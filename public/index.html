@@ -1,0 +1,53 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8">
+  <title>My Aplicación con Sockets</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="clienteIO.js"></script>
+  <script src="candle.min.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript"></script>
+  <script src="./canvasjs.min.js"></script>
+    
+  
+
+</head>  
+<body>  
+  <h1>My App</h1>
+  <div id="messages"></div>
+  <br/>
+  <form onsubmit="return addMessage(this)">
+    <input type="text" id="username" placeholder="Tu Nombre" >
+    <input type="text" id="texto" placeholder="Cuéntanos algo...">
+    <input type="submit" value="Enviar!">
+  </form>
+    <input type="submit" value="Ejecutar" onclick="fnDisparaEvento(event)">
+    <input type="submit" value="Contar procesos" onclick="fnContarFolk(event)">
+    <input type="submit" value="Add" onclick="fnAdd()">
+
+
+  <style>
+#chartdiv {
+	width	: 100%;
+	height	: 500px;
+}										
+</style>
+
+<!-- Resources -->
+<script src="https://www.amcharts.com/lib/3/amcharts.js"></script>
+<script src="https://www.amcharts.com/lib/3/serial.js"></script>
+<script src="https://www.amcharts.com/lib/3/plugins/export/export.min.js"></script>
+<link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
+<script src="https://www.amcharts.com/lib/3/themes/light.js"></script>
+
+<!-- Chart code -->
+
+<!-- HTML -->
+
+  <!--<div id="chart_div" style="width: 1600px; height: 800px;"></div>-->
+<div id="chartContainer" style="height: 800px; width: 100%;"/>
+<h1>My App</h1>
+<div id="chartContainer2" style="height: 800px; width: 100%;"/>
+</body>  
+</html>  
