@@ -2,7 +2,9 @@ var express = require('express');
 /*const Shared = require('mmap-object'); 
 const shared_object = new Shared.Create('filename');*/
 
-
+var EventEmitter = require('events').EventEmitter;
+var ee = new EventEmitter();
+ee.on(true, fnOrionx);
 
 var d = new Date("2014.01.01:23:06");
 console.log(d);
@@ -158,6 +160,8 @@ function fnMaster(msg){
           console.log("***************************");
           hijos++;
           if(hijos == arr.length * 2){
+			  hijos = 0;
+			  
             //console.log(arr); 
             //console.log(arr[objArr['CHABTC']]['result']);
             for(let obj of arr[objArr['CHABTC']]['result'].marketOrderBook.buy){
@@ -194,23 +198,25 @@ function fnMaster(msg){
               console.log('CHAUCHA desde BTC a Mercado: ' + compraChauchaBTC);
               console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - compraChauchaBTC));
 
-              var chauchaMejorBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * arr[objArr['CHABTC']]['result'].marketOrderBook.sell[0].limitPrice;
+              var chauchaMejorBTC = (arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * arr[objArr['CHABTC']]['result'].marketOrderBook.sell[0].limitPrice;
               console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
               console.log('chauchaMejorBTC: ' + chauchaMejorBTC);
               console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - chauchaMejorBTC));
 
-              var chauchaMejorCHABTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice;
+              var chauchaMejorCHABTC = (arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * (arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * 0.01);
               console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
               console.log('chauchaMejorCHABTC: ' + chauchaMejorCHABTC);
               console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - chauchaMejorCHABTC));
 
-              var chauchaMejorCHACLP = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice;
+              var chauchaMejorCHACLP = (arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * (arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * 0.01);
               console.log('CHAUCHA a limit: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice);
               console.log('CHAUCHA desde BTC a Mercado: ' + chauchaMejorCHACLP);
               console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice - chauchaMejorCHACLP));
-              console.log("COMPRAR : " + (arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * 100) +  " BTC")
+              console.log("COMPRAR MAXIMO BTC A: " + (arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * 100.01) +  " BTC")
 
-
+			  /*for(let obj of arr){
+                obj.result
+              }*/
         }
 
 
@@ -276,7 +282,7 @@ console.log('Listo!!');
 
   cluster.on('exit', (worker, code, signal) => {
 	console.log(`worker ${worker.process.pid} died`);
-	cluster.fork();
+	//cluster.fork();
   });
 } else {
   
@@ -320,22 +326,64 @@ io.on('connection', function(socket) {
 
   socket.on('message', function(data) {
     console.log('message');    
-    wk = cluster.fork();
-    wk.socket = this;
-    objLecturaLogPersistente[wk.process.pid] = wk;
-    wk.on('message', fnMaster);
-
-    wk = cluster.fork();
-    wk.socket = this;
-    objLecturaLogPersistente[wk.process.pid] = wk;
-    wk.on('message', fnMaster);
-
-    wk = cluster.fork();
-    wk.socket = this;
-    objLecturaLogPersistente[wk.process.pid] = wk;
-    wk.on('message', fnMaster);
-    
 	
+	
+	fnSouth(arrSouthReq[ejecucionSouth].mkt, arrSouthReq[ejecucionSouth].url);
+	
+	
+	
+    
+    
+	/*try {
+
+	  // URLs para consulta y formación de links
+	  var URL_BASE = 'https://www.southxchange.com/api/book/';
+	  var URL_REQUEST = URL_BASE + 'CHA/';
+	  var URL_LINK = URL_BASE + 'BTC';
+
+	  
+		
+		// Realiza la petición
+		var http = require('https');
+		var peticion = http.get(URL_LINK, function(respuesta) {
+			
+			
+			//console.log(respuesta);
+
+		  // Se asegura de que se tiene la respuesta completa (el evento data puede
+		  // ser disparado en mitad de la respuesta
+		  
+		  
+		  
+		  var cancionesJSON = '';
+		  respuesta.on('data', function(respuestaJSON) {
+			cancionesJSON += respuestaJSON;
+		  });
+
+		  // Una vez finalizada la respuesta se procesa
+		  respuesta.on('end', function() {
+
+			var canciones = JSON.parse(cancionesJSON);
+
+			
+			  for (cancion in canciones) {
+				var cancion = canciones[cancion];
+				console.log('\t* ' + cancion.title + ', de ' + cancion.artist.name + ': ' + URL_LINK + cancion.id);
+			  }
+			
+		  });
+
+		}).on('error', function(error) {
+		  // Ocurrió un error en el request
+		  console.log('Error encontrado al realizar la consulta: ' + error.message);
+		});
+
+	  
+	}
+	  catch(err) {
+	  console.log('Error inesperado:');
+	  console.log('\t' + err);
+	}*/
     
   });
 
@@ -363,3 +411,96 @@ io.on('connection', function(socket) {
 server.listen(8888, function() {  
   console.log("Servidor corriendo en http://localhost:8888");
 });
+
+
+var objSouth = {};
+var arrSouthReq = [{mkt: 'CHABTC', url: 'CHA/BTC'}, {mkt: 'CHABCH', url: 'CHA/BCH'}];
+var ejecucionSouth = 0;
+
+function fnOrionx(){
+	wk = cluster.fork();
+    wk.socket = this;
+    objLecturaLogPersistente[wk.process.pid] = wk;
+    wk.on('message', fnMaster);
+
+    wk = cluster.fork();
+    wk.socket = this;
+    objLecturaLogPersistente[wk.process.pid] = wk;
+    wk.on('message', fnMaster);
+
+    wk = cluster.fork();
+    wk.socket = this;
+    objLecturaLogPersistente[wk.process.pid] = wk;
+    wk.on('message', fnMaster);
+}
+
+
+function fnSouth(codMarket, URLMarket){
+try {
+
+	  // URLs para consulta y formación de links
+	  var URL_BASE = 'https://www.southxchange.com/api/book/';
+	  
+	  var URL_LINK = URL_BASE + URLMarket;
+
+	  
+		
+		// Realiza la petición
+		var http = require('https');
+		console.log(URL_LINK);
+		var peticion = http.get(URL_LINK, function(respuesta) {
+			
+			
+			//console.log(respuesta);
+
+		  // Se asegura de que se tiene la respuesta completa (el evento data puede
+		  // ser disparado en mitad de la respuesta
+		  
+		  
+		  
+		  var cancionesJSON = '';
+		  respuesta.on('data', function(respuestaJSON) {
+			cancionesJSON += respuestaJSON;
+		  });
+
+		  // Una vez finalizada la respuesta se procesa
+		  respuesta.on('end', function() {
+
+			var canciones = JSON.parse(cancionesJSON);
+			objSouth[codMarket] = canciones;
+			
+			console.log(objSouth[codMarket]);//objSouth			
+			ejecucionSouth++;
+			if(ejecucionSouth == arrSouthReq.length){
+				ejecucionSouth = 0;
+				fnOrionx();//ee.emit(h['35'], h);	
+			} else {
+				fnSouth(arrSouthReq[ejecucionSouth].mkt, arrSouthReq[ejecucionSouth].url);
+			}
+			
+		  });
+
+		}).on('error', function(error) {
+		  // Ocurrió un error en el request
+		  console.log('Error encontrado al realizar la consulta: ' + error.message);
+		});
+
+	  
+	}
+	  catch(err) {
+	  console.log('Error inesperado:');
+	  console.log('\t' + err);
+	}	
+	
+}
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	

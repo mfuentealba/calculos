@@ -76,7 +76,7 @@ process.on('message', (msg) => {
       console.log(res.data);*/
       //return(res.data);
       process.send({ cmd: 'fin proceso', data: process.pid, info: res.data, market: marketCode});
-      
+      process.exit();
   
     } catch (e) {
       throw(e);
