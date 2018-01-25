@@ -79,6 +79,7 @@ process.on('message', (msg) => {
       process.exit();
   
     } catch (e) {
+		console.log("ERROR");
       throw(e);
     }
   }

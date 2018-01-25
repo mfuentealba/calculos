@@ -524,6 +524,11 @@ function fnOrionx(){
     wk.socket = this;
     objLecturaLogPersistente[wk.process.pid] = wk;
     wk.on('message', fnMaster);
+	
+	wk = cluster.fork();
+    wk.socket = this;
+    objLecturaLogPersistente[wk.process.pid] = wk;
+    wk.on('message', fnMaster);
 }
 
 
