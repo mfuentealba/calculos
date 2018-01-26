@@ -66,7 +66,7 @@ process.on('message', (msg) => {
   async function main(query, marketCode) {
     try {
       let res = await fullQuery(
-        'http://api.orionx.io/graphql',   // Dirección de la API de Orionx
+        'http://api2.orionx.io/graphql',   // Dirección de la API de Orionx
         query,                            // query creada
         'xot4eDxZLWyjvbA4MJAYy55mDQ5FRc8zuX',                      // Aquí va la API Key
         'RHA5QN6RurArY2cXEntp43YXr5Kyz6y65a'                // Aquí va la Secret API Key
@@ -89,7 +89,7 @@ process.on('message', (msg) => {
       query: msg.query};
   
   
- main(query, msg.market)/*.then(function(result){
+ main(query, msg.market).catch(e => {console.log(e)})/*.then(function(result){
                                       //console.log(result.marketOrderBook.buy)
                                       for(let obj of result.marketOrderBook.buy){
                                         obj.amount /= 100000000; 
