@@ -154,6 +154,101 @@ var arr = [
     }
   }
 `},
+{market: 'BCHBTC', query: `query{
+    marketOrderBook(marketCode:"BCHBTC",limit:3) {
+      buy {
+        amount
+        limitPrice
+        accumulated
+        accumulatedPrice
+      }
+      sell {
+        amount
+        limitPrice
+        accumulated
+        accumulatedPrice
+      }
+      spread
+      mid
+    }
+  }
+`},
+{market: 'BCHCLP', query: `query{
+    marketOrderBook(marketCode:"BCHCLP",limit:3) {
+      buy {
+        amount
+        limitPrice
+        accumulated
+        accumulatedPrice
+      }
+      sell {
+        amount
+        limitPrice
+        accumulated
+        accumulatedPrice
+      }
+      spread
+      mid
+    }
+  }
+`},
+{market: 'BCHCLP', query: `query{
+    marketOrderBook(marketCode:"BCHCLP",limit:3) {
+      buy {
+        amount
+        limitPrice
+        accumulated
+        accumulatedPrice
+      }
+      sell {
+        amount
+        limitPrice
+        accumulated
+        accumulatedPrice
+      }
+      spread
+      mid
+    }
+  }
+`},
+{market: 'BCHCLP', query: `query{
+    marketOrderBook(marketCode:"BCHCLP",limit:3) {
+      buy {
+        amount
+        limitPrice
+        accumulated
+        accumulatedPrice
+      }
+      sell {
+        amount
+        limitPrice
+        accumulated
+        accumulatedPrice
+      }
+      spread
+      mid
+    }
+  }
+`},
+{market: 'BCHCLP', query: `query{
+    marketOrderBook(marketCode:"BCHCLP",limit:3) {
+      buy {
+        amount
+        limitPrice
+        accumulated
+        accumulatedPrice
+      }
+      sell {
+        amount
+        limitPrice
+        accumulated
+        accumulatedPrice
+      }
+      spread
+      mid
+    }
+  }
+`},
     ];
 
     var objArr = {};
@@ -227,58 +322,89 @@ function fnMaster(msg){
                 console.log(obj);
               }
 
-              var compraChauchaBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * arr[objArr['CHABTC']]['result'].marketOrderBook.sell[0].limitPrice;
 
-              console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
-              console.log('CHAUCHA desde BTC a Mercado: ' + compraChauchaBTC);
-              console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - compraChauchaBTC));
+              var comisionTake = (0.0029 / 0.9971) + 1;
+              var comisionMake = (0.0021 / 0.9979) + 1;
 
-              var chauchaMejorBTC = (arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * arr[objArr['CHABTC']]['result'].marketOrderBook.sell[0].limitPrice;
-              console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
-              console.log('chauchaMejorBTC: ' + chauchaMejorBTC);
-              console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - chauchaMejorBTC));
+              var compraChauchaBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake * arr[objArr['CHABTC']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake;
 
-              var chauchaMejorCHABTC = (arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * (arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * 0.01);
-              console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
-              console.log('chauchaMejorCHABTC: ' + chauchaMejorCHABTC);
-              console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - chauchaMejorCHABTC));
+              console.log('CHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionTake);
+              console.log('Comprar BTC Mercado: ' + arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake);
+              console.log('CHA desde BTC a CHA Mercado: ' + compraChauchaBTC);
+              console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971) - compraChauchaBTC));
 
-              var chauchaMejorCHACLP = (arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * (arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * 0.01);
-              console.log('CHAUCHA a limit: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice);
-              console.log('CHAUCHA desde BTC a Mercado: ' + chauchaMejorCHACLP);
-              console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice - chauchaMejorCHACLP));
+              var chauchaMejorBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * arr[objArr['CHABTC']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake;
+              
+              console.log('chaMejorBTC: ' + chauchaMejorBTC);
+              console.log('Comprar BTC Mejor: ' + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01);
+              console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971) - chauchaMejorBTC));
+
+              var chauchaMejorCHABTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01 * arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01;
+              
+              console.log('chaMejorCHABTC: ' + chauchaMejorCHABTC);
+              console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971) - chauchaMejorCHABTC));
+
+              var chauchaMejorCHACLP = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01 * arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake;
+              console.log('CHA a limit: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionMake * 1.01);
+              console.log('CHA desde BTC a CHA todo Limit: ' + chauchaMejorCHACLP);
+              console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice * 0.9971 * 0.99) - chauchaMejorCHACLP));
 
 
 
 
 
-            console.log("COMPRAR MAXIMO BTC A: " + (arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * 100.01) +  " BTC")
+            console.log("COMPRAR MAXIMO BTC A: " + (arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01) +  " BTC")
 
             console.log("********************  Southxchange BTC ********************");
 
-            compraChauchaBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * objSouth['CHABTC'].SellOrders[0].Price;
 
-            console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
-            console.log('CHAUCHA desde BTC a Mercado: ' + compraChauchaBTC);
-            console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - compraChauchaBTC));
+            var comisionSouth = ((0.002  /0.998) + 1) * 1.01;
 
-            var chauchaMejorBTC = (arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * objSouth['CHABTC'].SellOrders[0].Price;
-            console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
-            console.log('chauchaMejorBTC: ' + chauchaMejorBTC);
-            console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - chauchaMejorBTC));
 
-            var chauchaMejorCHABTC = (arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * (objSouth['CHABTC'].BuyOrders[0].Price + objSouth['CHABTC'].BuyOrders[0].Price * 0.01);
-            console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
-            console.log('chauchaMejorCHABTC: ' + chauchaMejorCHABTC);
-            console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - chauchaMejorCHABTC));
+            compraChauchaBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake * objSouth['CHABTC'].SellOrders[0].Price * comisionSouth * 1.0001;
+            
+            console.log('CHA a mercado: ' + objSouth['CHABTC'].SellOrders[0].Price * comisionSouth);
+            console.log('Comprar BTC Mercado: ' + (arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake));
+            console.log('CHA desde BTC a CHA Mercado: ' + compraChauchaBTC);
+            console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999 * 0.99) - compraChauchaBTC));
 
-            var chauchaMejorCHACLP = (arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * (objSouth['CHABTC'].BuyOrders[0].Price + objSouth['CHABTC'].BuyOrders[0].Price * 0.01);
-            console.log('CHAUCHA a limit: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice);
-            console.log('CHAUCHA desde BTC a Mercado: ' + chauchaMejorCHACLP);
-            console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice - chauchaMejorCHACLP));
+            var chauchaMejorBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * objSouth['CHABTC'].SellOrders[0].Price * comisionSouth * 1.0001;
+            
 
-            console.log("COMPRAR MAXIMO BTC A: " + (objSouth['CHABTC'].BuyOrders[0].Price * 100.01) +  " BTC")
 
+            console.log('chaMejorBTC: ' + chauchaMejorBTC);
+            console.log('Comprar BTC Mejor: ' + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01);
+            console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999) - chauchaMejorBTC));
+
+            var chauchaMejorCHA = (arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake) * objSouth['CHABTC'].BuyOrders[0].Price * comisionSouth * 1.0101;
+            
+            console.log('MejorCHA: ' + chauchaMejorCHA);
+            console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999) - chauchaMejorCHA));
+
+
+
+            var chauchaMejorCHABTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * objSouth['CHABTC'].BuyOrders[0].Price * comisionSouth * 1.0101;
+            
+            console.log('chaMejorCHABTC: ' + chauchaMejorCHABTC);
+            console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999) - chauchaMejorCHABTC));
+
+            var chauchaMejorCHACLP = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * objSouth['CHABTC'].BuyOrders[0].Price * comisionSouth * 1.0101;
+            console.log('CHA a limit: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionMake * 1.0101);
+            console.log('CHA desde BTC a CHA todo Limit: ' + chauchaMejorCHACLP);
+            console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice * 0.9979 * 0.9999) - chauchaMejorCHACLP));
+            
+            
+            
+            
+            
+            console.log("COMPRAR MAXIMO BTC A: " + (objSouth['CHABTC'].BuyOrders[0].Price * 100.0121) +  " BTC")
+            
+
+
+
+
+
+            
             console.log("********************  Southxchange  BCH ********************");
 
             compraChauchaBTC = arr[objArr['BCHCLP']]['result'].marketOrderBook.sell[0].limitPrice * objSouth['CHABCH'].SellOrders[0].Price;
@@ -510,8 +636,25 @@ var objSouth = {};
 var arrSouthReq = [{mkt: 'CHABTC', url: 'CHA/BTC'}, {mkt: 'CHABCH', url: 'CHA/BCH'}];
 var ejecucionSouth = 0;
 
+function fnMercados(msg){
+    
+    switch(msg.cmd){
+
+        default:
+    }
+
+}
+
 function fnOrionx(){
-	wk = cluster.fork();
+
+    wk = cluster.fork();
+    wk.socket = this;
+    objLecturaLogPersistente[wk.process.pid] = wk;
+    wk.on('message', fnMercados);
+
+
+
+	/*wk = cluster.fork();
     wk.socket = this;
     objLecturaLogPersistente[wk.process.pid] = wk;
     wk.on('message', fnMaster);
@@ -529,7 +672,7 @@ function fnOrionx(){
 	wk = cluster.fork();
     wk.socket = this;
     objLecturaLogPersistente[wk.process.pid] = wk;
-    wk.on('message', fnMaster);
+    wk.on('message', fnMaster);*/
 }
 
 
