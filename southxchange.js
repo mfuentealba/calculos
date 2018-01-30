@@ -1,3 +1,10 @@
+/**
+ * Clave: uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh
+
+Secreto: tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU
+ */
+
+
 const cluster = require('cluster');
 
 var EventEmitter = require('events').EventEmitter;

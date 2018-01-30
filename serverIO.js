@@ -15,253 +15,21 @@ var io = require('socket.io')(server);
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
 
-/*function* gen() 
-{ 
-	var a=0,b=undefined,c=0; 
-	
-	while(a<20)
-	{ 
-		if(b!=undefined) 
-		{ 
-			a=b; // resetea la variuable "a" para que empiece desde el valor indicado como parametro en yield
-			c++; // suma un reset mas a la cantidad total hasta ahora
-		} 
-		b=yield a+','+c; // retorna el valor de "a" concatenado con "c" y en el siguiente next()recibe un valor para "b"
-		a++; 
-	} 
-	return 'yield terminados. Esto es el return.';
-} 
 
-var secuencia = gen();
-
-console.log(secuencia.next()); // Object { value="0,0",  done=false}
-console.log(secuencia.next()); // Object { value="1,0",  done=false}
-console.log(secuencia.next()); // Object { value="2,0",  done=false}
-console.log(secuencia.next(10)); // Object { value="10,1",  done=false} 
-console.log(secuencia.next()); // Object { value="11,1",  done=false}
-console.log(secuencia.next()); // Object { value="12,1",  done=false}
-console.log(secuencia.next(5)); // Object { value="5,2",  done=false} 
-console.log(secuencia.next()); // Object { value="6,2",  done=false}
-console.log(secuencia.next(19)); // Object { value="19,3",  done=false} 
-console.log(secuencia.next()); // Object { value="20,3",  done=false}
-console.log(secuencia.next()); // Object { value="yield terminados. Esto es el return.",  done=true}
-*/
-
-
-function *crearGenerador() {
-    let primero = yield 1;
-    let segundo = yield primero + 2;       // 4 + 2
-    yield segundo + 3;                   // 5 + 3
-}
-
-let generador = crearGenerador();
-
-console.log(generador.next());           // "{ value: 1, done: false }"
-console.log(generador.next(4));          // "{ value: 6, done: false }"
-console.log(generador.next(5));          // "{ value: 8, done: false }"
-console.log(generador.next());           // "{ value: undefined, done: true }"+
-
-var BufferClass = function(){
-	
-	console.log(this.x)
-}
-
-BufferClass.prototype.x = 2;
-
-
-/*var h = new BufferClass();
-console.log(h.x);
-*/
 
 var objLecturaLog = {};
 var objLecturaLogPersistente = {};
 var wk;
 
-var arr = [
-     {market: 'CHACLP', query: `query{
-        marketOrderBook(marketCode:"CHACLP",limit:3) {
-          buy {
-            amount
-            limitPrice
-            accumulated
-            accumulatedPrice
-          }
-          sell {
-            amount
-            limitPrice
-            accumulated
-            accumulatedPrice
-          }
-          spread
-          mid
-        }
-      }
-  `},
-  {market: 'CHABTC', query: `query{
-    marketOrderBook(marketCode:"CHABTC",limit:3) {
-      buy {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      sell {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      spread
-      mid
-    }
-  }
-`},
-{market: 'BTCCLP', query: `query{
-    marketOrderBook(marketCode:"BTCCLP",limit:3) {
-      buy {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      sell {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      spread
-      mid
-    }
-  }
-`},
-{market: 'BCHCLP', query: `query{
-    marketOrderBook(marketCode:"BCHCLP",limit:3) {
-      buy {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      sell {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      spread
-      mid
-    }
-  }
-`},
-{market: 'BCHBTC', query: `query{
-    marketOrderBook(marketCode:"BCHBTC",limit:3) {
-      buy {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      sell {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      spread
-      mid
-    }
-  }
-`},
-{market: 'BCHCLP', query: `query{
-    marketOrderBook(marketCode:"BCHCLP",limit:3) {
-      buy {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      sell {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      spread
-      mid
-    }
-  }
-`},
-{market: 'BCHCLP', query: `query{
-    marketOrderBook(marketCode:"BCHCLP",limit:3) {
-      buy {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      sell {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      spread
-      mid
-    }
-  }
-`},
-{market: 'BCHCLP', query: `query{
-    marketOrderBook(marketCode:"BCHCLP",limit:3) {
-      buy {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      sell {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      spread
-      mid
-    }
-  }
-`},
-{market: 'BCHCLP', query: `query{
-    marketOrderBook(marketCode:"BCHCLP",limit:3) {
-      buy {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      sell {
-        amount
-        limitPrice
-        accumulated
-        accumulatedPrice
-      }
-      spread
-      mid
-    }
-  }
-`},
-    ];
+var arr = [];
 
     var objArr = {};
-    objArr['CHACLP'] = 0;
-    objArr['CHABTC'] = 1;
-    objArr['BTCCLP'] = 2;
-    objArr['BCHCLP'] = 3;
+   
 
 var hijos = 0;
 
 function fnMaster(msg){
-	 // console.log(msg);
-    //console.log(process.pid);
+	 
     switch(msg.cmd){
         case 'inicio Proceso':
           delete objLecturaLog[msg.data];
@@ -270,90 +38,53 @@ function fnMaster(msg){
           objLecturaLog[msg.data] = objLecturaLogPersistente[msg.data];
           console.log(msg);
           arr[objArr[msg.market]]['result'] = msg.info;
-          //console.log(arr[objArr[msg.market]]['result']);
+          
           
           console.log("***************************");
+
+          for(let obj of arr[objArr[msg.market]]['result'].marketOrderBook.buy){
+            console.log(obj);
+          }
+
+
           hijos++;
           if(hijos == arr.length * 2){
 			  hijos = 0;
 			  
-            //console.log(arr); 
-            //console.log(arr[objArr['CHABTC']]['result']);
-            for(let obj of arr[objArr['CHABTC']]['result'].marketOrderBook.buy){
-                obj.amount = obj.amount / 100000000;
-                obj.limitPrice /= 100000000;
-                obj.accumulated /= 100000000; 
-             //   console.log(obj);
-              }
-
-              for(let obj of arr[objArr['CHABTC']]['result'].marketOrderBook.sell){
-                obj.amount /= 100000000; 
-                obj.limitPrice /= 100000000; 
-                obj.accumulated /= 100000000; 
-              //  console.log(obj);
-              }
-
-              for(let obj of arr[objArr['BTCCLP']]['result'].marketOrderBook.buy){
-                obj.amount = obj.amount / 100000000;
-                //obj.limitPrice /= 100000000;
-                obj.accumulated /= 100000000; 
-                console.log(obj);
-              }
-
-              for(let obj of arr[objArr['BTCCLP']]['result'].marketOrderBook.sell){
-                obj.amount /= 100000000; 
-                //obj.limitPrice /= 100000000; 
-                obj.accumulated /= 100000000; 
-                console.log(obj);
-              }
-
-
-              for(let obj of arr[objArr['BCHCLP']]['result'].marketOrderBook.buy){
-                obj.amount = obj.amount / 100000000;
-                //obj.limitPrice /= 100000000;
-                obj.accumulated /= 100000000; 
-                console.log(obj);
-              }
-
-              for(let obj of arr[objArr['BCHCLP']]['result'].marketOrderBook.sell){
-                obj.amount /= 100000000; 
-                //obj.limitPrice /= 100000000; 
-                obj.accumulated /= 100000000; 
-                console.log(obj);
-              }
-
+            
 
               var comisionTake = (0.0029 / 0.9971) + 1;
               var comisionMake = (0.0021 / 0.9979) + 1;
 
-              var compraChauchaBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake * arr[objArr['CHABTC']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake;
+              var compraChauchaBTC = arr[objArr['BTC/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake * arr[objArr['CHA/BTC']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake;
 
-              console.log('CHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionTake);
-              console.log('Comprar BTC Mercado: ' + arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake);
+              console.log('CHA a mercado: ' + arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionTake);
+              console.log('Comprar BTC Mercado: ' + arr[objArr['BTC/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake);
               console.log('CHA desde BTC a CHA Mercado: ' + compraChauchaBTC);
-              console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971) - compraChauchaBTC));
+              console.log('GANANCIA: ' + ((arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971) - compraChauchaBTC));
 
-              var chauchaMejorBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * arr[objArr['CHABTC']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake;
-              
+              var chauchaMejorBTC = arr[objArr['BTC/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * arr[objArr['CHA/BTC']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake;
+              console.log(arr[objArr['BTC/CLP']]['result'].marketOrderBook.buy[0].limitPrice);
+              console.log(arr[objArr['CHA/BTC']]['result'].marketOrderBook.sell[0].limitPrice);
               console.log('chaMejorBTC: ' + chauchaMejorBTC);
-              console.log('Comprar BTC Mejor: ' + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01);
-              console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971) - chauchaMejorBTC));
+              console.log('Comprar BTC Mejor: ' + arr[objArr['BTC/CLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01);
+              console.log('GANANCIA: ' + ((arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971) - chauchaMejorBTC));
 
-              var chauchaMejorCHABTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01 * arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01;
+              var chauchaMejorCHABTC = arr[objArr['BTC/CLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01 * arr[objArr['CHA/BTC']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01;
               
               console.log('chaMejorCHABTC: ' + chauchaMejorCHABTC);
-              console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971) - chauchaMejorCHABTC));
+              console.log('GANANCIA: ' + ((arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971) - chauchaMejorCHABTC));
 
-              var chauchaMejorCHACLP = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01 * arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake;
-              console.log('CHA a limit: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionMake * 1.01);
+              var chauchaMejorCHACLP = arr[objArr['BTC/CLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01 * arr[objArr['CHA/BTC']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake;
+              console.log('CHA a limit: ' + arr[objArr['CHA/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionMake * 1.01);
               console.log('CHA desde BTC a CHA todo Limit: ' + chauchaMejorCHACLP);
-              console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice * 0.9971 * 0.99) - chauchaMejorCHACLP));
+              console.log('GANANCIA: ' + ((arr[objArr['CHA/CLP']]['result'].marketOrderBook.sell[0].limitPrice * 0.9971 * 0.99) - chauchaMejorCHACLP));
 
 
 
 
 
-            console.log("COMPRAR MAXIMO BTC A: " + (arr[objArr['CHABTC']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01) +  " BTC")
+            console.log("COMPRAR MAXIMO BTC A: " + (arr[objArr['CHA/BTC']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01) +  " BTC")
 
             console.log("********************  Southxchange BTC ********************");
 
@@ -361,43 +92,43 @@ function fnMaster(msg){
             var comisionSouth = ((0.002  /0.998) + 1) * 1.01;
 
 
-            compraChauchaBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake * objSouth['CHABTC'].SellOrders[0].Price * comisionSouth * 1.0001;
+            compraChauchaBTC = arr[objArr['BTC/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake * objSouth['CHA/BTC'].SellOrders[0].Price * comisionSouth * 1.0001;
             
-            console.log('CHA a mercado: ' + objSouth['CHABTC'].SellOrders[0].Price * comisionSouth);
-            console.log('Comprar BTC Mercado: ' + (arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake));
+            console.log('CHA a mercado: ' + objSouth['CHA/BTC'].SellOrders[0].Price * comisionSouth);
+            console.log('Comprar BTC Mercado: ' + (arr[objArr['BTC/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake));
             console.log('CHA desde BTC a CHA Mercado: ' + compraChauchaBTC);
-            console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999 * 0.99) - compraChauchaBTC));
+            console.log('GANANCIA: ' + ((arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999 * 0.99) - compraChauchaBTC));
 
-            var chauchaMejorBTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * objSouth['CHABTC'].SellOrders[0].Price * comisionSouth * 1.0001;
+            var chauchaMejorBTC = arr[objArr['BTC/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * objSouth['CHA/BTC'].SellOrders[0].Price * comisionSouth * 1.0001;
             
 
 
             console.log('chaMejorBTC: ' + chauchaMejorBTC);
-            console.log('Comprar BTC Mejor: ' + arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01);
-            console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999) - chauchaMejorBTC));
+            console.log('Comprar BTC Mejor: ' + arr[objArr['BTC/CLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionMake * 1.01);
+            console.log('GANANCIA: ' + ((arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999) - chauchaMejorBTC));
 
-            var chauchaMejorCHA = (arr[objArr['BTCCLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake) * objSouth['CHABTC'].BuyOrders[0].Price * comisionSouth * 1.0101;
+            var chauchaMejorCHA = (arr[objArr['BTC/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake) * objSouth['CHA/BTC'].BuyOrders[0].Price * comisionSouth * 1.0101;
             
             console.log('MejorCHA: ' + chauchaMejorCHA);
-            console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999) - chauchaMejorCHA));
+            console.log('GANANCIA: ' + ((arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999) - chauchaMejorCHA));
 
 
 
-            var chauchaMejorCHABTC = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * objSouth['CHABTC'].BuyOrders[0].Price * comisionSouth * 1.0101;
+            var chauchaMejorCHABTC = arr[objArr['BTC/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * objSouth['CHA/BTC'].BuyOrders[0].Price * comisionSouth * 1.0101;
             
             console.log('chaMejorCHABTC: ' + chauchaMejorCHABTC);
-            console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999) - chauchaMejorCHABTC));
+            console.log('GANANCIA: ' + ((arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.9971 * 0.9999) - chauchaMejorCHABTC));
 
-            var chauchaMejorCHACLP = arr[objArr['BTCCLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * objSouth['CHABTC'].BuyOrders[0].Price * comisionSouth * 1.0101;
-            console.log('CHA a limit: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionMake * 1.0101);
+            var chauchaMejorCHACLP = arr[objArr['BTC/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 1.01 * comisionMake * objSouth['CHA/BTC'].BuyOrders[0].Price * comisionSouth * 1.0101;
+            console.log('CHA a limit: ' + arr[objArr['CHA/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionMake * 1.0101);
             console.log('CHA desde BTC a CHA todo Limit: ' + chauchaMejorCHACLP);
-            console.log('GANANCIA: ' + ((arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice * 0.9979 * 0.9999) - chauchaMejorCHACLP));
+            console.log('GANANCIA: ' + ((arr[objArr['CHA/CLP']]['result'].marketOrderBook.sell[0].limitPrice * 0.9979 * 0.9999) - chauchaMejorCHACLP));
             
             
             
             
             
-            console.log("COMPRAR MAXIMO BTC A: " + (objSouth['CHABTC'].BuyOrders[0].Price * 100.0121) +  " BTC")
+            console.log("COMPRAR MAXIMO BTC A: " + (objSouth['CHA/BTC'].BuyOrders[0].Price * 100.0121) +  " BTC")
             
 
 
@@ -407,29 +138,29 @@ function fnMaster(msg){
             
             console.log("********************  Southxchange  BCH ********************");
 
-            compraChauchaBTC = arr[objArr['BCHCLP']]['result'].marketOrderBook.sell[0].limitPrice * objSouth['CHABCH'].SellOrders[0].Price;
+            compraChauchaBTC = arr[objArr['BCH/CLP']]['result'].marketOrderBook.sell[0].limitPrice * objSouth['CHA/BCH'].SellOrders[0].Price;
             
-            console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
+            console.log('CHAUCHA a mercado: ' + arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice);
             console.log('CHAUCHA desde BCH a Mercado: ' + compraChauchaBTC);
-            console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - compraChauchaBTC));
+            console.log('GANANCIA: ' + (arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice - compraChauchaBTC));
 
 
-            var chauchaMejorBTC = (arr[objArr['BCHCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BCHCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * objSouth['CHABCH'].SellOrders[0].Price;
-            console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
+            var chauchaMejorBTC = (arr[objArr['BCH/CLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BCH/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * objSouth['CHA/BCH'].SellOrders[0].Price;
+            console.log('CHAUCHA a mercado: ' + arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice);
             console.log('chauchaMejorBCH: ' + chauchaMejorBTC);
-            console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - chauchaMejorBTC));
+            console.log('GANANCIA: ' + (arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice - chauchaMejorBTC));
 
-            var chauchaMejorCHABTC = (arr[objArr['BCHCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BCHCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * (objSouth['CHABCH'].BuyOrders[0].Price + objSouth['CHABCH'].BuyOrders[0].Price * 0.01);
-            console.log('CHAUCHA a mercado: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice);
+            var chauchaMejorCHABTC = (arr[objArr['BCH/CLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BCH/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * (objSouth['CHA/BCH'].BuyOrders[0].Price + objSouth['CHA/BCH'].BuyOrders[0].Price * 0.01);
+            console.log('CHAUCHA a mercado: ' + arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice);
             console.log('chauchaMejorCHABCH: ' + chauchaMejorCHABTC);
-            console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.buy[0].limitPrice - chauchaMejorCHABTC));
+            console.log('GANANCIA: ' + (arr[objArr['CHA/CLP']]['result'].marketOrderBook.buy[0].limitPrice - chauchaMejorCHABTC));
 
-            var chauchaMejorCHACLP = (arr[objArr['BCHCLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BCHCLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * (objSouth['CHABCH'].BuyOrders[0].Price + objSouth['CHABCH'].BuyOrders[0].Price * 0.01);
-            console.log('CHAUCHA a limit: ' + arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice);
+            var chauchaMejorCHACLP = (arr[objArr['BCH/CLP']]['result'].marketOrderBook.buy[0].limitPrice + arr[objArr['BCH/CLP']]['result'].marketOrderBook.buy[0].limitPrice * 0.01) * (objSouth['CHA/BCH'].BuyOrders[0].Price + objSouth['CHA/BCH'].BuyOrders[0].Price * 0.01);
+            console.log('CHAUCHA a limit: ' + arr[objArr['CHA/CLP']]['result'].marketOrderBook.sell[0].limitPrice);
             console.log('CHAUCHA desde BCH a Mercado: ' + chauchaMejorCHACLP);
-            console.log('GANANCIA: ' + (arr[objArr['CHACLP']]['result'].marketOrderBook.sell[0].limitPrice - chauchaMejorCHACLP));
+            console.log('GANANCIA: ' + (arr[objArr['CHA/CLP']]['result'].marketOrderBook.sell[0].limitPrice - chauchaMejorCHACLP));
 
-            console.log("COMPRAR MAXIMO BCH A: " + (objSouth['CHABCH'].BuyOrders[0].Price * 100.01) +  " BCH")
+            console.log("COMPRAR MAXIMO BCH A: " + (objSouth['CHA/BCH'].BuyOrders[0].Price * 100.01) +  " BCH")
             
 
 
@@ -505,12 +236,7 @@ console.log('Listo!!');
   });
 } else {
   
-  /*process.on('message', (msg) => {
-	
-	console.log(msg + ' ' + process.pid);
-  });
-  process.send({ cmd: process.pid });
-  console.log(`Worker ${process.pid} started`);*/
+ 
 }
 
 
@@ -549,60 +275,6 @@ io.on('connection', function(socket) {
 	
 	fnSouth(arrSouthReq[ejecucionSouth].mkt, arrSouthReq[ejecucionSouth].url);
 	
-	
-	
-    
-    
-	/*try {
-
-	  // URLs para consulta y formación de links
-	  var URL_BASE = 'https://www.southxchange.com/api/book/';
-	  var URL_REQUEST = URL_BASE + 'CHA/';
-	  var URL_LINK = URL_BASE + 'BTC';
-
-	  
-		
-		// Realiza la petición
-		var http = require('https');
-		var peticion = http.get(URL_LINK, function(respuesta) {
-			
-			
-			//console.log(respuesta);
-
-		  // Se asegura de que se tiene la respuesta completa (el evento data puede
-		  // ser disparado en mitad de la respuesta
-		  
-		  
-		  
-		  var cancionesJSON = '';
-		  respuesta.on('data', function(respuestaJSON) {
-			cancionesJSON += respuestaJSON;
-		  });
-
-		  // Una vez finalizada la respuesta se procesa
-		  respuesta.on('end', function() {
-
-			var canciones = JSON.parse(cancionesJSON);
-
-			
-			  for (cancion in canciones) {
-				var cancion = canciones[cancion];
-				console.log('\t* ' + cancion.title + ', de ' + cancion.artist.name + ': ' + URL_LINK + cancion.id);
-			  }
-			
-		  });
-
-		}).on('error', function(error) {
-		  // Ocurrió un error en el request
-		  console.log('Error encontrado al realizar la consulta: ' + error.message);
-		});
-
-	  
-	}
-	  catch(err) {
-	  console.log('Error inesperado:');
-	  console.log('\t' + err);
-	}*/
     
   });
 
@@ -633,14 +305,66 @@ server.listen(8888, function() {
 
 
 var objSouth = {};
-var arrSouthReq = [{mkt: 'CHABTC', url: 'CHA/BTC'}, {mkt: 'CHABCH', url: 'CHA/BCH'}];
+var arrSouthReq = [{mkt: 'CHA/BTC', url: 'CHA/BTC'}, {mkt: 'CHA/BCH', url: 'CHA/BCH'}];
 var ejecucionSouth = 0;
 
 function fnMercados(msg){
     
     switch(msg.cmd){
+        case 'inicio Proceso':
+          
+        break;
+        case 'fin proceso':
+          
+            for(var obj of msg.info.markets){
+                console.log(obj);
+                objArr[obj.name] = arr.length;
+                arr[arr.length] = {market: obj.name, query: `query{
+                    marketOrderBook(marketCode:"` + obj.code + `",limit:3) {
+                    buy {
+                        amount
+                        limitPrice
+                        accumulated
+                        accumulatedPrice
+                    }
+                    sell {
+                        amount
+                        limitPrice
+                        accumulated
+                        accumulatedPrice
+                    }
+                    spread
+                    mid
+                    }
+                }
+                `};
+                
+               
+            }
 
+            for(var obj of arr){
+                wk = cluster.fork();
+                wk.socket = this;
+                objLecturaLogPersistente[wk.process.pid] = wk;
+                wk.on('message', fnMaster);
+            }
+
+        break;
+       
         default:
+        var obj = {market: '', query: `query{
+            markets {
+              code
+              name
+              commission
+              releaseDate
+            }
+          }
+        `}
+            this.send(obj);
+
+            
+        break;
     }
 
 }
@@ -653,26 +377,6 @@ function fnOrionx(){
     wk.on('message', fnMercados);
 
 
-
-	/*wk = cluster.fork();
-    wk.socket = this;
-    objLecturaLogPersistente[wk.process.pid] = wk;
-    wk.on('message', fnMaster);
-
-    wk = cluster.fork();
-    wk.socket = this;
-    objLecturaLogPersistente[wk.process.pid] = wk;
-    wk.on('message', fnMaster);
-
-    wk = cluster.fork();
-    wk.socket = this;
-    objLecturaLogPersistente[wk.process.pid] = wk;
-    wk.on('message', fnMaster);
-	
-	wk = cluster.fork();
-    wk.socket = this;
-    objLecturaLogPersistente[wk.process.pid] = wk;
-    wk.on('message', fnMaster);*/
 }
 
 
@@ -690,14 +394,7 @@ try {
 		var http = require('https');
 		console.log(URL_LINK);
 		var peticion = http.get(URL_LINK, function(respuesta) {
-			
-			
-			//console.log(respuesta);
-
-		  // Se asegura de que se tiene la respuesta completa (el evento data puede
-		  // ser disparado en mitad de la respuesta
-		  
-		  
+		
 		  
 		  var cancionesJSON = '';
 		  respuesta.on('data', function(respuestaJSON) {

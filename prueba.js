@@ -75,6 +75,42 @@ process.on('message', (msg) => {
      /* console.log('*** Response ***');    // Se imprime la respuesta que llega
       console.log(res.data);*/
       //return(res.data);
+      console.log(marketCode);
+      if(marketCode != ""){
+        if(marketCode.split("/")[1] == "BTC"){
+          for(let obj of res.data.marketOrderBook.buy){
+            obj.amount = obj.amount / 100000000;
+            obj.limitPrice /= 100000000;
+            obj.accumulated /= 100000000; 
+         //   console.log(obj);
+          }
+
+          for(let obj of res.data.marketOrderBook.sell){
+            obj.amount /= 100000000; 
+            obj.limitPrice /= 100000000; 
+            obj.accumulated /= 100000000; 
+          //  console.log(obj);
+          }
+        } else {
+          for(let obj of res.data.marketOrderBook.buy){
+            obj.amount = obj.amount / 100000000;
+           // obj.limitPrice /= 100000000;
+            obj.accumulated /= 100000000; 
+         //   console.log(obj);
+          }
+
+          for(let obj of res.data.marketOrderBook.sell){
+            obj.amount /= 100000000; 
+            //obj.limitPrice /= 100000000; 
+            obj.accumulated /= 100000000; 
+          //  console.log(obj);
+          }
+        }       
+      }
+
+      
+
+
       process.send({ cmd: 'fin proceso', data: process.pid, info: res.data, market: marketCode});
       process.exit();
   
