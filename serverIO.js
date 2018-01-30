@@ -51,10 +51,47 @@ function fnMaster(msg){
           if(hijos == arr.length * 2){
 			  hijos = 0;
 			  
-            
-
-              var comisionTake = (0.0029 / 0.9971) + 1;
+			  
+			  var comisionTake = (0.0029 / 0.9971) + 1;
+              var comisionTakeCompra = (0.0029 / 0.9971) + 1;
+			  var comisionTakeVenta = 1 - (0.0029 / 0.9971);
               var comisionMake = (0.0021 / 0.9979) + 1;
+			  var comisionMakeCompra = (0.0021 / 0.9979) + 1;
+			  var comisionMakeVenta = 1 - (0.0021 / 0.9979);
+			  var refBTC = 6975000;
+			  var merBTC = arr[objArr['BTC/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTakeCompra;
+			  var merBCH = arr[objArr['BCH/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTakeCompra;
+			  var comisionSouthCompra = ((0.002  /0.998) + 1) * 1.01;
+			  var comisionSouthVenta = (1 - (0.002  /0.998)) * 0.99;
+			  
+			  console.log("************* LISTADO DE PRECIOS ETH *************");
+			  console.log("ORIONX (BTC comprado a: " + refBTC + ") ETHBTC==> oferta: " + (arr[objArr['ETH/BTC']]['result'].marketOrderBook.sell[0].limitPrice * refBTC * comisionTakeCompra * comisionTakeCompra) + ", demanda: " + arr[objArr['ETH/BTC']]['result'].marketOrderBook.buy[0].limitPrice * refBTC * comisionTakeVenta * comisionTakeVenta);
+			  console.log("ORIONX (BTC comprado a mercado: " + merBTC + ") ETHBTC==> oferta: " + (arr[objArr['ETH/BTC']]['result'].marketOrderBook.sell[0].limitPrice * merBTC * comisionTakeCompra * comisionTakeCompra) + ", demanda: " + arr[objArr['ETH/BTC']]['result'].marketOrderBook.buy[0].limitPrice * merBTC * comisionTakeVenta * comisionTakeVenta);
+			  console.log("SOUTHXCHANGE (BTC comprado a mercado: " + merBTC + ") ETHBTC==> oferta: " + (objSouth['ETH/BTC'].SellOrders[0].Price * comisionSouthCompra * merBTC * comisionTakeCompra) + ", demanda: " + (objSouth['ETH/BTC'].BuyOrders[0].Price * comisionSouthVenta * merBTC * comisionTakeVenta));
+			  console.log("SOUTHXCHANGE (BCH comprado a mercado: " + merBCH + ") ETHBCH==> oferta: " + (objSouth['ETH/BCH'].SellOrders[0].Price * comisionSouthCompra * merBCH * comisionTakeCompra) + ", demanda: " + (objSouth['ETH/BCH'].BuyOrders[0].Price * comisionSouthVenta * merBCH * comisionTakeVenta));
+			  console.log("ORIONX ETHCLP ==> oferta: " + (arr[objArr['ETH/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTakeCompra) + ", demanda: " + arr[objArr['ETH/CLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionTakeVenta);
+			  console.log("************* LISTADO DE PRECIOS LTC *************");
+			  console.log("ORIONX (BTC comprado a: " + refBTC + ") LTCBTC==> oferta: " + (arr[objArr['LTC/BTC']]['result'].marketOrderBook.sell[0].limitPrice * refBTC * comisionTakeCompra * comisionTakeCompra) + ", demanda: " + arr[objArr['LTC/BTC']]['result'].marketOrderBook.buy[0].limitPrice * refBTC * comisionTakeVenta * comisionTakeVenta);
+			  console.log("ORIONX (BTC comprado a mercado: " + merBTC + ") LTCBTC==> oferta: " + (arr[objArr['LTC/BTC']]['result'].marketOrderBook.sell[0].limitPrice * merBTC * comisionTakeCompra * comisionTakeCompra) + ", demanda: " + arr[objArr['LTC/BTC']]['result'].marketOrderBook.buy[0].limitPrice * merBTC * comisionTakeVenta * comisionTakeVenta);
+			  console.log("SOUTHXCHANGE (BTC comprado a mercado: " + merBTC + ") LTCBTC==> oferta: " + (objSouth['LTC/BTC'].SellOrders[0].Price * comisionSouthCompra * merBTC * comisionTakeCompra) + ", demanda: " + (objSouth['LTC/BTC'].BuyOrders[0].Price * comisionSouthVenta * merBTC * comisionTakeVenta));
+			  console.log("SOUTHXCHANGE (BCH comprado a mercado: " + merBCH + ") LTCBCH==> oferta: " + (objSouth['LTC/BCH'].SellOrders[0].Price * comisionSouthCompra * merBCH * comisionTakeCompra) + ", demanda: " + (objSouth['LTC/BCH'].BuyOrders[0].Price * comisionSouthVenta * merBCH * comisionTakeVenta));
+			  console.log("ORIONX LTCCLP ==> oferta: " + (arr[objArr['LTC/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTakeCompra) + ", demanda: " + arr[objArr['LTC/CLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionTakeVenta);
+			  console.log("************* LISTADO DE PRECIOS DASH *************");
+			  console.log("ORIONX (BTC comprado a: " + refBTC + ") DASHBTC==> oferta: " + (arr[objArr['DASH/BTC']]['result'].marketOrderBook.sell[0].limitPrice * refBTC * comisionTakeCompra * comisionTakeCompra) + ", demanda: " + arr[objArr['DASH/BTC']]['result'].marketOrderBook.buy[0].limitPrice * refBTC * comisionTakeVenta * comisionTakeVenta);
+			  console.log("ORIONX (BTC comprado a mercado: " + merBTC + ") DASHBTC==> oferta: " + (arr[objArr['DASH/BTC']]['result'].marketOrderBook.sell[0].limitPrice * merBTC * comisionTakeCompra * comisionTakeCompra) + ", demanda: " + arr[objArr['DASH/BTC']]['result'].marketOrderBook.buy[0].limitPrice * merBTC * comisionTakeVenta * comisionTakeVenta);
+			  console.log("SOUTHXCHANGE (BTC comprado a mercado: " + merBTC + ") DASHBTC==> oferta: " + (objSouth['DASH/BTC'].SellOrders[0].Price * comisionSouthCompra * merBTC * comisionTakeCompra) + ", demanda: " + (objSouth['DASH/BTC'].BuyOrders[0].Price * comisionSouthVenta * merBTC * comisionTakeVenta));
+			  console.log("SOUTHXCHANGE (BCH comprado a mercado: " + merBCH + ") DASHBCH==> oferta: " + (objSouth['DASH/BCH'].SellOrders[0].Price * comisionSouthCompra * merBCH * comisionTakeCompra) + ", demanda: " + (objSouth['DASH/BCH'].BuyOrders[0].Price * comisionSouthVenta * merBCH * comisionTakeVenta));
+			  console.log("ORIONX DASHCLP ==> oferta: " + (arr[objArr['DASH/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTakeCompra) + ", demanda: " + arr[objArr['DASH/CLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionTakeVenta);
+			  console.log("************* LISTADO DE PRECIOS BCH *************");
+			  console.log("ORIONX (BTC comprado a: " + refBTC + ") BCHBTC==> oferta: " + (arr[objArr['BCH/BTC']]['result'].marketOrderBook.sell[0].limitPrice * refBTC * comisionTakeCompra * comisionTakeCompra) + ", demanda: " + arr[objArr['BCH/BTC']]['result'].marketOrderBook.buy[0].limitPrice * refBTC * comisionTakeVenta * comisionTakeVenta);
+			  console.log("ORIONX (BTC comprado a mercado: " + merBTC + ") BCHBTC==> oferta: " + (arr[objArr['BCH/BTC']]['result'].marketOrderBook.sell[0].limitPrice * merBTC * comisionTakeCompra * comisionTakeCompra) + ", demanda: " + arr[objArr['BCH/BTC']]['result'].marketOrderBook.buy[0].limitPrice * merBTC * comisionTakeVenta * comisionTakeVenta);
+			  console.log("SOUTHXCHANGE (BTC comprado a mercado: " + merBTC + ") BCHBTC==> oferta: " + (objSouth['BCH/BTC'].SellOrders[0].Price * comisionSouthCompra * merBTC * comisionTakeCompra) + ", demanda: " + (objSouth['BCH/BTC'].BuyOrders[0].Price * comisionSouthVenta * merBTC * comisionTakeVenta));
+			  console.log("ORIONX BCHCLP ==> oferta: " + (arr[objArr['BCH/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTakeCompra) + ", demanda: " + arr[objArr['BCH/CLP']]['result'].marketOrderBook.buy[0].limitPrice * comisionTakeVenta);
+			  
+			  
+			  
+			  
+			  
 
               var compraChauchaBTC = arr[objArr['BTC/CLP']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake * arr[objArr['CHA/BTC']]['result'].marketOrderBook.sell[0].limitPrice * comisionTake;
 
@@ -198,32 +235,10 @@ function fnMaster(msg){
 
 if (cluster.isMaster) {
 	console.log(`Master ${process.pid} is running`);
-  /*
-	cluster.setupMaster({
-	  exec: 'httpServer.js',
-	  args: [],
-	  silent: false
-  });
-  
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }*/
   
 
-  cluster.setupMaster({
-	  exec: 'prueba.js',
-    //exec: 'tendencias.1.js',
-    //exec: 'archivosConsolidados.js',
-	  //exec: 'lecturaMarketData.js',
-	  args: [],
-	  silent: false
-  });
-    /*const wk = cluster.fork();
-    //objLecturaLog[wk.process.pid] = wk;
-    console.log(wk.process.pid);
-	wk.on('message', fnMaster);//106933421
-  */
   
+    
   
   
  
@@ -305,9 +320,74 @@ server.listen(8888, function() {
 
 
 var objSouth = {};
-var arrSouthReq = [{mkt: 'CHA/BTC', url: 'CHA/BTC'}, {mkt: 'CHA/BCH', url: 'CHA/BCH'}];
+var arrSouthReq = [{mkt: 'CHA/BTC', url: 'CHA/BTC'}, {mkt: 'CHA/BCH', url: 'CHA/BCH'}, {mkt: 'BCH/BTC', url: 'BCH/BTC'}, {mkt: 'DASH/BTC', url: 'DASH/BTC'}, {mkt: 'ETH/BTC', url: 'ETH/BTC'}, {mkt: 'LTC/BTC', url: 'LTC/BTC'}, {mkt: 'DASH/BCH', url: 'DASH/BCH'}, {mkt: 'ETH/BCH', url: 'ETH/BCH'}, {mkt: 'LTC/BCH', url: 'LTC/BCH'}];
 var ejecucionSouth = 0;
 
+
+
+function fnVolTrans(msg){
+    
+	
+	
+    switch(msg.cmd){
+        case 'inicio Proceso':
+          
+        break;
+        case 'fin proceso':   
+		
+		  console.log(msg);
+		  exit()
+		  console.log(msg.market);
+		  console.log(objArr[msg.market]);
+		  console.log(arrTrades);
+          arrTrades[objArr[msg.market]]['result'] = msg.info;
+          
+          
+          console.log("***************************");
+		  hijos++;
+          if(hijos == arr.length * 2){		
+			hijos = 0;
+            cluster.setupMaster({
+				  exec: 'prueba.js',    
+				  args: [],
+				  silent: false
+			  });
+				
+			for(var obj of arr){
+				wk = cluster.fork();
+				wk.socket = this;
+				objLecturaLogPersistente[wk.process.pid] = wk;
+				wk.on('message', fnMaster);
+			}	
+			
+
+		  }
+
+        break;
+       
+        default:
+			
+			var obj = {market: msg.market, query: `query{
+				markets {
+				  code
+				  name
+				  commission
+				  releaseDate
+				}
+			  }
+			`}
+			console.log(obj);
+			exit();
+            this.send(obj);
+
+            
+        break;
+    }
+
+}
+
+
+var arrTrades = [];
 function fnMercados(msg){
     
     switch(msg.cmd){
@@ -338,6 +418,17 @@ function fnMercados(msg){
                     }
                 }
                 `};
+				
+				arrTrades[arr.length] = {market: obj.code, query: `query{
+                    marketTradeHistory(marketCode:"` + obj.code + `") {
+						_id
+						amount
+						price
+						totalCost
+						date
+					  }
+									}
+									`};
                 
                
             }
@@ -345,8 +436,8 @@ function fnMercados(msg){
             for(var obj of arr){
                 wk = cluster.fork();
                 wk.socket = this;
-                objLecturaLogPersistente[wk.process.pid] = wk;
-                wk.on('message', fnMaster);
+                //objLecturaLogPersistente[wk.process.pid] = wk;
+                wk.on('message', fnVolTrans);
             }
 
         break;
@@ -370,7 +461,11 @@ function fnMercados(msg){
 }
 
 function fnOrionx(){
-
+	cluster.setupMaster({
+	  exec: 'orionx.js',    
+	  args: [],
+	  silent: false
+  });
     wk = cluster.fork();
     wk.socket = this;
     objLecturaLogPersistente[wk.process.pid] = wk;
