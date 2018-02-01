@@ -1,123 +1,138 @@
+/*
+key        f4748dc5f158675806fcdc637058aa9f
+secreto    XfQbjXEvylIhzuUWvEvv5riVL81GSl80Dex5PuVG
+
+*/
+
+
+
 const cluster = require('cluster');
 
-var EventEmitter = require('events').EventEmitter;
-//var cache = require('memory-cache');
-var ee = new EventEmitter();
-
-//ee.on('8', fnExecRpt);
-/*ee.on('3', fnExecRpt);
-ee.on('9', fnExecRpt);*/
 
 
+var markets = [{nombre: 'btc-clp', code: 'BTC/CLP'}, {nombre: 'eth-clp', code: 'ETH/CLP'}, {nombre: 'bch-clp', code: 'BCH/CLP'}, 
+{nombre: 'eth-btc', code: 'ETH/BTC'}, {nombre: 'bch-btc', code: 'BCH/BTC'}];
+var ejecucionSouth = 0;
+var objResult = {};
 
+function fnTrades(){
+	try {
+
+	  // URLs para consulta y formación de links
+	  
+	  console.log(markets[ejecucionSouth].nombre);
+	  var URL_LINK = 'https://www.surbtc.com/api/v2/markets/' + markets[ejecucionSouth].nombre + '/trades.json';
+
+	  
+		
+		// Realiza la petición
+		var http = require('https');
+		console.log(URL_LINK);
+		var peticion = http.get(URL_LINK, function(respuesta) {
+		
+		  
+		  var cancionesJSON = '';
+		  respuesta.on('data', function(respuestaJSON) {
+			cancionesJSON += respuestaJSON;
+		  });
+
+		  // Una vez finalizada la respuesta se procesa
+		  respuesta.on('end', function() {
+
+			var canciones = JSON.parse(cancionesJSON);
+			objResult[markets[ejecucionSouth].code].trades = canciones;
+			
+			console.log(markets[ejecucionSouth]);//objSouth			
+			ejecucionSouth++;
+			if(ejecucionSouth == markets.length){
+				var j = { cmd: 'fin proceso', data: process.pid, info: objResult}
+				process.send(j);
+				process.exit();
+				
+			} else {
+				fnTrades();
+			}
+			
+		  });
+
+		}).on('error', function(error) {
+		  // Ocurrió un error en el request
+		  console.log('Error encontrado al realizar la consulta: ' + error.message);
+		});
+
+	  
+	}
+	  catch(err) {
+	  console.log('Error inesperado:');
+	  console.log('\t' + err);
+	}	
+	
+}
+
+
+
+function fnSurBTCLibros(){
+	try {
+
+	  // URLs para consulta y formación de links
+	 
+	  
+	  var URL_LINK = 'https://www.surbtc.com/api/v2/markets/' + markets[ejecucionSouth].nombre + '/order_book.json';
+
+	  
+		
+		// Realiza la petición
+		var http = require('https');
+		console.log(URL_LINK);
+		var peticion = http.get(URL_LINK, function(respuesta) {
+		
+		  
+		  var cancionesJSON = '';
+		  respuesta.on('data', function(respuestaJSON) {
+			cancionesJSON += respuestaJSON;
+		  });
+
+		  // Una vez finalizada la respuesta se procesa
+		  respuesta.on('end', function() {
+
+			var canciones = JSON.parse(cancionesJSON);
+			objResult[markets[ejecucionSouth].code] = {};
+			objResult[markets[ejecucionSouth].code].libros = canciones;
+			
+			console.log(markets[ejecucionSouth].code);//objSouth			
+			ejecucionSouth++;
+			if(ejecucionSouth == markets.length){
+				ejecucionSouth = 0;
+				fnTrades();//ee.emit(h['35'], h);	
+			} else {
+				fnSurBTCLibros();
+			}
+			
+		  });
+
+		}).on('error', function(error) {
+		  // Ocurrió un error en el request
+		  console.log('Error encontrado al realizar la consulta: ' + error.message);
+		});
+
+	  
+	}
+	  catch(err) {
+	  console.log('Error inesperado:');
+	  console.log('\t' + err);
+	}	
+	
+}
 
 
 process.on('message', (msg) => {
 	console.log('inicio Proceso');
-	process.send({ cmd: 'inicio Proceso', data: process.pid });
-	console.log(msg + ' ' + process.pid);
-  const JSSHA = require('jssha');
-  const fetch = require('node-fetch');
-  
-  // Creating SHA-OBJ
-  const shaObj = new JSSHA('SHA-512', 'TEXT');
-  
-  /**
-   * FullQuery() execs queries to an url with a query body, apiKey and secretKey.
-   * @param {String} url Url of the Orionx.io API GraphQL
-   * @param {String} query GraphQL Query
-   * @param {String} apiKey Personal Api Key from Orionx.io
-   * @param {String} apiSecretKey Personal Secret Api Key from Orionx.io
-   * @return {Object} JS object
-   */
-  async function fullQuery(url, query, apiKey, apiSecretKey) {
-    // New actual Time-Stamp
-    let timeStamp = new Date().getTime() / 1000;
-  
-    // Operating info of shaObj
-    shaObj.setHMACKey(apiSecretKey, 'TEXT');
-    let body = JSON.stringify(query);
-    shaObj.update(timeStamp + body);
-    let signature = shaObj.getHMAC('HEX');
-  
-    // Sending request
-    try {
-      let res = await fetch(url, {            // Consulta tipo POST.
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-ORIONX-TIMESTAMP': timeStamp,
-          'X-ORIONX-APIKEY': apiKey,
-          'X-ORIONX-SIGNATURE': signature,
-          'Content-Length': body.length,
-        },
-        body,                                 // Cuerpo del Mensaje (query)
-      });
-      return res.json();
-    } catch (e) {
-      throw(e);
-    }
-  }
-  
-  /**
-   * main() prints the result of a GraphQL query to Orionx.io
-   * @param {String} query GraphQL query string
-   */
-  async function main(query, marketCode) {
-    try {
-      let res = await fullQuery(
-        'http://api2.orionx.io/graphql',   // Dirección de la API de Orionx
-        query,                            // query creada
-        'xot4eDxZLWyjvbA4MJAYy55mDQ5FRc8zuX',                      // Aquí va la API Key
-        'RHA5QN6RurArY2cXEntp43YXr5Kyz6y65a'                // Aquí va la Secret API Key
-      );
-  
-     /* console.log('*** Response ***');    // Se imprime la respuesta que llega
-      console.log(res.data);*/
-      //return(res.data);
-      process.send({ cmd: 'fin proceso', data: process.pid, info: res.data, market: marketCode});
-      process.exit();
-  
-    } catch (e) {
-		console.log("ERROR");
-      throw(e);
-    }
-  }
-  
-  /* Basic GrapghQL Query */
-  let query = {                        
-      query: msg.query};
-  
-  
- main(query, msg.market).catch(e => {console.log(e)})/*.then(function(result){
-                                      //console.log(result.marketOrderBook.buy)
-                                      for(let obj of result.marketOrderBook.buy){
-                                        obj.amount /= 100000000; 
-                                        console.log(obj);
-                                      }
-  
-                                      for(let obj of result.marketOrderBook.sell){
-                                        obj.amount /= 100000000; 
-                                        console.log(obj);
-                                      }
-                                     
-                                      
-                                   
-  
-                                    });	*/
 	
+	fnSurBTCLibros();	
 		
-	//process.send({ cmd: 'fin proceso', data: process.pid });
-		
-	});
+});
 
 
-	/*fs.watch("FIX.4.4-TOMADOR_DE_ORDENES-ORDERROUTER.messages_20170804.log", { encoding: 'utf8' }, (eventType, filename) => {
-	  if (filename) {
-		console.log(eventType);
-		
-	  }
-	});*/
 	
 
 process.send({ cmd: process.pid });

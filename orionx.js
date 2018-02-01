@@ -108,25 +108,7 @@ process.on('message', (msg) => {
       query: msg.query};
   
   
- main(query, msg.market).catch(e => {console.log(e)})/*.then(function(result){
-                                      //console.log(result.marketOrderBook.buy)
-                                      for(let obj of result.marketOrderBook.buy){
-                                        obj.amount /= 100000000; 
-                                        console.log(obj);
-                                      }
-  
-                                      for(let obj of result.marketOrderBook.sell){
-                                        obj.amount /= 100000000; 
-                                        console.log(obj);
-                                      }
-                                     
-                                      
-                                   
-  
-                                    });	*/
-	
-		
-	//process.send({ cmd: 'fin proceso', data: process.pid });
+ main(query, msg.market).catch(e => {console.log(e)})
 		
 	});
 
