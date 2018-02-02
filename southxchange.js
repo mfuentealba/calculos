@@ -4,7 +4,7 @@
 Secreto: tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU
  */
 
-
+//P5Kc7UjcwjTHe8bg6dT9yr1g3kvVj1sw74ogyYHdst7z5h7cNfEP
 const cluster = require('cluster');
 
 process.on('message', (msg) => {
