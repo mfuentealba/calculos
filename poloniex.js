@@ -27,7 +27,11 @@ var objResult = {};
 function fnTrades(){
 	try {
 		console.log(markets[0].nombre);
-	  	client.returnPublicTradeHistory(markets[0].nombre, 20)
+		var d = Math.round((new Date(2018, 1, 7)).getTime() / 1000);
+		var d2 = Math.round((new Date()).getTime() / 1000);
+		console.log(d);
+		console.log(d2);
+	  	client.returnPublicTradeHistory({currencyPair: markets[0].nombre, start: d,  end: d2})
       .then(response => {
           const { status, data } = response;
 		  console.log(data);
@@ -40,7 +44,17 @@ function fnTrades(){
       }).catch(err => console.error(err));
 		
 		
-		
+		client.return24Volume()
+      .then(response => {
+          const { status, data } = response;
+		 // console.log(data);
+          obj.trades = data;
+		  
+		  
+		  
+		  
+		  
+      }).catch(err => console.error(err));
 		
 			
 
@@ -62,7 +76,7 @@ var obj = {};
 	client.returnOrderBook()
       .then(response => {
           const { status, data } = response;
-		  console.log(data);
+		  //console.log(data);
           obj.libros = data;
 		  obj.trades = {};
 		  
