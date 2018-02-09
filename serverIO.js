@@ -391,7 +391,39 @@ function fnVolTrans(msg){
 
 }
 
+
+function fnPoloniex(msg){
+    
+	
+	
+    switch(msg.cmd){
+        case 'inicio Proceso':
+          
+        break;
+        case 'fin proceso':   
+		
+		  
+		  console.log(msg.info);         
+          console.log("***************************");
+		  objSurBTC = msg.info;
+		  fnOrionx();
+
+        break;
+       
+        default:
+			
+			//console.log(arrTrades);
+            this.send('ini');
+
+            
+        break;
+    }
+
+
+}
+
 var objSurBTC;
+var objPoloniex;
 
 function fnSurBTC(msg){
     console.log(msg);
@@ -407,7 +439,19 @@ function fnSurBTC(msg){
 		  console.log(msg.info);         
           console.log("***************************");
 		  objSurBTC = msg.info;
-		  fnOrionx();
+		  
+		  cluster.setupMaster({
+			  exec: 'poloniex.js',    
+			  args: [],
+			  silent: false
+		  });
+			wk = cluster.fork();
+			wk.socket = this;
+			//objLecturaLogPersistente[wk.process.pid] = wk;
+			wk.on('message', fnPoloniex);
+		
+		  
+		  
 
         break;
        

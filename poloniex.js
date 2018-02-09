@@ -15,49 +15,45 @@ const client = poloniex.getClient({
 	  
 	  
 	  
-//const cluster = require('cluster');
+const cluster = require('cluster');
 
 
 
-var markets = [{nombre: 'BTC_ETH', code: 'ETH/BTC'}, {nombre: 'eth-clp', code: 'ETH/CLP'}, {nombre: 'bch-clp', code: 'BCH/CLP'}, 
-{nombre: 'eth-btc', code: 'ETH/BTC'}, {nombre: 'bch-btc', code: 'BCH/BTC'}];
+var markets = [];
 var ejecucionSouth = 0;
 var objResult = {};
 
 function fnTrades(){
 	try {
-		console.log(markets[0].nombre);
-		var d = Math.round((new Date(2018, 1, 7)).getTime() / 1000);
+		//console.log(markets[0].nombre);
+		var dx = new Date();
+		var d = Math.round((new Date().getTime() - 3000000) / 1000);//dx.getFullYear(), dx.getMonth(), dx.getDate())
 		var d2 = Math.round((new Date()).getTime() / 1000);
 		console.log(d);
 		console.log(d2);
-	  	client.returnPublicTradeHistory({currencyPair: markets[0].nombre, start: d,  end: d2})
+		
+		
+		
+	  	client.returnPublicTradeHistory({currencyPair: markets[ejecucionSouth], start: d,  end: d2})
       .then(response => {
           const { status, data } = response;
 		  console.log(data);
-          obj.trades = data;
+          obj.trades[markets[ejecucionSouth]] = data;
 		  
-		  
-		  
-		  
-		  
-      }).catch(err => console.error(err));
-		
-		
-		client.return24Volume()
-      .then(response => {
-          const { status, data } = response;
-		 // console.log(data);
-          obj.trades = data;
-		  
-		  
-		  
-		  
+		  ejecucionSouth++;
+		  if(ejecucionSouth == markets.length){
+			  var j = { cmd: 'fin proceso', data: process.pid, info: obj};	  
+			  process.send(j);
+			  process.exit();
+		  } else {
+			  fnTrades();
+		  }
 		  
       }).catch(err => console.error(err));
 		
-			
-
+		
+		 
+		  
 	  
 	}
 	  catch(err) {
@@ -70,13 +66,21 @@ function fnTrades(){
 
 var obj = {};
 
-//process.on('message', (msg) => {
+process.on('message', (msg) => {
 	console.log('inicio Proceso');
+	
+		
+	
+	
 	
 	client.returnOrderBook()
       .then(response => {
           const { status, data } = response;
-		  //console.log(data);
+		  console.log(data);
+		  for(var d in data){			  
+			  markets[markets.length] = d;
+		  }  
+		  
           obj.libros = data;
 		  obj.trades = {};
 		  
@@ -86,9 +90,9 @@ var obj = {};
       })
       .catch(err => console.error(err));	
 		
-//});
+});
 
 
 	
 
-//process.send({ cmd: process.pid });
+process.send({ cmd: process.pid });
