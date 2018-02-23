@@ -81,30 +81,34 @@ poloniex.on('message', (channelName, data, seq) => {
 						/**************** CASO SEGURO ****************/	
 						
 						var ref = str.split('_')[0];
-						if(objCriptos['USDT_' + ref] && objCriptos[str]['highestBid'] && objCriptos['USDT_' + ref]['highestBid']){
-							if(objCriptos[str]['highestBid'] * objCriptos['USDT_' + ref]['highestBid'] < remate['lowestAsk']){
-								var precioTraspasando = objCriptos[str]['lowestAsk'] * objCriptos['USDT_' + ref]['lowestAsk'];
-								precioTraspasando = precioTraspasando/(0.9975 * 0.9975);
-								var precioDirecto = remate['highestBid'] * (1 - 0.0025 / 0.9975);
-								if(precioTraspasando - precioDirecto > 0){
-									console.log("*******************************************************************************");
-									console.log(str + ' lowestAsk --> ' + objCriptos[str]['lowestAsk']);
-									console.log('USDT_' + ref + ' lowestAsk --> ' + objCriptos['USDT_' + ref]['lowestAsk']);
-									console.log(' RESULTADO --> ' + precioTraspasando);
-									console.log('USDT_' + monedas[1] + ' highestBid --> ' + precioDirecto);									
-									console.log(precioTraspasando - precioDirecto);
-									console.log(((precioTraspasando - precioDirecto) * 100 / precioDirecto) + '%');
-									console.log("*******************************************************************************");	
-									swOperacion = true;
-									var wk = cluster.fork();
-									//wk.socket = this;
-									console.log(wk.process.pid);
-									objOperacion[wk.process.pid] = ['USDT_' + ref, str, 'USDT_' + monedas[1], ];
-									console.log(objOperacion[wk.process.pid]);
-									wk.on('message', fnMaster);
-									break;
-								}	
-							}							
+						if(objCriptos['USDT_' + ref] && objCriptos[str]['lowestAsk'] && objCriptos['USDT_' + ref]['lowestAsk']){
+							
+							var precioTraspasando = (1 - 0.0015 / 0.9985) * remate['highestBid'] * (1 - 0.0025 / 0.9975);
+							/*console.log("remate['highestBid']: " + remate['highestBid'])
+							console.log(precioTraspasando);*/
+							var precioDirecto = objCriptos['USDT_' + ref]['lowestAsk'] * (1 + 0.0025 / 0.9975) * objCriptos[str]['highestBid'];
+							//console.log(precioDirecto);
+							if(precioTraspasando - precioDirecto > 0 && (precioTraspasando - precioDirecto) * 100 / precioDirecto > 0.09){
+								console.log("*******************************************************************************");
+								
+								console.log(str + ' lowestAsk --> ' + objCriptos[str]['lowestAsk']);
+								console.log('USDT_' + ref + ' lowestAsk --> ' + objCriptos['USDT_' + ref]['lowestAsk']);
+								console.log('USDT_' + monedas[1] + ' highestBid --> ' + precioDirecto);
+								console.log(' RESULTADO --> ' + precioTraspasando);
+																	
+								console.log(precioTraspasando - precioDirecto);
+								console.log(((precioTraspasando - precioDirecto) * 100 / precioDirecto) + '%');
+								console.log("*******************************************************************************");	
+								swOperacion = true;
+								var wk = cluster.fork();
+								//wk.socket = this;
+								console.log(wk.process.pid);
+								objOperacion[wk.process.pid] = ['USDT_' + ref, str, 'USDT_' + monedas[1], ];
+								console.log(objOperacion[wk.process.pid]);
+								wk.on('message', fnMaster);
+								//break;
+							}
+										
 						}
 						
 						/************************************************/
@@ -151,7 +155,7 @@ function fnMaster(msg){
 	 
     switch(msg.cmd){
         case 'fin proceso':
-			//swOperacion = false;
+			swOperacion = false;
         break;
         default:
             //this.send('MASTER: Listo el proceso {' + process.pid + '}');	

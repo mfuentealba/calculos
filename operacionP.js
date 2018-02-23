@@ -17,6 +17,7 @@ process.on('message', (msg) => {
 		//console.log(data);
 		//console.log("*******************************************************************************");		
 		for(var obj of data){
+
 			switch(obj.type){
 				case "orderBook":
 					books[channelName] = {};
@@ -24,8 +25,15 @@ process.on('message', (msg) => {
 					books[channelName]["bids"] = obj.data.bids;
 					console.log("********************************* " + channelName + " **********************************************");
 					var i = 0;
-					for(let reg in books[channelName]["asks"]){
-						console.log('rate: ' + reg + ', vol: ' + books[channelName]["asks"][reg]);
+					var libro;
+					if(channelName == msg[0]){
+						libro = "asks";
+					} else {
+						
+						libro = "bids";
+					}
+					for(let reg in books[channelName][libro]){
+						console.log('rate: ' + reg + ', vol: ' + books[channelName][libro][reg]);
 						if(i++ > 10){
 							break;
 						}
@@ -33,55 +41,83 @@ process.on('message', (msg) => {
 						
 					contBooks++;
 					if(contBooks == 3){
-						var posible;
-						var volPosible;
-						var valorOpcion;
-						var precioOpcion;
-						var valorReferencia;
+						var operacion;
+						var volOperacion;
+						var volTransada;
+						var precioTransada;
+						var volReferencia;
 						var precioReferencia;
 						
 						
 						for(let reg in books[msg[0]]["asks"]){
-							valorReferencia = books[msg[1]]["asks"][reg];
+							volReferencia = books[msg[0]]["asks"][reg];
 							precioReferencia = reg;
 							break;
 						}
 						
-						for(let reg in books[msg[1]]["asks"]){
+						for(let reg in books[msg[1]]["bids"]){
 							
-							posible = reg * books[msg[0]]["asks"][reg];
-							volPosible = books[msg[0]]["asks"][reg];
+							volOperacion = books[msg[1]]["bids"][reg];
+							precioOperacion = reg;
 							break;
 						}
 						
 						
 						for(let reg in books[msg[2]]["bids"]){
 							
-							valorOpcion = books[msg[2]]["bids"][reg];
-							precioOpcion = reg;
+							volTransada = books[msg[2]]["bids"][reg];
+							precioTransada = reg;
 							break;
 						}
 						
 						
 						
+						var retorno = (1 - 0.0015 / 0.9985) * precioTransada * (1 - 0.0025 / 0.9975);
+						console.log("Transada:  " + precioTransada);
+						console.log("RETORNO:   " + retorno);	
+						var gasto = precioReferencia * (1 + 0.0025 / 0.9975) * precioOperacion;
+						console.log("Referencia:" + precioReferencia);
+						console.log("Operacion: " + precioOperacion);
+						console.log("GASTO:     " + gasto);	
 						
-						if(posible < valorReferencia){//Puedo operar todo
-							if(volPosible < valorOpcion){ //Puedo vender Todo
-								console.log("OPERACION EXITOSA");
-								var gasto = posible * precioReferencia;
-								var retorno = precioReferencia * 
+						
+						
+						
+						//console.log(operacion + ' < ' + volReferencia);
+						if(retorno - gasto > 0){
+							if(volOperacion * precioOperacion < volReferencia){//Puedo operar todo
+								if(volOperacion < volTransada){ //Puedo vender Todo
+									console.log("OPERACION EXITOSA 1");
+									
+									console.log("RESULTADO: " + ((retorno - gasto) * volOperacion));
+								} else {
+									console.log("OPERACION EXITOSA 2");
+									
+									console.log("RESULTADO: " + ((retorno - gasto) * volTransada / precioTransada ));
+								}
+							} else {
 								
+								if(volOperacion < volTransada){ //Puedo vender Todo
+									console.log("OPERACION EXITOSA 3");
+									
+									console.log("RESULTADO: " + ((retorno - gasto) * volReferencia / precioOperacion ));
+								} else {
+									console.log("OPERACION EXITOSA 4");
+									
+									console.log("RESULTADO: " + ((retorno - gasto) * volTransada / precioTransada ));
+								}
 							}
-						} else {
-							valorReferencia
+							
+							
 						}
+						
 						
 						console.log("*******************************************************************************");	
 						
 						
 						
 					}
-					
+					process.exit();
 				break;
 				case "orderBookModify":
 					books[channelName][obj.data.type + 's'][obj.data.rate] = obj.data.amount;
