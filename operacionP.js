@@ -1,11 +1,44 @@
+const poloniexOrd = require('poloniex-exchange-api');
+
+const clientOrd = poloniexOrd.getClient({
+    publicKey : 'WZG48KNT-L35B2XGQ-CDCU7AG1-DFG3NWC9', // Your public key
+    privateKey: '966c91801fa03f37778de06e14b5fc6885a63f14220f446aaf698492df7da7b86556efe1751ce2083309348db66363664c2d22dbd82d664c7e6d6a74aa13677e', // Your private key
+});
+
+
+/*
+clientOrd.sell({currencyPair: 'USDT_BTC', rate: 15000, amount: 0.001, nonce: 9196535984736059393})
+      .then(response => {
+          const { status, data } = response;
+		  console.log(data);
+		  
+		  
+      })
+      .catch(err => console.error(err));
+*/
+
+
+
+
+
+
 const cluster = require('cluster');
 const Poloniex = require('poloniex-api-node');
 let poloniex = new Poloniex('Z3QXH3L0-AR8VP0ZA-PTR8VH8C-PBQO5LQU', '23b36c259b7a1af19dbf3b4bd444fd19e182637abd14fb62d1d784a711898939295b2fd96665a586c0d604f3296ba74731c029cddc6fb6d73b76a2b9f8744194');
 
 var contBooks = 0;
-process.on('message', (msg) => {
+process.on('message', (msgReq) => {
 	
 	//console.log(msg);
+	var capital = msgReq.capital;
+	var msg = msgReq.data;
+	if(msgReq.opt == 'SEGURO'){
+		var opePeg = 'asks';
+		var opeComisPeg = (1 - 0.0025 / 0.9975);
+	} else {
+		var opePeg = 'bids';
+		var opeComisPeg = (1 - 0.0015 / 0.9985);
+	}
 	
 	poloniex.subscribe(msg[0]);
 	poloniex.subscribe(msg[1]);
@@ -28,8 +61,10 @@ process.on('message', (msg) => {
 					var libro;
 					if(channelName == msg[0]){
 						libro = "asks";
-					} else {
+					} else if(channelName == msg[1]){
 						
+						libro = opePeg;
+					} else {
 						libro = "bids";
 					}
 					for(let reg in books[channelName][libro]){
@@ -55,9 +90,9 @@ process.on('message', (msg) => {
 							break;
 						}
 						
-						for(let reg in books[msg[1]]["bids"]){
+						for(let reg in books[msg[1]][opePeg]){
 							
-							volOperacion = books[msg[1]]["bids"][reg];
+							volOperacion = books[msg[1]][opePeg][reg];
 							precioOperacion = reg;
 							break;
 						}
@@ -72,7 +107,7 @@ process.on('message', (msg) => {
 						
 						
 						
-						var retorno = (1 - 0.0015 / 0.9985) * precioTransada * (1 - 0.0025 / 0.9975);
+						var retorno = opeComisPeg * precioTransada * (1 - 0.0025 / 0.9975);
 						console.log("Transada:  " + precioTransada);
 						console.log("RETORNO:   " + retorno);	
 						var gasto = precioReferencia * (1 + 0.0025 / 0.9975) * precioOperacion;
@@ -83,9 +118,15 @@ process.on('message', (msg) => {
 						
 						
 						
-						//console.log(operacion + ' < ' + volReferencia);
+						console.log(retorno + ' > ' + gasto);
 						if(retorno - gasto > 0){
-							if(volOperacion * precioOperacion < volReferencia){//Puedo operar todo
+							
+							/***************************** TEST 1 USD **************************************/
+							
+							capital = capital * ((retorno - gasto) * 100 / gasto);
+							process.send({ cmd: 'fin proceso', capital: capital });
+							process.exit();
+							/*if(volOperacion * precioOperacion < volReferencia){//Puedo operar todo
 								if(volOperacion < volTransada){ //Puedo vender Todo
 									console.log("OPERACION EXITOSA 1");
 									
@@ -106,7 +147,7 @@ process.on('message', (msg) => {
 									
 									console.log("RESULTADO: " + ((retorno - gasto) * volTransada / precioTransada ));
 								}
-							}
+							}*/
 							
 							
 						}
@@ -117,7 +158,7 @@ process.on('message', (msg) => {
 						
 						
 					}
-					process.exit();
+					
 				break;
 				case "orderBookModify":
 					books[channelName][obj.data.type + 's'][obj.data.rate] = obj.data.amount;
@@ -148,7 +189,7 @@ process.on('message', (msg) => {
 		
 	
 	
-	process.send({ cmd: 'fin proceso' });
+	
 	
 		
 });
