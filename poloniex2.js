@@ -394,16 +394,16 @@ poloniex.on('message', (channelName, data, seq) => {
 					console.log(books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate);
 					*/
 					
-					if(obj.data.rate == books[channelName][obj.data.type + 's'][0]){
-						
+					if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
+						console.log("ES IGUAL AL [0]");
 						books[channelName][obj.data.type + 's'][0].amount = obj.data.amount;
 						
-					} else if(obj.data.rate < books[channelName][obj.data.type + 's'][0]){
-						
+					} else if(obj.data.rate < books[channelName][obj.data.type + 's'][0].rate){
+						console.log("ES MENOR");
 						books[channelName][obj.data.type + 's'].unshift({rate: obj.data.rate, amount: obj.data.amount});
 						
 					} else if(obj.data.rate > books[channelName][obj.data.type + 's'][0].rate && obj.data.rate < books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate){
-						
+						console.log("ESTA EN EL LIBRO");
 						
 						for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
 							let reg = books[channelName][obj.data.type + 's'][j];
@@ -411,14 +411,14 @@ poloniex.on('message', (channelName, data, seq) => {
 								reg.amount = obj.data.amount;
 								break;
 							} else if(reg.rate > obj.data.rate){
-								
+								console.log(books[channelName][obj.data.type + 's']);
 								books[channelName][obj.data.type + 's'].splite(j, 0, {rate: reg.rate, amount: reg.amount});
 								
 							}
 							
 						}
 					} else {
-						
+						console.log("MAYOR AL LIBRO");
 						books[channelName][obj.data.type + 's'].push({rate: reg, amount: obj.data[libro][reg]});
 						
 					}

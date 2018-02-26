@@ -115,9 +115,60 @@ process.on('message', (msgReq) => {
 
 function orderBookModify(channelName, obj){
 	//console.log(data);
-	if(books[channelName]){
+	/*if(books[channelName]){
 		books[channelName][obj.data.type + 's'][obj.data.rate] = obj.data.amount;
+	}*/
+	
+	
+	
+	console.log(obj);
+	/*console.log(obj.data.type + 's');
+	console.log(books[channelName]);
+	console.log(books[channelName][obj.data.type + 's']);
+	console.log(books[channelName][obj.data.type + 's'].length - 1);
+	console.log(books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1]);
+	console.log(books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate);
+	*/
+	
+	if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
+		
+		books[channelName][obj.data.type + 's'][0].amount = obj.data.amount;
+		
+	} else if(obj.data.rate < books[channelName][obj.data.type + 's'][0].rate){
+		
+		books[channelName][obj.data.type + 's'].unshift({rate: obj.data.rate, amount: obj.data.amount});
+		
+	} else if(obj.data.rate > books[channelName][obj.data.type + 's'][0].rate && obj.data.rate < books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate){
+		
+		
+		for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
+			let reg = books[channelName][obj.data.type + 's'][j];
+			if(reg.rate == obj.data.rate){
+				reg.amount = obj.data.amount;
+				break;
+			} else if(reg.rate > obj.data.rate){
+				
+				books[channelName][obj.data.type + 's'].splite(j, 0, {rate: reg.rate, amount: reg.amount});
+				
+			}
+			
+		}
+	} else {
+		
+		books[channelName][obj.data.type + 's'].push({rate: reg, amount: obj.data[libro][reg]});
+		
 	}
+	
+	
+	
+	console.log(books[channelName]["asks"]);
+	
+	
+	
+	
+	
+	
+	
 	if(order && msg[1] == channelName){
 		if(order.rate == obj.data.rate){
 			/*console.log("CONSULTA ORDENES " + channelName);
@@ -173,9 +224,29 @@ function orderBookModify(channelName, obj){
 
 function orderBookRemove(channelName, obj){
 	//.log(data);
-	if(books[channelName]){
+	/*if(books[channelName]){
 		delete books[channelName][obj.data.type + 's'][obj.data.rate];	
+	}*/
+	console.log(obj);
+	if(books[channelName] && books[channelName]["asks"] && books[channelName]["bids"]){
+		
+		for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
+			let reg = books[channelName][obj.data.type + 's'][j];
+			if(reg.rate == obj.data.rate){
+				books[channelName][obj.data.type + 's'].splice(j, 1);
+				break;
+			} 
+			
+		}
+		
+		
 	}
+	console.log(books[channelName]["asks"]);
+	
+	
+	
+	
+	
 	if(order && msg[1] == channelName){
 		if(order.rate == obj.data.rate){
 			clientOrd.buy({currencyPair: msg[0], rate: precioReferencia, amount: volRef})
@@ -214,7 +285,7 @@ function orderBookRemove(channelName, obj){
 
 
 function fnLibros(channelName, obj){
-	books[channelName] = {};
+	/*books[channelName] = {};
 	books[channelName]["asks"] = obj.data.asks;
 	books[channelName]["bids"] = obj.data.bids;
 	console.log("********************************* " + channelName + " **********************************************");
@@ -234,7 +305,35 @@ function fnLibros(channelName, obj){
 			break;
 		}
 	}
-		
+	*/
+	
+	
+	books[channelName] = {};
+	books[channelName]["asks"] = [];//obj.data.asks;
+	books[channelName]["bids"] = [];//obj.data.bids;
+	
+	console.log("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+	console.log(books[channelName][libro]);
+	for(let reg in obj.data[libro]){
+		//books[channelName]["asks"][reg] = obj.data[libro][reg]
+		books[channelName]["asks"].push({rate: reg, amount: obj.data[libro][reg]});
+		console.log('rate: ' + reg + ', amount: ' + obj.data[libro][reg]);
+		if(i++ > 9){
+			break;
+		}
+	}						
+	
+	i = 0;
+	console.log("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+	for(let reg in obj.data['bids']){
+		//books[channelName]["asks"][reg] = obj.data[libro][reg]
+		books[channelName]['bids'].push({rate: reg, amount: obj.data['bids'][reg]});
+		console.log('rate: ' + reg + ', amount: ' + obj.data['bids'][reg]);
+		if(i++ > 10){
+			break;
+		}
+	}
+	
 	contBooks++;
 	if(contBooks == 3){
 		
@@ -243,67 +342,67 @@ function fnLibros(channelName, obj){
 			/***************************** TEST 1 USD **************************************/
 
 			if(swBLoqueo == false && order == null){
-		console.log("PETICION DE ORDEN");
-		swBLoqueo = true;
-		capital = capital * ((retorno - gasto) * 100 / gasto);
-								
-		var volRef = 1 / precioReferencia;
-		volRef = volRef.toFixed(8);
-		//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
-		var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
-		volOP = volOP.toFixed(8);
-		console.log({currencyPair: msg[1], rate: precioOperacion, amount: volOP});	
-		volRemate = volOP * (1 - 0.0025 / 0.9975) * precioTransada;
-		volRemate = volRemate.toFixed(8);
-		//console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate});	
-		
-		clientOrd.buy({currencyPair: msg[1], rate: precioOperacion, amount: volOP, fillOrKill: fillOrKill})
-			  .then(response => {
-				  
-				  const { status, data } = response;
-				  console.log(data);
-				  
-				  if(data.error){
-					console.log("\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-					console.log("**** __ CANCELADA __****");
-					console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
-					swBLoqueo = false;
-				  } else if(data.resultingTrades.length > 0){
-					clientOrd.buy({currencyPair: msg[0], rate: precioReferencia, amount: volRef})
+				console.log("PETICION DE ORDEN");
+				swBLoqueo = true;
+				capital = capital * ((retorno - gasto) * 100 / gasto);
+										
+				var volRef = 1 / precioReferencia;
+				volRef = volRef.toFixed(8);
+				//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
+				var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
+				volOP = volOP.toFixed(8);
+				console.log({currencyPair: msg[1], rate: precioOperacion, amount: volOP});	
+				volRemate = volOP * (1 - 0.0025 / 0.9975) * precioTransada;
+				volRemate = volRemate.toFixed(8);
+				//console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate});	
+				
+				clientOrd.buy({currencyPair: msg[1], rate: precioOperacion, amount: volOP, fillOrKill: fillOrKill})
 					  .then(response => {
+						  
 						  const { status, data } = response;
 						  console.log(data);
 						  
-							
-							clientOrd.sell({currencyPair: msg[2], rate: precioTransada, amount: volRemate})
+						  if(data.error){
+							console.log("\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+							console.log("**** __ CANCELADA __****");
+							console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
+							swBLoqueo = false;
+						  } else if(data.resultingTrades.length > 0){
+							clientOrd.buy({currencyPair: msg[0], rate: precioReferencia, amount: volRef})
 							  .then(response => {
 								  const { status, data } = response;
 								  console.log(data);
 								  
-								  process.send({ cmd: 'fin proceso', capital: capital });
+									
+									clientOrd.sell({currencyPair: msg[2], rate: precioTransada, amount: volRemate})
+									  .then(response => {
+										  const { status, data } = response;
+										  console.log(data);
+										  
+										  process.send({ cmd: 'fin proceso', capital: capital });
+										  
+									  })
+									  .catch(err => console.error(err));
 								  
 							  })
-							  .catch(err => console.error(err));
+							  .catch(err => console.error(err));  
+						  } else {
+							//clientOrd.cancelOrder(data.orderNumber);
+							console.log("NUEVA ORDEN: " + data.orderNumber);
+							order = {};
+							order.orderNumber = data.orderNumber;
+							
+							order.rate = precioOperacion;				
+							
+							ee.on('orderBookRemove', orderBookRemove);
+							ee.on('orderBookModify', orderBookModify);
+						  }
+							
+							
+						  
 						  
 					  })
-					  .catch(err => console.error(err));  
-				  } else {
-					//clientOrd.cancelOrder(data.orderNumber);
-					console.log("NUEVA ORDEN: " + data.orderNumber);
-					order = {};
-					order.orderNumber = data.orderNumber;
-					
-					order.rate = precioOperacion;				
-					
-					ee.on('orderBookRemove', orderBookRemove);
-					ee.on('orderBookModify', orderBookModify);
-				  }
-					
-					
-				  
-				  
-			  })
-			  .catch(err => console.error(err));							
+					  .catch(err => console.error(err));							
 														
 				/*poloniex.unsubscribe(msg[0]);
 				poloniex.unsubscribe(msg[1]);
@@ -332,7 +431,7 @@ function fnLibros(channelName, obj){
 					}
 				}*/
 			
-	}
+			}
 			
 			
 		}
@@ -449,15 +548,15 @@ function fnDiferencia(){
 	
 	
 	for(let reg in books[msg[0]]["asks"]){
-		volReferencia = books[msg[0]]["asks"][reg];
-		precioReferencia = reg;
+		volReferencia = reg.amount;
+		precioReferencia = reg.rate;
 		break;
 	}
 	
 	for(let reg in books[msg[1]][opePeg]){
 		
-		volOperacion = books[msg[1]][opePeg][reg];
-		precioOperacion = Number(reg) + tick;
+		volOperacion = reg.amount;
+		precioOperacion = Number(reg.rate) + tick;
 		console.log("NUEVO PRECIO: " + precioOperacion);
 		if(order){
 			order.rate = precioOperacion;
@@ -470,8 +569,8 @@ function fnDiferencia(){
 	
 	for(let reg in books[msg[2]]["bids"]){
 		
-		volTransada = books[msg[2]]["bids"][reg];
-		precioTransada = reg;
+		volTransada = reg.amount;
+		precioTransada = reg.rate;
 		break;
 	}
 	
