@@ -1,4 +1,3 @@
-var fsLauncher = require('fs');
 const poloniexOrd = require('poloniex-exchange-api');
 
 const clientOrd = poloniexOrd.getClient({
@@ -7,13 +6,11 @@ const clientOrd = poloniexOrd.getClient({
 });
 
 var order = null;
+var cantDolar = 2;
 
 var EventEmitter = require('events').EventEmitter;
 var ee = new EventEmitter();
 ee.on("orderBook", fnLibros);
-ee.on('orderBookRemoveSalir', fnSalir);
-ee.on('orderBookModifySalir', fnSalir);
-var salir = '';
 
 /*
 clientOrd.sell({currencyPair: 'USDT_BTC', rate: 15000, amount: 0.001, nonce: 9196535984736059393})
@@ -87,7 +84,7 @@ process.on('message', (msgReq) => {
 
 		
 		for(var obj of data){
-			ee.emit(obj.type + salir, channelName, obj);
+			ee.emit(obj.type, channelName, obj);
 			
 		}
 		
@@ -216,62 +213,34 @@ function orderBookModify(channelName, obj){
 	
 	if(order && msg[1] == channelName){
 		if(order.rate == obj.data.rate){
-			if(swBLoqueo == false){
-				swBLoqueo = true;
-				console.log("CONSULTA ORDENES " + channelName);
-				clientOrd.returnOpenOrders({currencyPair: channelName}).then(response => {
-					const { status, data } = response;
-					  
-					console.log(data);
-					swBLoqueo = false;
-					var volRef = 1 / precioReferencia;
-					volRef = volRef.toFixed(8);
-					//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
-					var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
-					volOP = volOP.toFixed(8);
-					console.log({currencyPair: msg[1], rate: precioOperacion, amount: volOP});	
-					volRemate = volOP * (1 - 0.0025 / 0.9975) * precioTransada;
-					volRemate = volRemate.toFixed(8);
-					
-					
-					if(data.length == 0 && order){
-						clientOrd.buy({currencyPair: msg[0], rate: precioReferencia, amount: volRef})
+			console.log("CONSULTA ORDENES " + channelName);
+			clientOrd.returnOpenOrders({currencyPair: channelName}).then(response => {
+			  const { status, data } = response;
+			  
+			  console.log(data);
+			  if(data.length == 0){
+				clientOrd.buy({currencyPair: msg[0], rate: precioReferencia, amount: volReferencia})
+						  .then(response => {
+							  const { status, data } = response;
+							  console.log(data);
+							  
+								
+								clientOrd.sell({currencyPair: msg[2], rate: precioTransada, amount: volRemate})
 								  .then(response => {
 									  const { status, data } = response;
 									  console.log(data);
-									  
-										
-										clientOrd.sell({currencyPair: msg[2], rate: precioTransada, amount: volRemate})
-										  .then(response => {
-											  const { status, data } = response;
-											  console.log(data);
-											  process.send({ cmd: 'fin proceso', capital: capital });
-											  
-										  })
-										  .catch(err => console.error(err));
+									  process.send({ cmd: 'fin proceso', capital: capital });
 									  
 								  })
-								  .catch(err => console.error(err));  
-						}
-					  
-				  
-					  })
-					  .catch(err => {
-						  //console.error(err);
-						  swBLoqueo = false;
-						  });
-				}
-				
-			
-		} else if(order.rate < obj.data.rate || fnDiferencia() < 0){
-			
-			
-			if(swBLoqueo == false){
-				console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE " + order.rate + " < " + obj.data.rate + " Y DIFERENCIA = " + fnDiferencia());
-				swBLoqueo = true;
-				fnCancelacion();
-				
-			}
+								  .catch(err => console.error(err));
+							  
+						  })
+						  .catch(err => console.error(err));  
+			  }
+			  
+			  
+		  })
+		  .catch(err => console.error(err));	
 			
 		} 
 	} else {
@@ -281,32 +250,32 @@ function orderBookModify(channelName, obj){
 			fnEjecucion();
 			//exit;
 		} else {
-			salir = 'Salir';
+			console.log("DIFERENCIA PERDIDA: " + r);	
 			if(order){
-				console.log("CANCELAR ORDEN Y SALIR");	
-				fnCancelacion();
-					
-			} else {
-				console.log("DIFERENCIA PERDIDA (SIN ORDEN): " + r);	
-				process.send({ cmd: 'fin proceso', capital: capital });
-				process.exit();	
+				if(swBLoqueo == false){
+					swBLoqueo = true;
+					clientOrd.cancelOrder({orderNumber:order.orderNumber}).then(response => {
+											  const { status, data } = response;
+											  console.log(data);
+											  //process.send({ cmd: 'fin proceso', capital: capital });
+											  swBLoqueo = false;
+											  order = null;
+											  process.send({ cmd: 'fin proceso', capital: capital });
+											  process.exit();
+										  })
+										  .catch(err => {
+											console.error(err)
+											console.log("PROBLEMAS DE CANCELACION");
+										  });
+				}
 			}
-			
-			
 			
 		}
 	}
 	
 }	
 	
-function fnSalir(){
-	if(!order){
-		process.send({ cmd: 'fin proceso', capital: capital });
-		process.exit();		
-	}
-	
-}
-	
+
 function orderBookRemove(channelName, obj){
 	//.log(data);
 	/*if(books[channelName]){
@@ -338,18 +307,10 @@ function orderBookRemove(channelName, obj){
 	
 	if(order && msg[1] == channelName){
 		if(order.rate == obj.data.rate){
-			var volRef = 1 / precioReferencia;
-			volRef = volRef.toFixed(8);
-			//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
-			var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
-			volOP = volOP.toFixed(8);
-			console.log({currencyPair: msg[1], rate: precioOperacion, amount: volOP});	
-			volRemate = volOP * (1 - 0.0025 / 0.9975) * precioTransada;
-			volRemate = volRemate.toFixed(8);
-			clientOrd.buy({currencyPair: msg[0], rate: precioReferencia, amount: volRef})
+			clientOrd.buy({currencyPair: msg[0], rate: precioReferencia, amount: volReferencia})
 						  .then(response => {
-							    const { status, data } = response;
-							    console.log(data);
+							  const { status, data } = response;
+							  console.log(data);
 							  
 								
 								clientOrd.sell({currencyPair: msg[2], rate: precioTransada, amount: volRemate})
@@ -366,12 +327,22 @@ function orderBookRemove(channelName, obj){
 		}
 	}
 	if(order && fnDiferencia() < 0){
-		
+		console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE  DIFERENCIA = " + fnDiferencia());
 		if(swBLoqueo == false){
-			console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE  DIFERENCIA = " + fnDiferencia());
 			swBLoqueo = true;
-			fnCancelacion();
-			
+			clientOrd.cancelOrder({orderNumber:order.orderNumber}).then(response => {
+									  const { status, data } = response;
+									  console.log(data);
+									  //process.send({ cmd: 'fin proceso', capital: capital });
+									  swBLoqueo = false;
+									  order = null;
+									  process.send({ cmd: 'fin proceso', capital: capital });
+								      process.exit();
+								  })
+								  .catch(err => {
+									  console.error(err)
+									  console.log("PROBLEMAS DE CANCELACION");
+									  });
 		}
 		
 	}
@@ -442,7 +413,7 @@ function fnLibros(channelName, obj){
 				swBLoqueo = true;
 				capital = capital * ((retorno - gasto) * 100 / gasto);
 										
-				var volRef = 2 / precioReferencia;
+				var volRef = cantDolar / precioReferencia;
 				volRef = volRef.toFixed(8);
 				//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
 				var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
@@ -463,6 +434,7 @@ function fnLibros(channelName, obj){
 							console.log("**** __ CANCELADA __****");
 							console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
 							swBLoqueo = false;
+							
 						  } else if(data.resultingTrades.length > 0){
 							clientOrd.buy({currencyPair: msg[0], rate: precioReferencia, amount: volRef})
 							  .then(response => {
@@ -506,8 +478,14 @@ function fnLibros(channelName, obj){
 					  })
 					  .catch(err => {
 						  console.error(err)
-						  process.send({ cmd: 'fin proceso', capital: capital });
-						  process.exit();
+						  if(err.error == 'Total must be at least 0.0001.'){
+							process.send({ cmd: 'fin proceso', capital: capital });
+							process.exit();  
+						  }
+								
+							console.log("NO SE PUDO CREAR ORDEN: " + msg[0]);
+							  
+						  
 						 });							
 														
 				/*poloniex.unsubscribe(msg[0]);
@@ -542,16 +520,8 @@ function fnLibros(channelName, obj){
 			
 		} else {
 			console.log("DIFERENCIA PERDIDA: " + r);	
-			if(order){
-				console.log("CANCELAR ORDEN Y SALIR");	
-				fnCancelacion();
-				
-			} else {
-				console.log("SIN ORDEN");	
-				process.send({ cmd: 'fin proceso', capital: capital });
-				process.exit();	
-			}
 			
+		
 			
 		}
 		
@@ -573,7 +543,7 @@ function fnEjecucion(){
 		swBLoqueo = true;
 		capital = capital * ((retorno - gasto) * 100 / gasto);
 								
-		var volRef = 2 / precioReferencia;
+		var volRef = 1 / precioReferencia;
 		volRef = volRef.toFixed(8);
 		//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
 		var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
@@ -623,7 +593,6 @@ function fnEjecucion(){
 				  } else {
 					//clientOrd.cancelOrder(data.orderNumber);
 					console.log("NUEVA ORDEN: " + data.orderNumber);
-					
 					order = {};
 					order.orderNumber = data.orderNumber;
 					
@@ -635,11 +604,7 @@ function fnEjecucion(){
 				  
 				  
 			  })
-			  .catch(err => {
-								  console.error(err);
-								  console.log("NO SE PUDO CREAR ORDEN: " + msg[1]);
-								  swBLoqueo = false;
-							  });							
+			  .catch(err => console.error(err));							
 														
 				/*poloniex.unsubscribe(msg[0]);
 				poloniex.unsubscribe(msg[1]);
@@ -674,35 +639,6 @@ function fnEjecucion(){
 }
 
 
-function fnCancelacion(){
-	clientOrd.cancelOrder({orderNumber:order.orderNumber}).then(response => {
-	  const { status, data } = response;
-	  console.log(data);
-	  //process.send({ cmd: 'fin proceso', capital: capital });
-	  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "CANCELACION EXITOSA\n", (err) => {
-			if (err) throw err;
-				////console.log('The "data to append" was appended to file!');
-			});
-	  console.log("CANCELACION EXITOSA");
-	  swBLoqueo = false;
-	  order = null;
-	  if(salir == 'Salir'){
-		process.send({ cmd: 'fin proceso', capital: capital });
-		process.exit();	
-	  }
-	})
-	.catch(err => {
-		console.error(err);
-		console.log("ERROR CANCELACION");
-		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "ERROR CANCELACION\n", (err) => {
-			if (err) throw err;
-				////console.log('The "data to append" was appended to file!');
-			});
-		fnCancelacion()
-	});
-}
-
-
 function fnDiferencia(){
 	
 	
@@ -717,7 +653,7 @@ function fnDiferencia(){
 		
 		volOperacion = reg.amount;
 		//console.log("PRECIO ANTERIOR: " + precioOperacion);
-		precioOperacion = Number(reg.rate) + tick;
+		precioOperacion = order ? Number(order.rate) : Number(reg.rate) + tick;
 		precioOperacion = precioOperacion.toFixed(8);
 		//console.log(reg);
 		//console.log("NUEVO PRECIO: " + precioOperacion);

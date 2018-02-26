@@ -5,6 +5,10 @@ const clientOrd = poloniexOrd.getClient({
     privateKey: '966c91801fa03f37778de06e14b5fc6885a63f14220f446aaf698492df7da7b86556efe1751ce2083309348db66363664c2d22dbd82d664c7e6d6a74aa13677e', // Your private key
 });
 
+
+
+
+
 var p = 10.225545548996644
 console.log(p.toFixed(8));
 
@@ -27,8 +31,8 @@ let poloniex = new Poloniex('WZG48KNT-L35B2XGQ-CDCU7AG1-DFG3NWC9',
 const cluster = require('cluster');
 var capital = 1;
 var acum = 0;
-//poloniex.subscribe('ticker');
-poloniex.subscribe('BTC_ETC');
+poloniex.subscribe('ticker');
+//poloniex.subscribe('BTC_ETC');
 var objOperacion = {};
 var swOperacion = false;
 
@@ -49,29 +53,23 @@ clientOrd.sell({currencyPair: 'USDT_BTC', rate: 15000, amount: 0.001, nonce: 919
           const { status, data } = response;
 		  console.log(data);
 		  
-		  clientOrd.cancelOrder({orderNumber:data.orderNumber}).then(response => {
+		  
+			clientOrd.returnOpenOrders({currencyPair: 'USDT_BTC'}).then(response => {
+			  const { status, data } = response;
+			  console.log("CANTIDAD ORDENES");
+			  console.log(data);
+				clientOrd.cancelOrder({orderNumber:data[0].orderNumber}).then(response => {
 									  const { status, data } = response;
 									  console.log(data);
 									  //process.send({ cmd: 'fin proceso', capital: capital });
 									  swBLoqueo = false;
 								  })
-								  .catch(err => console.error(err));
-		  
-		  /*clientOrd.sell({currencyPair: 'USDT_BTC', rate: 15000, amount: 0.001, nonce: 9196535984736059393})
-		  .then(response => {
-			  const { status, data } = response;
-			  console.log(data);
-			  clientOrd.sell({currencyPair: 'USDT_BTC', rate: 15000, amount: 0.001, nonce: 9196535984736059393})
-			  .then(response => {
-				  const { status, data } = response;
-				  console.log(data);
-				  
-				  
-			  })
-			  .catch(err => console.error(err));	 
+								  .catch(err => console.error(err));			  
 			  
 		  })
-		  .catch(err => console.error(err));*/
+		  .catch(err => console.error(err));						  
+		  
+		  
 		  
       })
       .catch(err => console.error(err));
@@ -99,7 +97,7 @@ var objRematablesUSDT = {ETC: 'ETC', XRP: 'XRP', ETH: 'ETH', LTC: 'LTC', BCH: 'B
 poloniex.on('message', (channelName, data, seq) => {
   if (channelName === 'ticker') {
     objCriptos[data.currencyPair] = data;
-	//console.log(data);
+	console.log(data);
 	if(swOperacion){
 		
 	} else if(data.currencyPair != 'USDT_BTC' && data.currencyPair != 'USDT_XMR' && data.currencyPair != 'USDT_ETH'){
@@ -206,9 +204,9 @@ poloniex.on('message', (channelName, data, seq) => {
 								console.log(wk.process.pid);
 								objOperacion[wk.process.pid] = {data: ['USDT_' + ref, str, 'USDT_' + monedas[1]], opt: 'ESPERA', capital: capital};;
 								console.log(objOperacion[wk.process.pid]);
-								wk.on('message', fnMaster);
-								break;
+								wk.on('message', fnMaster);								
 								poloniex.unsubscribe('ticker');
+								break;
 							}
 											
 						}
@@ -360,7 +358,7 @@ poloniex.on('message', (channelName, data, seq) => {
 					books[channelName]["bids"] = [];//obj.data.bids;
 					
 					console.log("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-					console.log(books[channelName][libro]);
+					
 					for(let reg in obj.data[libro]){
 						//books[channelName]["asks"][reg] = obj.data[libro][reg]
 						books[channelName]["asks"].push({rate: reg, amount: obj.data[libro][reg]});
@@ -385,7 +383,10 @@ poloniex.on('message', (channelName, data, seq) => {
 				break;
 				case "orderBookModify":
 					//console.log(channelName);
-					console.log(obj);
+					if(obj.data.type == 'bid'){
+						console.log(obj);	
+					}
+					
 					/*console.log(obj.data.type + 's');
 					console.log(books[channelName]);
 					console.log(books[channelName][obj.data.type + 's']);
@@ -393,57 +394,101 @@ poloniex.on('message', (channelName, data, seq) => {
 					console.log(books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1]);
 					console.log(books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate);
 					*/
-					
-					if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
-						console.log("ES IGUAL AL [0]");
-						books[channelName][obj.data.type + 's'][0].amount = obj.data.amount;
-						
-					} else if(obj.data.rate < books[channelName][obj.data.type + 's'][0].rate){
-						console.log("ES MENOR");
-						books[channelName][obj.data.type + 's'].unshift({rate: obj.data.rate, amount: obj.data.amount});
-						
-					} else if(obj.data.rate > books[channelName][obj.data.type + 's'][0].rate && obj.data.rate < books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate){
-						console.log("ESTA EN EL LIBRO");
-						
-						for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
-							let reg = books[channelName][obj.data.type + 's'][j];
-							if(reg.rate == obj.data.rate){
-								reg.amount = obj.data.amount;
-								break;
-							} else if(reg.rate > obj.data.rate){
-								console.log(books[channelName][obj.data.type + 's']);
-								books[channelName][obj.data.type + 's'].splite(j, 0, {rate: reg.rate, amount: reg.amount});
+					if(obj.data.type == 'ask'){
+						if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
+							console.log("ES IGUAL AL [0]");
+							books[channelName][obj.data.type + 's'][0].amount = obj.data.amount;
+							
+						} else if(obj.data.rate < books[channelName][obj.data.type + 's'][0].rate){
+							console.log("ES MENOR");
+							books[channelName][obj.data.type + 's'].unshift({rate: obj.data.rate, amount: obj.data.amount});
+							
+						} else if(obj.data.rate > books[channelName][obj.data.type + 's'][0].rate && obj.data.rate < books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate){
+							console.log("ESTA EN EL LIBRO");
+							console.log(books[channelName][obj.data.type + 's'].length);
+							for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
+								let reg = books[channelName][obj.data.type + 's'][j];
+								if(reg.rate == obj.data.rate){
+									console.log("ENCONTRADO EN " + j);
+									reg.amount = obj.data.amount;
+									break;
+								} else if(reg.rate > obj.data.rate){
+									console.log(reg.rate + " > " + obj.data.rate);
+									//console.log(books[channelName][obj.data.type + 's']);
+									books[channelName][obj.data.type + 's'].splice(j, 0, {rate: obj.data.rate, amount: obj.data.amount});
+									break;
+								}
 								
 							}
+							console.log("SALI");
+						} else {
+							console.log("MAYOR AL LIBRO");
+							books[channelName][obj.data.type + 's'].push({rate: obj.data.rate, amount: obj.data.amount});
 							
-						}
+						}	
 					} else {
-						console.log("MAYOR AL LIBRO");
-						books[channelName][obj.data.type + 's'].push({rate: reg, amount: obj.data[libro][reg]});
-						
+						if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
+							console.log("ES IGUAL AL [0]");
+							books[channelName][obj.data.type + 's'][0].amount = obj.data.amount;
+							
+						} else if(obj.data.rate > books[channelName][obj.data.type + 's'][0].rate){
+							console.log("ES MAYOR");
+							books[channelName][obj.data.type + 's'].unshift({rate: obj.data.rate, amount: obj.data.amount});
+							
+						} else if(obj.data.rate < books[channelName][obj.data.type + 's'][0].rate && obj.data.rate > books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate){
+							console.log("ESTA EN EL LIBRO");
+							console.log(books[channelName][obj.data.type + 's'].length);
+							for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
+								let reg = books[channelName][obj.data.type + 's'][j];
+								if(reg.rate == obj.data.rate){
+									console.log("ENCONTRADO EN " + j);
+									reg.amount = obj.data.amount;
+									break;
+								} else if(reg.rate < obj.data.rate){
+									console.log(reg.rate + " < " + obj.data.rate);
+									//console.log(books[channelName][obj.data.type + 's']);
+									books[channelName][obj.data.type + 's'].splice(j, 0, {rate: obj.data.rate, amount: obj.data.amount});
+									break;
+								}
+								
+							}
+							console.log("SALI");
+						} else {
+							console.log("MAYOR AL LIBRO");
+							books[channelName][obj.data.type + 's'].push({rate: obj.data.rate, amount: obj.data.amount});
+							
+						}	
 					}
 					
 					
 					
-					console.log(books[channelName]["asks"]);
+					if(obj.data.type == 'bid'){
+						console.log(books[channelName]["bids"]);
+					}
+					
 					
 				break;
 				case "orderBookRemove":
-					console.log(obj);
+					if(obj.data.type == 'bid'){
+						console.log(obj);	
+					}
 					if(books[channelName] && books[channelName]["asks"] && books[channelName]["bids"]){
 						
 						for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
 							let reg = books[channelName][obj.data.type + 's'][j];
 							if(reg.rate == obj.data.rate){
 								books[channelName][obj.data.type + 's'].splice(j, 1);
+								console.log("ENCONTRADO EN " + j);
 								break;
 							} 
 							
 						}
 						
-						
+						console.log("NO ENCONTRADO");
 					}
-					console.log(books[channelName]["asks"]);
+					if(obj.data.type == 'bid'){
+						console.log(books[channelName]["bids"]);
+					}
 				break;
 			}	
 		
@@ -485,7 +530,7 @@ function fnMaster(msg){
 			console.log("**** RESULTADO: " + capital + " ****");
 			console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
 			
-			
+			poloniex.subscribe('ticker');
 			swOperacion = false;
         break;
         default:
