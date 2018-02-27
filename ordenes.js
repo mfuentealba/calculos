@@ -1,35 +1,39 @@
-const cluster = require('cluster');
-const Poloniex = require('poloniex-api-node');
-let poloniex = new Poloniex('Z3QXH3L0-AR8VP0ZA-PTR8VH8C-PBQO5LQU', '23b36c259b7a1af19dbf3b4bd444fd19e182637abd14fb62d1d784a711898939295b2fd96665a586c0d604f3296ba74731c029cddc6fb6d73b76a2b9f8744194');
+const poloniexOrd = require('poloniex-exchange-api');
 
+const clientOrd = poloniexOrd.getClient({
+    publicKey : 'WZG48KNT-L35B2XGQ-CDCU7AG1-DFG3NWC9', // Your public key
+    privateKey: '966c91801fa03f37778de06e14b5fc6885a63f14220f446aaf698492df7da7b86556efe1751ce2083309348db66363664c2d22dbd82d664c7e6d6a74aa13677e', // Your private key
+});
 
 
 
 process.on('message', (msgReq) => {
 	
-	
+	fnOrden(msgReq);
+});
+
+
+function fnOrden(msgReq){
 	clientOrd[msgReq.opt](msgReq.data)
-	  .then(response => {
+	.then(response => {
+
+		const { status, data } = response;
+		console.log(data);
+
+		if(data.error){
+			fnOrden(msgReq);
+		} else {
+			process.send({ cmd: 'fin proceso' });
+		}	  
 		  
-		  const { status, data } = response;
-		  console.log(data);
-		  
-		  if(data.error){
-			console.log("\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-			console.log("**** __ CANCELADA __****");
-			console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
-			swBLoqueo = false;
-		  
-		  }
-			
-			
-		  
-		  
-	  })
-	  .catch(err => {
-		  
-			});		
-}	
+	})
+	.catch(err => {
+		console.error(err);
+		fnOrden(msgReq);
+	});		
+}
+
+
 
 process.send({ cmd: process.pid });
 

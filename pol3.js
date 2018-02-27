@@ -6,6 +6,8 @@ const clientOrd = poloniexOrd.getClient({
 });
 
 
+var EventEmitter = require('events').EventEmitter;
+var ee = new EventEmitter();
 
 
 
@@ -14,8 +16,9 @@ var channelName = 'BTC_ETC';
 books[channelName] = {};
 var reg = 'ask';
 var libro = 'asks';
+var msg;
 
-		
+var opePeg = "asks"		
 		
 
 const Poloniex = require('poloniex-api-node');
@@ -30,45 +33,6 @@ var objOperacion = {};
 var swOperacion = false;
 
 
-/*
-clientOrd.returnOpenOrders({currencyPair: 'BTC_ETC'}).then(response => {
-							  const { status, data } = response;
-							  console.log(data);
-							  
-								
-							  
-						  })
-						  .catch(err => console.error(err));	*/
-/*
-
-clientOrd.sell({currencyPair: 'USDT_BTC', rate: 15000, amount: 0.001, nonce: 9196535984736059393})
-      .then(response => {
-          const { status, data } = response;
-		  console.log(data);
-		  
-		  
-			clientOrd.returnOpenOrders({currencyPair: 'USDT_BTC'}).then(response => {
-			  const { status, data } = response;
-			  console.log("CANTIDAD ORDENES");
-			  console.log(data);
-				clientOrd.cancelOrder({orderNumber:data[0].orderNumber}).then(response => {
-									  const { status, data } = response;
-									  console.log(data);
-									  //process.send({ cmd: 'fin proceso', capital: capital });
-									  swBLoqueo = false;
-								  })
-								  .catch(err => console.error(err));			  
-			  
-		  })
-		  .catch(err => console.error(err));						  
-		  
-		  
-		  
-      })
-      .catch(err => console.error(err));
-	  
-	  
-*/
 
 
  
@@ -101,12 +65,6 @@ wk.socket = this;
 arrOrdenes.push(wk);
 wk.on('message', fnOrdenes);
 
-
-cluster.setupMaster({
-				  exec: 'operacionP.js',    
-				  args: [],
-				  silent: false
-			  });
 				
 
 var objCriptos = {};
@@ -149,86 +107,6 @@ poloniex.on('message', (channelName, data, seq) => {
 				if(remate){
 					for(var str in obj){					
 						
-						/**************** MEJOR CASO ****************/
-						/*var ref = str.split('_')[0];
-						if(objCriptos['USDT_' + ref] && objCriptos[str]['highestBid'] && objCriptos['USDT_' + ref]['highestBid']){
-							if(objCriptos[str]['highestBid'] * objCriptos['USDT_' + ref]['highestBid'] < remate['lowestAsk']){
-								var precioTraspasando = objCriptos[str]['highestBid'] * objCriptos['USDT_' + ref]['highestBid'];
-								precioTraspasando = precioTraspasando/(0.9985 * 0.9985);
-								var precioDirecto = remate['lowestAsk'] * (1 - 0.0015 / 0.9985);
-								if(precioTraspasando - precioDirecto > 0){
-									console.log("*******************************************************************************");
-									console.log(str + ' highestBid --> ' + objCriptos[str]['highestBid']);
-									console.log('USDT_' + ref + ' highestBid --> ' + objCriptos['USDT_' + ref]['highestBid']);
-									console.log(' RESULTADO --> ' + precioTraspasando);
-									console.log('USDT_' + monedas[1] + ' lowestAsk --> ' + precioDirecto);									
-									console.log(precioTraspasando - precioDirecto);
-									console.log(((precioTraspasando - precioDirecto) * 100 / precioDirecto) + '%');
-									console.log("*******************************************************************************");	
-									swOperacion = true;
-									var wk = cluster.fork();
-									wk.socket = this;
-									objOperacion[wk.process.pid] = [str, data.currencyPair, 'USDT_' + ref];
-									wk.on('message', fnMaster);
-								}	
-							}							
-						}*/
-						/**************** CASO ESPERA ****************/	
-						
-						
-						/*var ref = str.split('_')[0];
-						if(objCriptos['USDT_' + ref] && objCriptos[str]['lowestAsk'] && objCriptos['USDT_' + ref]['lowestAsk']){
-							
-							var precioTraspasando = (1 - 0.0015 / 0.9985) * remate['highestBid'] * (1 - 0.0025 / 0.9975);
-							var precioT = (1 - 0.0025 / 0.9975) * remate['highestBid'] * (1 - 0.0025 / 0.9975);
-							precioTraspasando = precioTraspasando.toFixed(8);
-							var precioDirecto = objCriptos['USDT_' + ref]['lowestAsk'] * (1 + 0.0025 / 0.9975) * objCriptos[str]['highestBid'];
-							var precioD = objCriptos['USDT_' + ref]['lowestAsk'] * (1 + 0.0025 / 0.9975) * objCriptos[str]['lowestAsk'];
-							precioDirecto = precioDirecto.toFixed(8);
-							var evaluacion = precioTraspasando - precioDirecto;
-							if(precioT - precioD > 0){
-								console.log("[ " + evaluacion.toFixed(8) + " -------- " + (precioT - precioD) + " ]");
-							}
-								
-							
-							
-							
-							//console.log(precioDirecto);
-							if(precioTraspasando - precioDirecto > 0){// && (precioTraspasando - precioDirecto) * 100 / precioDirecto > 0.09
-								console.log("*******************************************************************************");
-								
-								console.log(str + ' highestBid --> ' + objCriptos[str]['highestBid']);
-								console.log('USDT_' + ref + ' lowestAsk --> ' + objCriptos['USDT_' + ref]['lowestAsk']);
-								console.log('USDT_' + monedas[1] + ' highestBid --> ' + precioDirecto);
-								console.log(' RESULTADO --> ' + precioTraspasando);
-																	
-								console.log(precioTraspasando - precioDirecto);
-								acum += (precioTraspasando - precioDirecto) / precioDirecto;
-								console.log(((precioTraspasando - precioDirecto) * 100 / precioDirecto) + '%');
-								capital = capital * (1 + (precioTraspasando - precioDirecto)/ precioDirecto);
-								console.log("\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-								console.log("**** RESULTADO: " + capital + " ****");
-								console.log("**** RESULTADO: " + acum + " ****");
-								console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
-								
-								
-								
-								console.log("*******************************************************************************");	
-								
-								swOperacion = true;								
-								var wk = cluster.fork();
-								//wk.socket = this;
-								console.log(wk.process.pid);
-								objOperacion[wk.process.pid] = {data: ['USDT_' + ref, str, 'USDT_' + monedas[1]], opt: 'ESPERA', capital: capital};;
-								console.log(objOperacion[wk.process.pid]);
-								wk.on('message', fnMaster);								
-								poloniex.unsubscribe('ticker');
-								break;
-							}
-											
-						}
-						
-						*/
 						
 						
 						/**************** CASO SEGURO ****************/	
@@ -251,28 +129,82 @@ poloniex.on('message', (channelName, data, seq) => {
 							
 							if(precioTraspasando - precioDirecto > 0){// && (precioTraspasando - precioDirecto) * 100 / precioDirecto > 0.09
 								console.log("*******************************************************************************");
+								msg = [];
+								msg[0] = 'USDT_' + ref;
+								msg[1] = str;
+								msg[2] = 'USDT_' + monedas[1];
+								poloniex.subscribe('USDT_' + ref);
+								poloniex.subscribe(str);
+								poloniex.subscribe('USDT_' + monedas[1]);
+								poloniex.unsubscribe('ticker');								
+								break;					
 								
-								console.log(str + ' lowestAsk --> ' + objCriptos[str]['lowestAsk']);
-								console.log('USDT_' + ref + ' lowestAsk --> ' + objCriptos['USDT_' + ref]['lowestAsk']);
-								console.log('USDT_' + monedas[1] + ' highestBid --> ' + precioDirecto);
-								console.log(' RESULTADO --> ' + precioTraspasando);
-								
-								
-								
-																	
-								console.log(precioTraspasando - precioDirecto);
-								acum += (precioTraspasando - precioDirecto) / precioDirecto;
-								console.log(((precioTraspasando - precioDirecto) * 100 / precioDirecto) + '%');
-								capital = capital * (1 + (precioTraspasando - precioDirecto)/ precioDirecto);
-								console.log("\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-								console.log("**** RESULTADO: " + capital + " ****");
-								console.log("**** RESULTADO: " + acum + " ****");
-								console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
-								
-								
-								
-								console.log("*******************************************************************************");	
-								
+							}
+										
+						
+						
+						}	
+						/************************************************/
+						//res[str] = {objCriptos[data.currencyPair].objCriptos['USDT_' + str]}
+					}						
+				}	
+			}
+				
+		}
+	}
+		
+	  
+} else {
+	   //console.log(data);
+	   console.log("*******************************************************************************");	
+		var  i = 0;
+		
+
+		for(var obj of data){
+			
+			switch(obj.type){
+				case "orderBook":
+					console.log("********************************* " + channelName + " **********************************************");
+					var i = 0;
+					var libro = "asks";
+						
+	
+					books[channelName] = {};
+					books[channelName]["asks"] = [];//obj.data.asks;
+					books[channelName]["bids"] = [];//obj.data.bids;
+	
+					console.log("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+					console.log(books[channelName][libro]);
+					for(let reg in obj.data[libro]){
+						//books[channelName]["asks"][reg] = obj.data[libro][reg]
+						books[channelName]["asks"].push({rate: reg, amount: obj.data[libro][reg]});
+						console.log('rate: ' + reg + ', amount: ' + obj.data[libro][reg]);
+						if(i++ > 9){
+							break;
+						}
+					}						
+	
+					i = 0;
+					console.log("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+					for(let reg in obj.data['bids']){
+						//books[channelName]["asks"][reg] = obj.data[libro][reg]
+						books[channelName]['bids'].push({rate: reg, amount: obj.data['bids'][reg]});
+						console.log('rate: ' + reg + ', amount: ' + obj.data['bids'][reg]);
+						if(i++ > 10){
+							break;
+						}
+					}
+	
+					contBooks++;
+					if(contBooks == 3){
+						var r = fnDiferencia();
+						if(r > 0){
+			
+			/***************************** TEST 1 USD **************************************/
+
+							if(swBLoqueo == false && order == null){
+								console.log("PETICION DE ORDEN");
+								swBLoqueo = true;
 								var vol = 2 / objCriptos['USDT_' + ref]['lowestAsk'];
 								vol = vol.toFixed(8);
 								console.log({currencyPair: 'USDT_' + ref, rate: objCriptos['USDT_' + ref]['lowestAsk'], amount: vol});
@@ -295,93 +227,41 @@ poloniex.on('message', (channelName, data, seq) => {
 								
 								objParam.opt = 'sell';
 								objParam.data = {currencyPair: 'USDT_' + monedas[1], rate: remate['highestBid'], amount: vol/*, fillOrKill: 1*/}
-								arrOrdenes[2].send(objParam);
+								arrOrdenes[2].send(objParam);				
 								
-								
-
-								console.log("***************** DESUSCRIPCION ***************");	
-								//poloniex.unsubscribe('ticker');
-								
-								
-								
-								
-								
-								
-								
-								//vol = (vol * (1 - 0.0025 / 0.9975));
-								//vol = vol.toFixed(8);
-								//console.log("**** RESULTADO CAJA: " + vol + " ****");
-								
-								  
-								  
-								
-								  
-								  
-								  
-								
-								
-								
-								/*
-								swOperacion = true;
-								var wk = cluster.fork();
-								//wk.socket = this;
-								console.log(wk.process.pid);
-								objOperacion[wk.process.pid] = {data: ['USDT_' + ref, str, 'USDT_' + monedas[1]], opt: 'SEGURO', capital: capital};
-								console.log(objOperacion[wk.process.pid]);
-								wk.on('message', fnMaster);*/
-								//break;
-								
+							
 							}
-										
+							
+							
+						} else {
+							console.log("DIFERENCIA PERDIDA: " + r);	
+							salir = "Salir";
+							fsLauncher.appendFileSync('./' + msg[1] + '.txt', "DIFERENCIA PERDIDA: " + r + "\n", (err) => {
+									if (err) throw err;
+										////console.log('The "data to append" was appended to file!');
+									});
+							if(order){
+								console.log("CANCELAR ORDEN Y SALIR");	
+								fnCancelacion();
+								
+							} else {
+								console.log("SIN ORDEN");	
+								fsLauncher.appendFileSync('./' + msg[1] + '.txt', "SIN ORDEN\n\n\n\n\n", (err) => {
+														if (err) throw err;
+															////console.log('The "data to append" was appended to file!');
+														});	
+								process.send({ cmd: 'fin proceso', capital: capital });
+								process.exit();	
+							}
+							
+							
+						}
+		
+		
+						console.log("*******************************************************************************");	
 						
 						
-						}	
-						/************************************************/
-						//res[str] = {objCriptos[data.currencyPair].objCriptos['USDT_' + str]}
-					}						
-				}	
-			}
-				
-		}
-	}
-		
-	  
-}
-	
- 
-  if (channelName === 'BTC_ETC') {
-	   //console.log(data);
-	   console.log("*******************************************************************************");	
-		var  i = 0;
-		
-
-		for(var obj of data){
-			
-			switch(obj.type){
-				case "orderBook":
-					books[channelName]["asks"] = [];//obj.data.asks;
-					books[channelName]["bids"] = [];//obj.data.bids;
-					
-					console.log("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-					
-					for(let reg in obj.data[libro]){
-						//books[channelName]["asks"][reg] = obj.data[libro][reg]
-						books[channelName]["asks"].push({rate: reg, amount: obj.data[libro][reg]});
-						console.log('rate: ' + reg + ', amount: ' + obj.data[libro][reg]);
-						if(i++ > 9){
-							break;
-						}
-					}						
-					
-					i = 0;
-					console.log("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-					for(let reg in obj.data['bids']){
-						//books[channelName]["asks"][reg] = obj.data[libro][reg]
-						books[channelName]['bids'].push({rate: reg, amount: obj.data['bids'][reg]});
-						console.log('rate: ' + reg + ', amount: ' + obj.data['bids'][reg]);
-						if(i++ > 10){
-							break;
-						}
+						
 					}
 					
 					
@@ -527,40 +407,66 @@ poloniex.on('error', (error) => {
 poloniex.openWebSocket({ version: 2 });
 
 
-
-function fnMaster(msg){
-	 
-    switch(msg.cmd){
-        case 'fin proceso':
-			if(capital < msg.capital){
-				capital = msg.capital;	
-			}
-			
-			console.log("\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-			console.log("**** RESULTADO: " + capital + " ****");
-			console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
-			
-			poloniex.subscribe('ticker');
-			swOperacion = false;
-        break;
-        default:
-            //this.send('MASTER: Listo el proceso {' + process.pid + '}');	
-			/*console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-			console.log(this.pid);
-			console.log(process.pid);
-			console.log(objOperacion[process.pid]);
-			this.send('MASTER: Listo el proceso {' + process.pid + '}');
-			console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");*/
-            this.send(objOperacion[msg.cmd]);            
-        break;
-    }
+var opeComisPeg = (1 - 0.0025 / 0.9975);
+function fnDiferencia(){
 	
+	
+	
+	
+	volReferencia = books[msg[0]]["asks"][1].amount;
+	precioReferencia = books[msg[0]]["asks"][1].rate;
+		
+	
+	
+		
+	volOperacion = books[msg[1]][opePeg][1].amount;
+	//console.log("PRECIO ANTERIOR: " + precioOperacion);
+	precioOperacion = Number(books[msg[1]][opePeg][1].rate);
+	precioOperacion = books[msg[1]][opePeg][1].toFixed(8);
+	//console.log(reg);
+	//console.log("NUEVO PRECIO: " + precioOperacion);
+		
+	
+	
+	
+	
+		
+	volTransada = books[msg[2]]["bids"][1].amount;
+	precioTransada = books[msg[2]]["bids"][1].rate;
+	
+	var retorno = opeComisPeg * precioTransada * (1 - 0.0025 / 0.9975);
+	//console.log("Transada:  " + precioTransada);
+	//console.log("RETORNO:   " + retorno);	
+	var gasto = precioReferencia * (1 + 0.0025 / 0.9975) * precioOperacion;
+	//console.log("Referencia:" + precioReferencia);
+	//console.log("Operacion: " + precioOperacion);
+	//console.log("GASTO:     " + gasto);	
+	
+	
+	
+	
+	//console.log("DIFERENCIA : " + (retorno - gasto));
+	
+	if(retorno - gasto < 0){
+		poloniex.unsubscribe('USDT_' + ref);
+		poloniex.unsubscribe(str);
+		poloniex.unsubscribe('USDT_' + monedas[1]);
+		poloniex.subscribe('ticker');
+	}
+	
+	return retorno - gasto;// > 0 ? true : false;
 }
 
+var countOrdenes = 0;
 function fnOrdenes(msg){
 	 
     switch(msg.cmd){
         case 'fin proceso':
+			countOrdenes++;
+			if(countOrdenes == 3){
+				swOperacion = false;	
+				countOrdenes = 0;
+			}
 			
         break;
         default:
