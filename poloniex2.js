@@ -79,10 +79,34 @@ clientOrd.sell({currencyPair: 'USDT_BTC', rate: 15000, amount: 0.001, nonce: 919
 
 
  
+cluster.setupMaster({
+				  exec: 'ordenes.js',    
+				  args: [],
+				  silent: false
+			  });
+
+var arrOrdenes = [];
+var wk = cluster.fork();
+
+wk.socket = this;
+objOperacion[wk.process.pid] = [str, data.currencyPair, 'USDT_' + ref];
+arrOrdenes.push(wk);
+wk.on('message', fnOrdenes);
+
+var wk = cluster.fork();
+
+wk.socket = this;
+
+arrOrdenes.push(wk);
+wk.on('message', fnOrdenes);
 
 
+var wk = cluster.fork();
 
-
+wk.socket = this;
+objOperacion[wk.process.pid] = [str, data.currencyPair, 'USDT_' + ref];
+arrOrdenes.push(wk);
+wk.on('message', fnOrdenes);
 
 
 cluster.setupMaster({
@@ -216,7 +240,7 @@ poloniex.on('message', (channelName, data, seq) => {
 						
 						/**************** CASO SEGURO ****************/	
 						
-						/*
+						
 						var ref = str.split('_')[0];
 						if(objCriptos['USDT_' + ref] && objCriptos[str]['lowestAsk'] && objCriptos['USDT_' + ref]['lowestAsk']){
 							
@@ -255,44 +279,32 @@ poloniex.on('message', (channelName, data, seq) => {
 								
 								
 								console.log("*******************************************************************************");	
-								/*
+								
 								var vol = 1 / objCriptos['USDT_' + ref]['lowestAsk'];
 								vol = vol.toFixed(8);
 								console.log({currencyPair: 'USDT_' + ref, rate: objCriptos['USDT_' + ref]['lowestAsk'], amount: vol});
-
-								clientOrd.buy({currencyPair: 'USDT_' + ref, rate: objCriptos['USDT_' + ref]['lowestAsk'], amount: vol})
-								  .then(response => {
-									  const { status, data } = response;
-									  console.log(data);
-									  
-									  
-									  vol = vol * (1 - 0.0025 / 0.9975) / objCriptos[str]['lowestAsk'];
-										vol = vol.toFixed(8);
-										console.log({currencyPair: str, rate: objCriptos[str]['lowestAsk'], amount: vol});	
-										
-										clientOrd.buy({currencyPair: str, rate: objCriptos[str]['lowestAsk'], amount: vol})
-										  .then(response => {
-											  const { status, data } = response;
-											  console.log(data);
-											  vol = vol * (1 - 0.0025 / 0.9975) * objCriptos['USDT_' + monedas[1]]['lowestAsk'];
-												vol = vol.toFixed(8);
-												console.log({currencyPair: 'USDT_' + monedas[1], rate: remate['highestBid'], amount: vol});	
-												
-												clientOrd.sell({currencyPair: 'USDT_' + monedas[1], rate: remate['highestBid'], amount: vol})
-												  .then(response => {
-													  const { status, data } = response;
-													  console.log(data);
-													  
-													  
-												  })
-												  .catch(err => console.error(err));
-											  
-										  })
-										  .catch(err => console.error(err));
-									  
-									  
-								  })
-								  .catch(err => console.error(err));
+								var objParam = {};
+								objParam.opt = 'buy';
+								objParam.data = {currencyPair: 'USDT_' + ref, rate: objCriptos['USDT_' + ref]['lowestAsk'], amount: vol, fillOrKill: 1}
+								arrOrdenes[0].send(objParam);
+								
+								
+								vol = vol * (1 - 0.0025 / 0.9975) / objCriptos[str]['lowestAsk'];
+								vol = vol.toFixed(8);
+								console.log({currencyPair: str, rate: objCriptos[str]['lowestAsk'], amount: vol});
+								objParam.data = {currencyPair: str, rate: objCriptos[str]['lowestAsk'], amount: vol, fillOrKill: 1};							
+								
+								arrOrdenes[1].send(objParam);
+								
+								vol = vol * (1 - 0.0025 / 0.9975) * objCriptos['USDT_' + monedas[1]]['lowestAsk'];
+								vol = vol.toFixed(8);
+								console.log({currencyPair: 'USDT_' + monedas[1], rate: remate['highestBid'], amount: vol});	
+								
+								objParam.opt = 'sell';
+								objParam.data = {currencyPair: 'USDT_' + monedas[1], rate: remate['highestBid'], amount: vol, fillOrKill: 1}
+								arrOrdenes[2].send(objParam);
+								
+								
 
 								
 								poloniex.unsubscribe('ticker');
@@ -330,7 +342,7 @@ poloniex.on('message', (channelName, data, seq) => {
 										
 						
 						
-						}	*/
+						}	
 						/************************************************/
 						//res[str] = {objCriptos[data.currencyPair].objCriptos['USDT_' + str]}
 					}						
@@ -501,6 +513,11 @@ poloniex.on('message', (channelName, data, seq) => {
     console.log(`data sequence number is ${seq}`);*/
   }
 });
+
+
+
+
+
  
 poloniex.on('open', () => {
   console.log(`Poloniex WebSocket connection open`);
@@ -547,6 +564,26 @@ function fnMaster(msg){
 	
 }
 
-
+function fnOrdenes(msg){
+	 
+    switch(msg.cmd){
+        case 'fin proceso':
+			if(capital < msg.capital){
+				capital = msg.capital;	
+			}
+			
+			console.log("\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+			console.log("**** RESULTADO: " + capital + " ****");
+			console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
+			
+			poloniex.subscribe('ticker');
+			swOperacion = false;
+        break;
+        default:
+                    
+        break;
+    }
+	
+}
 
 

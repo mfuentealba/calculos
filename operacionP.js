@@ -245,7 +245,12 @@ function orderBookModify(channelName, obj){
 										  .then(response => {
 											  const { status, data } = response;
 											  console.log(data);
+											  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "orderBookModify\n\n\n\n\n", (err) => {
+												if (err) throw err;
+													////console.log('The "data to append" was appended to file!');
+												});	
 											  process.send({ cmd: 'fin proceso', capital: capital });
+											  process.exit();
 											  
 										  })
 										  .catch(err => console.error(err));
@@ -287,7 +292,11 @@ function orderBookModify(channelName, obj){
 				fnCancelacion();
 					
 			} else {
-				console.log("DIFERENCIA PERDIDA (SIN ORDEN): " + r);	
+				console.log("DIFERENCIA PERDIDA (SIN ORDEN): " + r);
+			fsLauncher.appendFileSync('./' + msg[1] + '.txt', "orderBookModify DIFERENCIA PERDIDA (SIN ORDEN): " + r + "\n\n\n\n\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});				
 				process.send({ cmd: 'fin proceso', capital: capital });
 				process.exit();	
 			}
@@ -301,6 +310,10 @@ function orderBookModify(channelName, obj){
 	
 function fnSalir(){
 	if(!order){
+		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "fnSalir\n\n\n\n\n", (err) => {
+			if (err) throw err;
+				////console.log('The "data to append" was appended to file!');
+			});	
 		process.send({ cmd: 'fin proceso', capital: capital });
 		process.exit();		
 	}
@@ -357,6 +370,11 @@ function orderBookRemove(channelName, obj){
 									  const { status, data } = response;
 									  console.log(data);
 									  process.send({ cmd: 'fin proceso', capital: capital });
+									  process.exit();
+									  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "orderBookRemove\n\n\n\n\n", (err) => {
+										if (err) throw err;
+											////console.log('The "data to append" was appended to file!');
+										});	
 									  
 								  })
 								  .catch(err => console.error(err));
@@ -369,6 +387,10 @@ function orderBookRemove(channelName, obj){
 		
 		if(swBLoqueo == false){
 			console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE  DIFERENCIA = " + fnDiferencia());
+			fsLauncher.appendFileSync('./' + msg[1] + '.txt', "CANCELANDO ORDEN " + order.orderNumber + " PORQUE  DIFERENCIA = " + fnDiferencia()+ "\n", (err) => {
+			if (err) throw err;
+				////console.log('The "data to append" was appended to file!');
+			});
 			swBLoqueo = true;
 			fnCancelacion();
 			
@@ -474,19 +496,31 @@ function fnLibros(channelName, obj){
 									  .then(response => {
 										  const { status, data } = response;
 										  console.log(data);
-										  
+										  fsLauncher.appendFileSync('./' + msg[1] + '.txt',  'fin proceso' + "\n", (err) => {
+											if (err) throw err;
+												////console.log('The "data to append" was appended to file!');
+											});
 										  process.send({ cmd: 'fin proceso', capital: capital });
+										  process.exit();
 										  
 									  })
 									  .catch(err => {
 										  console.error(err);
 										  console.log("NO SE PUDO CREAR ORDEN: " + msg[2]);
-									  });
+										  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "NO SE PUDO CREAR ORDEN: " + msg[2] + "\n", (err) => {
+											if (err) throw err;
+												////console.log('The "data to append" was appended to file!');
+											});
+									});
 								  
 							  })
 							  .catch(err => {
 								  console.error(err);
 								  console.log("NO SE PUDO CREAR ORDEN: " + msg[0]);
+								  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "NO SE PUDO CREAR ORDEN: " + msg[0] + "\n", (err) => {
+									if (err) throw err;
+										////console.log('The "data to append" was appended to file!');
+									});
 							  });  
 						  } else {
 							//clientOrd.cancelOrder(data.orderNumber);
@@ -506,8 +540,14 @@ function fnLibros(channelName, obj){
 					  })
 					  .catch(err => {
 						  console.error(err)
+						  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "fnLibros\n\n\n\n\n", (err) => {
+										if (err) throw err;
+											////console.log('The "data to append" was appended to file!');
+										});	
 						  process.send({ cmd: 'fin proceso', capital: capital });
+						  
 						  process.exit();
+						  
 						 });							
 														
 				/*poloniex.unsubscribe(msg[0]);
@@ -542,12 +582,21 @@ function fnLibros(channelName, obj){
 			
 		} else {
 			console.log("DIFERENCIA PERDIDA: " + r);	
+			salir = "Salir";
+			fsLauncher.appendFileSync('./' + msg[1] + '.txt', "DIFERENCIA PERDIDA: " + r + "\n", (err) => {
+					if (err) throw err;
+						////console.log('The "data to append" was appended to file!');
+					});
 			if(order){
 				console.log("CANCELAR ORDEN Y SALIR");	
 				fnCancelacion();
 				
 			} else {
 				console.log("SIN ORDEN");	
+				fsLauncher.appendFileSync('./' + msg[1] + '.txt', "SIN ORDEN\n\n\n\n\n", (err) => {
+										if (err) throw err;
+											////console.log('The "data to append" was appended to file!');
+										});	
 				process.send({ cmd: 'fin proceso', capital: capital });
 				process.exit();	
 			}
@@ -582,7 +631,10 @@ function fnEjecucion(){
 		volRemate = volOP * (1 - 0.0025 / 0.9975) * precioTransada;
 		volRemate = volRemate.toFixed(8);
 		//console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate});	
-		
+		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "{currencyPair: " + msg[1] + ", rate: " + precioOperacion + ", amount: " + volOP + "}\n", (err) => {
+			if (err) throw err;
+				////console.log('The "data to append" was appended to file!');
+			});
 		clientOrd.buy({currencyPair: msg[1], rate: precioOperacion, amount: volOP, fillOrKill: fillOrKill})
 			  .then(response => {
 				  
@@ -595,34 +647,14 @@ function fnEjecucion(){
 					console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
 					swBLoqueo = false;
 				  } else if(data.resultingTrades.length > 0){
-					clientOrd.buy({currencyPair: msg[0], rate: precioReferencia, amount: volRef})
-					  .then(response => {
-						  const { status, data } = response;
-						  console.log(data);
-						  
-							
-							clientOrd.sell({currencyPair: msg[2], rate: precioTransada, amount: volRemate})
-							  .then(response => {
-								  const { status, data } = response;
-								  console.log(data);
-								  //swBLoqueo = false;
-								  process.send({ cmd: 'fin proceso', capital: capital });
-								  process.exit();
-								  
-							  })
-							  .catch(err => {
-								  console.error(err);
-								  console.log("NO SE PUDO CREAR ORDEN: " + msg[2]);
-							  });
-						  
-					  })
-					  .catch(err => {
-								  console.error(err);
-								  console.log("NO SE PUDO CREAR ORDEN: " + msg[0]);
-							  });  
+					 fnGasto({currencyPair: msg[0], rate: precioReferencia, amount: volRef}, {currencyPair: msg[2], rate: precioTransada, amount: volRemate});
 				  } else {
 					//clientOrd.cancelOrder(data.orderNumber);
 					console.log("NUEVA ORDEN: " + data.orderNumber);
+					fsLauncher.appendFileSync('./' + msg[1] + '.txt', "NUEVA ORDEN: " + data.orderNumber + "\n", (err) => {
+						if (err) throw err;
+							////console.log('The "data to append" was appended to file!');
+						});
 					
 					order = {};
 					order.orderNumber = data.orderNumber;
@@ -636,10 +668,14 @@ function fnEjecucion(){
 				  
 			  })
 			  .catch(err => {
-								  console.error(err);
-								  console.log("NO SE PUDO CREAR ORDEN: " + msg[1]);
-								  swBLoqueo = false;
-							  });							
+				  console.error(err);
+				  console.log("NO SE PUDO CREAR ORDEN: " + msg[1]);
+				  swBLoqueo = false;
+				  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "NO SE PUDO CREAR ORDEN: " + msg[1] + "\n", (err) => {
+						if (err) throw err;
+							////console.log('The "data to append" was appended to file!');
+						});
+					});							
 														
 				/*poloniex.unsubscribe(msg[0]);
 				poloniex.unsubscribe(msg[1]);
@@ -674,19 +710,89 @@ function fnEjecucion(){
 }
 
 
+function fnGasto(obj1, obj2){
+	clientOrd.buy(obj1)
+	  .then(response => {
+		const { status, data } = response;
+		console.log(data);
+		fsLauncher.appendFileSync('./' + msg[1] + '.txt', JSON.stringify({currencyPair: msg[0], rate: precioReferencia, amount: volRef}) + "}\n", (err) => {
+		if (err) throw err;
+			////console.log('The "data to append" was appended to file!');
+		});
+		fnRemate(obj2);
+		fsLauncher.appendFileSync('./' + msg[1] + '.txt', JSON.stringify(data) + "\n", (err) => {
+		if (err) throw err;
+			////console.log('The "data to append" was appended to file!');
+		});
+			
+			
+			  
+		  
+	  })
+	  .catch(err => {
+		  console.error(err);
+		  console.log("NO SE PUDO CREAR ORDEN: " + msg[0]);
+		  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "NO SE PUDO CREAR ORDEN: " + msg[0] + "\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+		fnGasto(obj1, obj2);
+
+	  }); 
+}
+
+function fnRemate(obj2){
+	clientOrd.sell()
+		  .then(response => {
+			  const { status, data } = response;
+			  console.log(data);
+			  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "{currencyPair: " + msg[2] + ", rate: " + precioTransada + ", amount: " + volRemate + "}\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+				fsLauncher.appendFileSync('./' + msg[1] + '.txt', JSON.stringify(data) + "\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+			  //swBLoqueo = false;
+			  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "fnRemate\n\n\n\n\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+			  process.send({ cmd: 'fin proceso', capital: capital });
+			  process.exit();
+			  
+		  })
+		  .catch(err => {
+			  console.error(err);
+			  console.log("NO SE PUDO CREAR ORDEN: " + msg[2]);
+			  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "NO SE PUDO CREAR ORDEN: " + msg[2] + "\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+				fnRemate(obj2);
+		});
+}
+
+
 function fnCancelacion(){
 	clientOrd.cancelOrder({orderNumber:order.orderNumber}).then(response => {
 	  const { status, data } = response;
 	  console.log(data);
 	  //process.send({ cmd: 'fin proceso', capital: capital });
-	  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "CANCELACION EXITOSA\n", (err) => {
+	  
+	  console.log("CANCELACION EXITOSA");
+	  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "CANCELACION EXITOSA de " + order.orderNumber + "\n", (err) => {
 			if (err) throw err;
 				////console.log('The "data to append" was appended to file!');
 			});
-	  console.log("CANCELACION EXITOSA");
 	  swBLoqueo = false;
 	  order = null;
 	  if(salir == 'Salir'){
+		  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "fnCancelacion\n\n\n\n\n", (err) => {
+			if (err) throw err;
+				////console.log('The "data to append" was appended to file!');
+			});
 		process.send({ cmd: 'fin proceso', capital: capital });
 		process.exit();	
 	  }
