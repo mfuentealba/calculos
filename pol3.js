@@ -136,7 +136,8 @@ poloniex.on('message', (channelName, data, seq) => {
 								poloniex.subscribe('USDT_' + ref);
 								poloniex.subscribe(str);
 								poloniex.subscribe('USDT_' + monedas[1]);
-								poloniex.unsubscribe('ticker');								
+								poloniex.unsubscribe('ticker');		
+								console.log("SUSCRITOS");
 								break;					
 								
 							}
@@ -241,10 +242,12 @@ poloniex.on('message', (channelName, data, seq) => {
 							
 							
 						} else {
-							poloniex.unsubscribe('USDT_' + ref);
-							poloniex.unsubscribe(str);
-							poloniex.unsubscribe('USDT_' + monedas[1]);
-							poloniex.subscribe('ticker');							
+							console.log("PERDIDA DE DIFERENCIA: " + r);
+							poloniex.subscribe('ticker');
+							poloniex.unsubscribe(msg[0]);
+							poloniex.unsubscribe(msg[1]);
+							poloniex.unsubscribe(msg[2]);
+														
 						}
 		
 		
@@ -371,10 +374,16 @@ poloniex.on('open', () => {
  
 poloniex.on('close', (reason, details) => {
   console.log(`Poloniex WebSocket connection disconnected`);
+  
+	poloniex = new Poloniex('WZG48KNT-L35B2XGQ-CDCU7AG1-DFG3NWC9', 
+	'966c91801fa03f37778de06e14b5fc6885a63f14220f446aaf698492df7da7b86556efe1751ce2083309348db66363664c2d22dbd82d664c7e6d6a74aa13677e');
+	
+	poloniex.subscribe('ticker');
 });
  
 poloniex.on('error', (error) => {
   console.log(`An error has occured`);
+  console.error(error);
 });
  
 poloniex.openWebSocket({ version: 2 });
@@ -438,9 +447,9 @@ function fnOrdenes(msg){
 			countOrdenes++;
 			if(countOrdenes == 3){
 				swOperacion = false;
-				poloniex.unsubscribe('USDT_' + ref);
-				poloniex.unsubscribe(str);
-				poloniex.unsubscribe('USDT_' + monedas[1]);
+				poloniex.unsubscribe(msg[0]);
+				poloniex.unsubscribe(msg[1]);
+				poloniex.unsubscribe(msg[2]);
 				poloniex.subscribe('ticker');
 				countOrdenes = 0;
 			}
