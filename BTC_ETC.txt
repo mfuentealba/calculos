@@ -1,0 +1,1 @@
+{currencyPair: BTC_ETC, rate: 0.00307780, amount: 0.05922153}

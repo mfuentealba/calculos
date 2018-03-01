@@ -48,3 +48,4 @@ SIN ORDEN
 
 
 
+{currencyPair: BTC_REP, rate: 0.00426681, amount: 0.04251285}
