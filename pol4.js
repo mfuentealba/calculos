@@ -158,6 +158,7 @@ poloniex.on('message', (channelName, data, seq) => {
 						poloniex.unsubscribe('ticker');		
 						console.log("SUSCRITOS");	
 						evalMejor = null;
+						swOperacion = true;
 					}						
 				}	
 			}
@@ -172,8 +173,16 @@ poloniex.on('message', (channelName, data, seq) => {
 		for(var obj of data){
 			console.log(obj.type);			
 			//console.log(channelName);
-			if(msg[0] == channelName || msg[1] == channelName || msg[2] == channelName){
+			if((msg[0] == channelName || msg[1] == channelName || msg[2] == channelName) && swOperacion){
 				ee.emit(obj.type, channelName, obj);	
+				
+			} else if(!swOperacion){
+				poloniex.unsubscribe(msg[0]);
+				poloniex.unsubscribe(msg[1]);
+				poloniex.unsubscribe(msg[2]);
+				objCriptos = {};
+				poloniex.subscribe('ticker');	
+				break;
 			}
 						
 		}	   
@@ -222,12 +231,7 @@ function orderBookRemove(channelName, obj){
 				});
 				swBLoqueo = true;
 				fnCancelacion();
-				poloniex.unsubscribe(msg[0]);
-				poloniex.unsubscribe(msg[1]);
-				poloniex.unsubscribe(msg[2]);
-				//ee.removeListener('orderBookRemove', orderBookRemove);
-				//ee.removeListener('orderBookModify', orderBookModify);
-				poloniex.subscribe('ticker');
+				
 				salir = 'Salir';
 				swOperacion = false;
 				order = null	
@@ -384,14 +388,8 @@ function orderBookModify(channelName, obj){
 					fnEjecucion();
 					//exit;
 				} else {
-					salir = 'Salir';
-					swOperacion = false;
-					poloniex.unsubscribe(msg[0]);
-					poloniex.unsubscribe(msg[1]);
-					poloniex.unsubscribe(msg[2]);
-					//ee.removeListener('orderBookRemove', orderBookRemove);
-					//ee.removeListener('orderBookModify', orderBookModify);
-					poloniex.subscribe('ticker');
+					
+					
 					salir = 'Salir';
 					swOperacion = false;
 					order = null	
@@ -561,9 +559,7 @@ function fnLibros(channelName, obj){
 			
 		} else {
 			console.log("PERDIDA DE DIFERENCIA: " + r);
-			poloniex.unsubscribe('all');
-			console.log("DESUSCRIBO");
-			poloniex.subscribe('ticker');
+			
 		}
 
 
@@ -586,8 +582,8 @@ poloniex.on('close', (reason, details) => {
 });
  
 poloniex.on('error', (error) => {
-  console.log(`An error has occured`);
-  console.error(error);
+  /*console.log(`An error has occured`);
+  console.error(error);*/
 });
  
 poloniex.openWebSocket({ version: 2 });
@@ -598,9 +594,9 @@ function fnDiferencia(){
 	
 	if(contBooks == 3){
 		console.log(msg[0]);
-		volReferencia = books[msg[0]]["asks"][1].amount;
-		precioReferencia = books[msg[0]]["asks"][1].rate;
-			
+		volReferencia = books[msg[0]]["asks"][0].amount;
+		precioReferencia = books[msg[0]]["asks"][0].rate;
+		swOperacion = false;	
 		
 		
 			
@@ -622,8 +618,8 @@ function fnDiferencia(){
 		
 		
 		console.log(msg[2]);	
-		volTransada = books[msg[2]]["bids"][1].amount;
-		precioTransada = books[msg[2]]["bids"][1].rate;
+		volTransada = books[msg[2]]["bids"][0].amount;
+		precioTransada = books[msg[2]]["bids"][0].rate;
 		
 		var retorno = opeComisPeg * precioTransada * (1 - 0.0025 / 0.9975);
 		//console.log("Transada:  " + precioTransada);
@@ -657,12 +653,7 @@ function fnOrdenes(msg){
 			countOrdenes++;
 			if(countOrdenes == 2){
 				swOperacion = false;
-				poloniex.unsubscribe('all');
-				/*poloniex.unsubscribe(msg[1]);
-				poloniex.unsubscribe(msg[2]);
-				ee.removeListener('orderBookRemove', orderBookRemove);
-				ee.removeListener('orderBookModify', orderBookModify);*/
-				poloniex.subscribe('ticker');
+				
 				countOrdenes = 0;
 				order = null;
 			}
