@@ -8,6 +8,9 @@ const clientOrd = poloniexOrd.getClient({
 
 var order = null;
 
+
+
+
 var EventEmitter = require('events').EventEmitter;
 var ee = new EventEmitter();
 ee.on("orderBook", fnLibros);
@@ -52,6 +55,17 @@ var swBLoqueo = false;
 const cluster = require('cluster');
 const Poloniex = require('poloniex-api-node');
 let poloniex = new Poloniex('Z3QXH3L0-AR8VP0ZA-PTR8VH8C-PBQO5LQU', '23b36c259b7a1af19dbf3b4bd444fd19e182637abd14fb62d1d784a711898939295b2fd96665a586c0d604f3296ba74731c029cddc6fb6d73b76a2b9f8744194');
+
+
+cluster.setupMaster({
+				  exec: 'ordenes.js',    
+				  args: [],
+				  silent: false
+			  });
+
+var arrOrdenes = [];
+var wk = cluster.fork();
+
 
 var contBooks = 0;
 process.on('message', (msgReq) => {

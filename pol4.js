@@ -11,7 +11,8 @@ var order = null;
 var EventEmitter = require('events').EventEmitter;
 var ee = new EventEmitter();
 ee.on("orderBook", fnLibros);
-
+ee.on('orderBookRemove', orderBookRemove);
+ee.on('orderBookModify', orderBookModify);
 var salir = '';
 
 
@@ -110,19 +111,11 @@ poloniex.on('message', (channelName, data, seq) => {
 				var res = {};
 				var remate = objCriptos['USDT_' + monedas[1]];
 				if(remate){
+					var evalMejor;
 					for(var str in obj){					
-						
-						
-						
-						/**************** CASO ESPERA ****************/	
-						
-						
+											
 						var ref = str.split('_')[0];
 						if(objCriptos['USDT_' + ref] && objCriptos[str]['lowestAsk'] && objCriptos['USDT_' + ref]['lowestAsk']){
-							
-							
-							
-							
 							
 							var precioTraspasando = (1 - 0.0015 / 0.9985) * remate['lowestAsk'] * (1 - 0.0025 / 0.9975);
 							
@@ -134,27 +127,14 @@ poloniex.on('message', (channelName, data, seq) => {
 							if(precioTraspasando - precioDirecto > 0){
 								console.log("[ " + evaluacion.toFixed(8) + " -------- " + (precioTraspasando - precioDirecto) + " ]");
 							}
-								
-							
-							
-							
 							//console.log(precioDirecto);
 							if(precioTraspasando - precioDirecto > 0){// && (precioTraspasando - precioDirecto) * 100 / precioDirecto > 0.09
+								if(!evalMejor){
+									evalMejor = {gasto: 'USDT_' + ref, ope: str, ganancia: 'USDT_' + monedas[1], result: precioTraspasando - precioDirecto};
+								} else if(precioTraspasando - precioDirecto > evalMejor.result){
+									evalMejor = {gasto: 'USDT_' + ref, ope: str, ganancia: 'USDT_' + monedas[1], result: precioTraspasando - precioDirecto};
+								}
 								
-								
-								msg = [];
-								msg[0] = 'USDT_' + ref;
-								msg[1] = str;
-								msg[2] = 'USDT_' + monedas[1];
-								
-								console.log(msg);
-								
-								poloniex.subscribe('USDT_' + ref);
-								poloniex.subscribe(str);
-								poloniex.subscribe('USDT_' + monedas[1]);
-								poloniex.unsubscribe('ticker');		
-								console.log("SUSCRITOS");										
-								break;
 							}
 											
 						}
@@ -162,6 +142,22 @@ poloniex.on('message', (channelName, data, seq) => {
 						
 						/************************************************/
 						//res[str] = {objCriptos[data.currencyPair].objCriptos['USDT_' + str]}
+					}	
+					if(evalMejor){
+						
+						msg = [];
+						msg[0] = evalMejor.gasto;
+						msg[1] = evalMejor.ope;
+						msg[2] = evalMejor.ganancia;
+						
+						console.log(msg);
+						
+						poloniex.subscribe(msg[0]);
+						poloniex.subscribe(msg[1]);
+						poloniex.subscribe(msg[2]);
+						poloniex.unsubscribe('ticker');		
+						console.log("SUSCRITOS");	
+						evalMejor = null;
 					}						
 				}	
 			}
@@ -170,13 +166,16 @@ poloniex.on('message', (channelName, data, seq) => {
 	}
 		
 	  
-} else if(swOperacion == false) {	   
+} else {	   
 	    console.log("*******************************************************************************");	
 		var  i = 0;
 		for(var obj of data){
 			console.log(obj.type);			
 			//console.log(channelName);
-			ee.emit(obj.type, channelName, obj);			
+			if(msg[0] == channelName || msg[1] == channelName || msg[2] == channelName){
+				ee.emit(obj.type, channelName, obj);	
+			}
+						
 		}	   
 	} 
 });
@@ -200,6 +199,43 @@ function orderBookRemove(channelName, obj){
 		}
 		
 		//console.log("NO ENCONTRADO");
+		if(order && msg[1] == channelName){
+			if(order.rate == obj.data.rate){
+				var objParam = {};
+				objParam.opt = 'buy';
+				objParam.data = {currencyPair: msg[0], rate: precioReferencia, amount: volRef};
+				arrOrdenes[1].send(objParam);										
+				
+				objParam.opt = 'sell';
+				objParam.data = {currencyPair: msg[2], rate: precioTransada, amount: volRemate};
+				
+				arrOrdenes[2].send(objParam);			
+			}
+		}
+		if(order && fnDiferencia() < 0){
+			
+			if(swBLoqueo == false){
+				console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE  DIFERENCIA = " + fnDiferencia());
+				fsLauncher.appendFileSync('./' + msg[1] + '.txt', "CANCELANDO ORDEN " + order.orderNumber + " PORQUE  DIFERENCIA = " + fnDiferencia()+ "\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+				swBLoqueo = true;
+				fnCancelacion();
+				poloniex.unsubscribe(msg[0]);
+				poloniex.unsubscribe(msg[1]);
+				poloniex.unsubscribe(msg[2]);
+				//ee.removeListener('orderBookRemove', orderBookRemove);
+				//ee.removeListener('orderBookModify', orderBookModify);
+				poloniex.subscribe('ticker');
+				salir = 'Salir';
+				swOperacion = false;
+				order = null	
+				countOrdenes = 0;
+				
+			}
+			
+		}
 	}
 	
 	//if(obj.data.type == 'bid'){
@@ -210,33 +246,7 @@ function orderBookRemove(channelName, obj){
 	
 	
 	
-	if(order && msg[1] == channelName){
-		if(order.rate == obj.data.rate){
-			var objParam = {};
-			objParam.opt = 'buy';
-			objParam.data = {currencyPair: msg[0], rate: precioReferencia, amount: volRef};
-			arrOrdenes[1].send(objParam);										
-			
-			objParam.opt = 'sell';
-			objParam.data = {currencyPair: msg[2], rate: precioTransada, amount: volRemate};
-			
-			arrOrdenes[2].send(objParam);			
-		}
-	}
-	if(order && fnDiferencia() < 0){
-		
-		if(swBLoqueo == false){
-			console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE  DIFERENCIA = " + fnDiferencia());
-			fsLauncher.appendFileSync('./' + msg[1] + '.txt', "CANCELANDO ORDEN " + order.orderNumber + " PORQUE  DIFERENCIA = " + fnDiferencia()+ "\n", (err) => {
-			if (err) throw err;
-				////console.log('The "data to append" was appended to file!');
-			});
-			swBLoqueo = true;
-			fnCancelacion();
-			
-		}
-		
-	}
+	
 
 
 }
@@ -244,141 +254,154 @@ function orderBookRemove(channelName, obj){
 
 
 function orderBookModify(channelName, obj){
-	console.log(channelName + 'HHHHHHHHH');
-	if(obj.data.type == 'ask'){
-		if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
-			//console.log("ES IGUAL AL [0]");
-			books[channelName][obj.data.type + 's'][0].amount = obj.data.amount;
-			
-		} else if(obj.data.rate < books[channelName][obj.data.type + 's'][0].rate){
-			//console.log("ES MENOR");
-			books[channelName][obj.data.type + 's'].unshift({rate: obj.data.rate, amount: obj.data.amount});
-			
-		} else if(obj.data.rate > books[channelName][obj.data.type + 's'][0].rate && obj.data.rate < books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate){
-			//console.log("ESTA EN EL LIBRO");
-			//console.log(books[channelName][obj.data.type + 's'].length);
-			for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
-				let reg = books[channelName][obj.data.type + 's'][j];
-				if(reg.rate == obj.data.rate){
-					//console.log("ENCONTRADO EN " + j);
-					reg.amount = obj.data.amount;
-					break;
-				} else if(reg.rate > obj.data.rate){
-					//console.log(reg.rate + " > " + obj.data.rate);
-					//console.log(books[channelName][obj.data.type + 's']);
-					books[channelName][obj.data.type + 's'].splice(j, 0, {rate: obj.data.rate, amount: obj.data.amount});
-					break;
-				}
+	console.log(channelName + '  HHHHHHHHH  ' + obj.data.type + " ES IGUAL A " + msg[1] + " ? ");
+	if(books[channelName]){
+		if(obj.data.type == 'ask'){
+			if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
+				//console.log("ES IGUAL AL [0]");
+				books[channelName][obj.data.type + 's'][0].amount = obj.data.amount;
 				
-			}
-			//console.log("SALI");
-		} else {
-			//console.log("MAYOR AL LIBRO");
-			books[channelName][obj.data.type + 's'].push({rate: obj.data.rate, amount: obj.data.amount});
-			
-		}	
-	} else {
-		if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
-			//console.log("ES IGUAL AL [0]");
-			books[channelName][obj.data.type + 's'][0].amount = obj.data.amount;
-			
-		} else if(obj.data.rate > books[channelName][obj.data.type + 's'][0].rate){
-			//console.log("ES MAYOR");
-			books[channelName][obj.data.type + 's'].unshift({rate: obj.data.rate, amount: obj.data.amount});
-			
-		} else if(obj.data.rate < books[channelName][obj.data.type + 's'][0].rate && obj.data.rate > books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate){
-			//console.log("ESTA EN EL LIBRO");
-			//console.log(books[channelName][obj.data.type + 's'].length);
-			for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
-				let reg = books[channelName][obj.data.type + 's'][j];
-				if(reg.rate == obj.data.rate){
-					//console.log("ENCONTRADO EN " + j);
-					reg.amount = obj.data.amount;
-					break;
-				} else if(reg.rate < obj.data.rate){
-					//console.log(reg.rate + " < " + obj.data.rate);
-					//console.log(books[channelName][obj.data.type + 's']);
-					books[channelName][obj.data.type + 's'].splice(j, 0, {rate: obj.data.rate, amount: obj.data.amount});
-					break;
-				}
+			} else if(obj.data.rate < books[channelName][obj.data.type + 's'][0].rate){
+				//console.log("ES MENOR");
+				books[channelName][obj.data.type + 's'].unshift({rate: obj.data.rate, amount: obj.data.amount});
 				
-			}
-			//console.log("SALI");
+			} else if(obj.data.rate > books[channelName][obj.data.type + 's'][0].rate && obj.data.rate < books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate){
+				//console.log("ESTA EN EL LIBRO");
+				//console.log(books[channelName][obj.data.type + 's'].length);
+				for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
+					let reg = books[channelName][obj.data.type + 's'][j];
+					if(reg.rate == obj.data.rate){
+						//console.log("ENCONTRADO EN " + j);
+						reg.amount = obj.data.amount;
+						break;
+					} else if(reg.rate > obj.data.rate){
+						//console.log(reg.rate + " > " + obj.data.rate);
+						//console.log(books[channelName][obj.data.type + 's']);
+						books[channelName][obj.data.type + 's'].splice(j, 0, {rate: obj.data.rate, amount: obj.data.amount});
+						break;
+					}
+					
+				}
+				//console.log("SALI");
+			} else {
+				//console.log("MAYOR AL LIBRO");
+				books[channelName][obj.data.type + 's'].push({rate: obj.data.rate, amount: obj.data.amount});
+				
+			}	
 		} else {
-			//console.log("MAYOR AL LIBRO");
-			books[channelName][obj.data.type + 's'].push({rate: obj.data.rate, amount: obj.data.amount});
-			
-		}	
+			if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
+				//console.log("ES IGUAL AL [0]");
+				books[channelName][obj.data.type + 's'][0].amount = obj.data.amount;
+				
+			} else if(obj.data.rate > books[channelName][obj.data.type + 's'][0].rate){
+				//console.log("ES MAYOR");
+				books[channelName][obj.data.type + 's'].unshift({rate: obj.data.rate, amount: obj.data.amount});
+				
+			} else if(obj.data.rate < books[channelName][obj.data.type + 's'][0].rate && obj.data.rate > books[channelName][obj.data.type + 's'][books[channelName][obj.data.type + 's'].length - 1].rate){
+				//console.log("ESTA EN EL LIBRO");
+				//console.log(books[channelName][obj.data.type + 's'].length);
+				for(let j = 0; j < books[channelName][obj.data.type + 's'].length; j++){
+					let reg = books[channelName][obj.data.type + 's'][j];
+					if(reg.rate == obj.data.rate){
+						//console.log("ENCONTRADO EN " + j);
+						reg.amount = obj.data.amount;
+						break;
+					} else if(reg.rate < obj.data.rate){
+						//console.log(reg.rate + " < " + obj.data.rate);
+						//console.log(books[channelName][obj.data.type + 's']);
+						books[channelName][obj.data.type + 's'].splice(j, 0, {rate: obj.data.rate, amount: obj.data.amount});
+						break;
+					}
+					
+				}
+				//console.log("SALI");
+			} else {
+				//console.log("MAYOR AL LIBRO");
+				books[channelName][obj.data.type + 's'].push({rate: obj.data.rate, amount: obj.data.amount});
+				
+			}	
+		}
+		
+		if(msg[1] == channelName){
+			if(order){
+				if(order.rate == obj.data.rate){
+					if(swBLoqueo == false){
+						swBLoqueo = true;
+						console.log("CONSULTA ORDENES " + channelName);
+						clientOrd.returnOpenOrders({currencyPair: channelName}).then(response => {
+							const { status, data } = response;
+							  
+							console.log(data);
+							swBLoqueo = false;
+							var volRef = 1 / precioReferencia;
+							volRef = volRef.toFixed(8);
+							//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
+							var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
+							volOP = volOP.toFixed(8);
+							console.log({currencyPair: msg[1], rate: precioOperacion, amount: volOP});	
+							volRemate = volOP * (1 - 0.0025 / 0.9975) * precioTransada;
+							volRemate = volRemate.toFixed(8);
+							
+							
+							if(data.length == 0 && order){
+								var objParam = {};
+								objParam.opt = 'buy';
+								objParam.data = {currencyPair: msg[0], rate: precioReferencia, amount: volRef};
+								arrOrdenes[1].send(objParam);										
+								
+								objParam.opt = 'sell';
+								objParam.data = {currencyPair: msg[2], rate: precioTransada, amount: volRemate};
+								
+								arrOrdenes[2].send(objParam);
+								
+								}
+							  
+						  
+							  })
+						.catch(err => {
+						  //console.error(err);
+						  swBLoqueo = false;
+						});
+					}
+						
+					
+				} else if(order.rate < obj.data.rate){
+					
+					
+					if(swBLoqueo == false){
+						console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE " + order.rate + " < " + obj.data.rate + " Y DIFERENCIA = " + fnDiferencia());
+						swBLoqueo = true;
+						fnCancelacion();
+						
+					}
+					
+				} 
+			} else {
+				var r = fnDiferencia();
+				if(r > 0){
+					console.log('***SE EJECUTA***');
+					console.log(order);
+					fnEjecucion();
+					//exit;
+				} else {
+					salir = 'Salir';
+					swOperacion = false;
+					poloniex.unsubscribe(msg[0]);
+					poloniex.unsubscribe(msg[1]);
+					poloniex.unsubscribe(msg[2]);
+					//ee.removeListener('orderBookRemove', orderBookRemove);
+					//ee.removeListener('orderBookModify', orderBookModify);
+					poloniex.subscribe('ticker');
+					salir = 'Salir';
+					swOperacion = false;
+					order = null	
+					countOrdenes = 0;
+								
+				}
+			}	
+		}
 	}
 	
-	if(msg[1] == channelName){
-		if(order){
-			if(order.rate == obj.data.rate){
-				if(swBLoqueo == false){
-					swBLoqueo = true;
-					console.log("CONSULTA ORDENES " + channelName);
-					clientOrd.returnOpenOrders({currencyPair: channelName}).then(response => {
-						const { status, data } = response;
-						  
-						console.log(data);
-						swBLoqueo = false;
-						var volRef = 1 / precioReferencia;
-						volRef = volRef.toFixed(8);
-						//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
-						var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
-						volOP = volOP.toFixed(8);
-						console.log({currencyPair: msg[1], rate: precioOperacion, amount: volOP});	
-						volRemate = volOP * (1 - 0.0025 / 0.9975) * precioTransada;
-						volRemate = volRemate.toFixed(8);
-						
-						
-						if(data.length == 0 && order){
-							var objParam = {};
-							objParam.opt = 'buy';
-							objParam.data = {currencyPair: msg[0], rate: precioReferencia, amount: volRef};
-							arrOrdenes[1].send(objParam);										
-							
-							objParam.opt = 'sell';
-							objParam.data = {currencyPair: msg[2], rate: precioTransada, amount: volRemate};
-							
-							arrOrdenes[2].send(objParam);
-							
-							}
-						  
-					  
-						  })
-					.catch(err => {
-					  //console.error(err);
-					  swBLoqueo = false;
-					});
-				}
-					
-				
-			} else if(order.rate < obj.data.rate){
-				
-				
-				if(swBLoqueo == false){
-					console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE " + order.rate + " < " + obj.data.rate + " Y DIFERENCIA = " + fnDiferencia());
-					swBLoqueo = true;
-					fnCancelacion();
-					
-				}
-				
-			} 
-		} else {
-			var r = fnDiferencia();
-			if(r > 0){
-				//console.log(order);
-				fnEjecucion();
-				//exit;
-			} else {
-				salir = 'Salir';
-				swOperacion = false;
-				
-				countOrdenes = 0;			
-			}
-		}	
-	}
 	
 					
 					
@@ -445,8 +468,9 @@ function fnLibros(channelName, obj){
 
 	contBooks++;
 	if(contBooks == 3){
-		contBooks = 0;
+		
 		var r = fnDiferencia();
+		contBooks = 0;
 		if(r > 0){
 
 /***************************** TEST 1 USD **************************************/
@@ -504,8 +528,7 @@ function fnLibros(channelName, obj){
 						swBLoqueo = false;
 						
 						console.log("INSCRITOS EVENTOS");
-						ee.on('orderBookRemove', orderBookRemove);
-						ee.on('orderBookModify', orderBookModify);
+						
 					  }
 						
 						
@@ -538,11 +561,9 @@ function fnLibros(channelName, obj){
 			
 		} else {
 			console.log("PERDIDA DE DIFERENCIA: " + r);
-			salir = 'Salir';
-			swOperacion = false;
-			order = null	
-			countOrdenes = 0;
-										
+			poloniex.unsubscribe('all');
+			console.log("DESUSCRIBO");
+			poloniex.subscribe('ticker');
 		}
 
 
@@ -575,60 +596,57 @@ poloniex.openWebSocket({ version: 2 });
 var opeComisPeg = (1 - 0.0015 / 0.9985);
 function fnDiferencia(){
 	
-	
-	
-	
-	volReferencia = books[msg[0]]["asks"][1].amount;
-	precioReferencia = books[msg[0]]["asks"][1].rate;
+	if(contBooks == 3){
+		console.log(msg[0]);
+		volReferencia = books[msg[0]]["asks"][1].amount;
+		precioReferencia = books[msg[0]]["asks"][1].rate;
+			
 		
-	
-	
 		
-	volOperacion = books[msg[1]][opePeg][1].amount;
-	//console.log("PRECIO ANTERIOR: " + precioOperacion);
-	if(order){
-		precioOperacion = order.rate;
-	} else {
-		precioOperacion = Number(books[msg[1]][opePeg][0].rate);
-		precioOperacion = precioOperacion.toFixed(8);	
+			
+		volOperacion = books[msg[1]][opePeg][1].amount;
+		//console.log("PRECIO ANTERIOR: " + precioOperacion);
+		if(order){
+			precioOperacion = order.rate;
+		} else {
+			//precioOperacion = Number(books[msg[1]][opePeg][0].rate);
+			precioOperacion = Number((books[msg[1]]['asks'][0].rate - books[msg[1]]['bids'][0].rate) / 2) + Number(books[msg[1]]['bids'][0].rate);
+			precioOperacion = precioOperacion.toFixed(8);	
+		}
+		
+		//console.log(reg);
+		//console.log("NUEVO PRECIO: " + precioOperacion);
+			
+		
+		
+		
+		
+		console.log(msg[2]);	
+		volTransada = books[msg[2]]["bids"][1].amount;
+		precioTransada = books[msg[2]]["bids"][1].rate;
+		
+		var retorno = opeComisPeg * precioTransada * (1 - 0.0025 / 0.9975);
+		//console.log("Transada:  " + precioTransada);
+		//console.log("RETORNO:   " + retorno);	
+		var gasto = precioReferencia * (1 + 0.0025 / 0.9975) * precioOperacion;
+		//console.log("Referencia:" + precioReferencia);
+		//console.log("Operacion: " + precioOperacion);
+		//console.log("GASTO:     " + gasto);	
+		
+		
+		
+		
+		//console.log("DIFERENCIA : " + (retorno - gasto));
+		
+		if(retorno - gasto < 0){
+			
+		}
+		
+		return retorno - gasto;// > 0 ? true : false;
 	}
+	console.log("AUN NO DESUBSCRIBO");
+	return -1;
 	
-	//console.log(reg);
-	//console.log("NUEVO PRECIO: " + precioOperacion);
-		
-	
-	
-	
-	
-		
-	volTransada = books[msg[2]]["bids"][1].amount;
-	precioTransada = books[msg[2]]["bids"][1].rate;
-	
-	var retorno = opeComisPeg * precioTransada * (1 - 0.0025 / 0.9975);
-	//console.log("Transada:  " + precioTransada);
-	//console.log("RETORNO:   " + retorno);	
-	var gasto = precioReferencia * (1 + 0.0025 / 0.9975) * precioOperacion;
-	//console.log("Referencia:" + precioReferencia);
-	//console.log("Operacion: " + precioOperacion);
-	//console.log("GASTO:     " + gasto);	
-	
-	
-	
-	
-	//console.log("DIFERENCIA : " + (retorno - gasto));
-	
-	if(retorno - gasto < 0){
-		console.log("BUSCANDO....")
-		console.log(msg);
-		poloniex.unsubscribe(msg[0]);
-		poloniex.unsubscribe(msg[1]);
-		poloniex.unsubscribe(msg[2]);
-		ee.removeListener('orderBookRemove', orderBookRemove);
-		ee.removeListener('orderBookModify', orderBookModify);
-		poloniex.subscribe('ticker');
-	}
-	
-	return retorno - gasto;// > 0 ? true : false;
 }
 
 var countOrdenes = 0;
@@ -641,11 +659,12 @@ function fnOrdenes(msg){
 				swOperacion = false;
 				poloniex.unsubscribe('all');
 				/*poloniex.unsubscribe(msg[1]);
-				poloniex.unsubscribe(msg[2]);*/
+				poloniex.unsubscribe(msg[2]);
 				ee.removeListener('orderBookRemove', orderBookRemove);
-				ee.removeListener('orderBookModify', orderBookModify);
+				ee.removeListener('orderBookModify', orderBookModify);*/
 				poloniex.subscribe('ticker');
 				countOrdenes = 0;
+				order = null;
 			}
 			
         break;
