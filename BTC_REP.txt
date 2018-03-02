@@ -49,3 +49,9 @@ SIN ORDEN
 
 
 {currencyPair: BTC_REP, rate: 0.00426681, amount: 0.04251285}
+{currencyPair: BTC_REP, rate: 0.00430727, amount: 0.04231961}
+{currencyPair: BTC_REP, rate: 0.00430823, amount: 0.04233102}
+{currencyPair: BTC_REP, rate: 0.00432947, amount: 0.04163261}
+{currencyPair: BTC_REP, rate: 0.00429627, amount: 0.04181966}
+{currencyPair: BTC_REP, rate: 0.00428033, amount: 0.04181926}
+NUEVA ORDEN: 157744970301

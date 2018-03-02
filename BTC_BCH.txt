@@ -1,0 +1,14 @@
+{currencyPair: BTC_BCH, rate: 0.11765030, amount: 0.00154410}
+{currencyPair: BTC_BCH, rate: 0.11630781, amount: 0.00155712}
+{currencyPair: BTC_BCH, rate: 0.11630781, amount: 0.00155712}
+{currencyPair: BTC_BCH, rate: 0.11631031, amount: 0.00155708}
+{currencyPair: BTC_BCH, rate: 0.11633014, amount: 0.00155682}
+{currencyPair: BTC_BCH, rate: 0.11633014, amount: 0.00155622}
+{currencyPair: BTC_BCH, rate: 0.11633014, amount: 0.00155622}
+{currencyPair: BTC_BCH, rate: 0.11637011, amount: 0.00155500}
+{currencyPair: BTC_BCH, rate: 0.11659956, amount: 0.00153312}
+{currencyPair: BTC_BCH, rate: 0.11615253, amount: 0.00154340}
+NUEVA ORDEN: 62107157862
+{currencyPair: BTC_BCH, rate: 0.11554640, amount: 0.00155547}
+NUEVA ORDEN: 62127454545
+CANCELACION EXITOSA de 62127454545

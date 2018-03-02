@@ -30,8 +30,8 @@ var objOperacion = {};
 var swOperacion = false;
 
 
-/*
-clientOrd.returnOpenOrders({currencyPair: 'BTC_ETC'}).then(response => {
+
+/*clientOrd.returnOpenOrders({currencyPair: 'BTC_ETC'}).then(response => {
 							  const { status, data } = response;
 							  console.log(data);
 							  
@@ -39,8 +39,13 @@ clientOrd.returnOpenOrders({currencyPair: 'BTC_ETC'}).then(response => {
 							  
 						  })
 						  .catch(err => console.error(err));	*/
-/*
+var x = 2 / 11110.77129858;
 
+
+console.log(x);
+console.log(x.toFixed(8));
+						  
+						  
 clientOrd.sell({currencyPair: 'USDT_BTC', rate: 15000, amount: 0.001, nonce: 9196535984736059393})
       .then(response => {
           const { status, data } = response;
@@ -68,7 +73,7 @@ clientOrd.sell({currencyPair: 'USDT_BTC', rate: 15000, amount: 0.001, nonce: 919
       .catch(err => console.error(err));
 	  
 	  
-*/
+
 
 
  

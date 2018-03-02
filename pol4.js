@@ -12,8 +12,8 @@ var order = null;
 var EventEmitter = require('events').EventEmitter;
 var ee = new EventEmitter();
 ee.on("orderBook", fnLibros);
-ee.on('orderBookRemove', orderBookRemove);
-ee.on('orderBookModify', orderBookModify);
+/*ee.on('orderBookRemove', orderBookRemove);
+ee.on('orderBookModify', orderBookModify);*/
 var salir = '';
 
 
@@ -25,7 +25,10 @@ var reg = 'ask';
 var libro = 'asks';
 var msg;
 var contBooks = 0;
-var opePeg = "asks"		
+var opePeg = "asks";
+
+var	volRef = 0;		
+var volOP = 0;
 		
 
 const Poloniex = require('poloniex-api-node');
@@ -138,11 +141,22 @@ poloniex.on('message', (channelName, data, seq) => {
 							
 							
 							var evaluacion2 = retorno - gasto;
-							//if(precioTraspasando - precioDirecto > 0){
-								console.log("[ " + evaluacion2.toFixed(8) + " ] ----> " + str);
+							
+							volRef = 1 / objCriptos['USDT_' + ref]['lowestAsk'];
+							volRef = volRef.toFixed(8);
+							
+							volOP = volRef * (1 - 0.0025 / 0.9975) / objCriptos[str]['lowestAsk'];
+							volOP = volOP.toFixed(8);
+							
+							volRemate = volOP * (1 - 0.0015 / 0.9985) * remate['highestBid'] * (1 - 0.0025 / 0.9975);
+							volRemate = volRemate.toFixed(8);
+							
+							
+							//if(volRemate - 1 > 0){
+								console.log("[ " + evaluacion2.toFixed(8) + " -------- " + (volRemate - 1) + " ] ----> " + str);
 							//}
 							//console.log(precioDirecto);
-							if(evaluacion2 > 0){// && (precioTraspasando - precioDirecto) * 100 / precioDirecto > 0.09
+							if(volRemate - 1 > 0){// && (precioTraspasando - precioDirecto) * 100 / precioDirecto > 0.09
 								if(!evalMejor){
 									evalMejor = {gasto: 'USDT_' + ref, ope: str, ganancia: 'USDT_' + monedas[1], result: evaluacion2, m1: objCriptos['USDT_' + ref]['lowestAsk'], m2: objCriptos[str]['highestBid'], m3: remate['lowestAsk']};
 								} else if(precioTraspasando - precioDirecto > evalMejor.result){
@@ -173,6 +187,7 @@ poloniex.on('message', (channelName, data, seq) => {
 						console.log("SUSCRITOS");	
 						evalMejor = null;
 						swOperacion = true;
+						contBooks = 0;
 					}						
 				}	
 			}
@@ -182,10 +197,10 @@ poloniex.on('message', (channelName, data, seq) => {
 		
 	  
 } else {	   
-	    console.log("*******************************************************************************");	
+	    
 		var  i = 0;
 		for(var obj of data){
-			console.log(obj.type);			
+			//console.log(obj.type);			
 			//console.log(channelName);
 			if((msg[0] == channelName || msg[1] == channelName || msg[2] == channelName) && swOperacion){
 				ee.emit(obj.type, channelName, obj);	
@@ -195,7 +210,9 @@ poloniex.on('message', (channelName, data, seq) => {
 				poloniex.unsubscribe(msg[1]);
 				poloniex.unsubscribe(msg[2]);
 				objCriptos = {};
-				poloniex.subscribe('ticker');	
+				//poloniex.subscribe('ticker');	
+				ee.removeListener('orderBookRemove', orderBookRemove);
+				ee.removeListener('orderBookModify', orderBookModify);
 				break;
 			}
 						
@@ -204,7 +221,7 @@ poloniex.on('message', (channelName, data, seq) => {
 });
 
 function orderBookRemove(channelName, obj){
-	console.log(channelName);
+	//console.log(channelName);
 	/*if(books[channelName]){
 		delete books[channelName][obj.data.type + 's'][obj.data.rate];	
 	}*/
@@ -236,15 +253,18 @@ function orderBookRemoveEjec(channelName, obj){
 	
 	if(msg[1] == channelName){
 		if(order.rate == obj.data.rate){
+			console.log("CANCELACION");
 			var objParam = {};
 			objParam.opt = 'buy';
+			console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
 			objParam.data = {currencyPair: msg[0], rate: precioReferencia, amount: volRef};
 			arrOrdenes[1].send(objParam);										
-			
+			console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate});
 			objParam.opt = 'sell';
 			objParam.data = {currencyPair: msg[2], rate: precioTransada, amount: volRemate};
 			
-			arrOrdenes[2].send(objParam);			
+			arrOrdenes[2].send(objParam);	
+			swOperacion = false;
 		}
 	}
 	fnDiferencia();
@@ -255,7 +275,7 @@ function orderBookRemoveEjec(channelName, obj){
 
 
 function orderBookModify(channelName, obj){
-	console.log(channelName + '  HHHHHHHHH  ' + obj.data.type + " ES IGUAL A " + msg[1] + " ? ");
+	//console.log(channelName + '  HHHHHHHHH  ' + obj.data.type + " ES IGUAL A " + msg[1] + " ? ");
 	if(books[channelName]){
 		if(obj.data.type == 'ask'){
 			if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
@@ -325,8 +345,8 @@ function orderBookModify(channelName, obj){
 		
 		var r = fnDiferencia();
 		if(r > 0){
-			console.log('***SE EJECUTA***');
-			console.log(order);
+			//console.log('***SE EJECUTA***');
+			//console.log(order);
 			orderBookModifyEjec(channelName, obj);
 		
 		} 		
@@ -334,39 +354,36 @@ function orderBookModify(channelName, obj){
 }
 
 function orderBookModifyEjec(channelName, obj){
-	if(msg[1] == channelName){
+	if(msg[1] == channelName && order){
 		
 		if(order.rate == obj.data.rate){
-			console.log("CONSULTA ORDENES " + swBLoqueo);
+			//console.log("CONSULTA ORDENES " + swBLoqueo);
 			if(swBLoqueo == false){
 				swBLoqueo = true;
-				console.log("CONSULTA ORDENES " + channelName);
+				//console.log("CONSULTA ORDENES " + channelName);
 				clientOrd.returnOpenOrders({currencyPair: channelName}).then(response => {
 					const { status, data } = response;
 					  
-					console.log(data);
-					swBLoqueo = false;
-					var volRef = 1 / precioReferencia;
-					volRef = volRef.toFixed(8);
-					//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
-					var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
-					volOP = volOP.toFixed(8);
-					console.log({currencyPair: msg[1], rate: precioOperacion, amount: volOP});	
-					volRemate = volOP * (1 - 0.0025 / 0.9975) * precioTransada;
-					volRemate = volRemate.toFixed(8);
+					//console.log(data);
+					
+					
 					
 					
 					if(data.length == 0 && order){
+						console.log("MODIFICACION");
 						var objParam = {};
 						objParam.opt = 'buy';
+						console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
 						objParam.data = {currencyPair: msg[0], rate: precioReferencia, amount: volRef};
 						arrOrdenes[1].send(objParam);										
-						
+						console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate});
 						objParam.opt = 'sell';
 						objParam.data = {currencyPair: msg[2], rate: precioTransada, amount: volRemate};
-						
+						swOperacion = false;
 						arrOrdenes[2].send(objParam);
 						
+						} else {
+							swBLoqueo = false;	
 						}
 					  
 				  
@@ -380,9 +397,9 @@ function orderBookModifyEjec(channelName, obj){
 			
 		} else if(order.rate < obj.data.rate){
 			
-			console.log("CANCELANDO ORDEN " + swBLoqueo);
+			//console.log("CANCELANDO ORDEN " + swBLoqueo);
 			if(swBLoqueo == false){
-				console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE " + order.rate + " < " + obj.data.rate + " Y DIFERENCIA = " + fnDiferencia());
+				//console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE " + order.rate + " < " + obj.data.rate + " Y DIFERENCIA = " + fnDiferencia());
 				swBLoqueo = true;
 				fnCancelacion();
 				
@@ -413,9 +430,9 @@ function fnSalir(){
 		
 		console.log("NO ENCONTRADO");
 	}
-	if(obj.data.type == 'bid'){
+	/*if(obj.data.type == 'bid'){
 		console.log(books[channelName]["bids"]);
-	}
+	}*/
 }
 
 
@@ -454,89 +471,13 @@ function fnLibros(channelName, obj){
 	contBooks++;
 	if(contBooks == 3){
 		
-		var r = fnDiferencia();
-		contBooks = 0;
-		if(r > 0){
-
-/***************************** TEST 1 USD **************************************/
-
-			
-			if(swBLoqueo == false && order == null){
-				console.log("PETICION DE ORDEN");
-				swBLoqueo = true;
-				//capital = capital * ((retorno - gasto) * 100 / gasto);
-										
-				var volRef = 2 / precioReferencia;
-				volRef = volRef.toFixed(8);
-				//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
-				var objParam = {};
-				objParam.opt = 'buy';
-				objParam.data = {currencyPair: msg[0], rate: precioReferencia, amount: volRef};
-				
-				
-				
-				var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
-				volOP = volOP.toFixed(8);
-				var precOper = ((books[msg[1]]['asks'][0].rate - books[msg[1]]['bids'][0].rate) / 2) + books[msg[1]]['bids'][0].rate;
-				console.log({currencyPair: msg[1], rate: precOper, amount: volOP});	
-				
-				
-				clientOrd.buy({currencyPair: msg[1], rate: precOper, amount: volOP/*, postOnly: 1*/})
-				  .then(response => {
-					  
-					  const { status, data } = response;
-					  console.log(data);
-					  
-					  if(data.error){
-						console.log("\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-						console.log("**** __ CANCELADA __****");
-						console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
-						/*ee.on('orderBookRemove', orderBookRemove);
-						ee.on('orderBookModify', orderBookModify);*/
-						swBLoqueo = false;
-					  } else if(data.resultingTrades.length > 0){
-						objParam.data = {currencyPair: msg[1], rate: precioOperacion, amount: volOP};															
-						arrOrdenes[1].send(objParam);										
-						volRemate = volOP * (1 - 0.0025 / 0.9975);
-						volRemate = volRemate.toFixed(8);
-						//console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate});	
-						objParam.opt = 'sell';
-						objParam.data = {currencyPair: msg[2], rate: precioTransada, amount: volRemate}
-						arrOrdenes[2].send(objParam);
-					  } else {
-						//clientOrd.cancelOrder(data.orderNumber);
-						console.log("NUEVA ORDEN: " + data.orderNumber);
-						order = {};
-						order.orderNumber = data.orderNumber;
-						
-						order.rate = precioOperacion;				
-						swBLoqueo = false;
-						
-						console.log("INSCRITOS EVENTOS");
-						
-					  }
-						
-						
-					  
-					  
-				  })
-				  .catch(err => {
-					  console.error(err)
-					  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "fnLibros\n\n\n\n\n", (err) => {
-									if (err) throw err;
-										////console.log('The "data to append" was appended to file!');
-									});	
-					  
-					  
-					 });	
-			}
-		} else {
-			console.log("PERDIDA DE DIFERENCIA: " + r);
-			
-		}
+		fnDiferencia();
+		ee.on('orderBookRemove', orderBookRemove);
+		ee.on('orderBookModify', orderBookModify);
+		
 
 
-		console.log("*******************************************************************************");	
+		//console.log("*******************************************************************************");	
 		
 		
 		
@@ -566,13 +507,12 @@ var opeComisPeg = (1 + 0.0015 / 0.9985);
 function fnDiferencia(){
 	
 	if(contBooks == 3){
-		console.log(msg[0]);
-		volReferencia = books[msg[0]]["asks"][0].amount;
-		precioReferencia = books[msg[0]]["asks"][0].rate;			
-		console.log(precioReferencia);
+		
+		
+		
 		
 			
-		volOperacion = books[msg[1]][opePeg][1].amount;
+		
 		//console.log("PRECIO ANTERIOR: " + precioOperacion);
 		if(order){
 			precioOperacion = order.rate;
@@ -581,7 +521,7 @@ function fnDiferencia(){
 			precioOperacion = Number((books[msg[1]]['asks'][0].rate - books[msg[1]]['bids'][0].rate) / 2) + Number(books[msg[1]]['bids'][0].rate);
 			precioOperacion = precioOperacion.toFixed(8);	
 		}
-		console.log(precioOperacion);
+		//console.log(precioOperacion);
 		//console.log(reg);
 		//console.log("NUEVO PRECIO: " + precioOperacion);
 			
@@ -589,37 +529,51 @@ function fnDiferencia(){
 		
 		
 		
-		console.log(msg[2]);	
-		volTransada = books[msg[2]]["bids"][0].amount;
+			
+		
 		precioTransada = books[msg[2]]["bids"][0].rate;
-		console.log(precioTransada);
 		
 		
-		//console.log("Transada:  " + precioTransada);
-		//console.log("RETORNO:   " + retorno);	
-		var gasto = (1 / (precioReferencia * (1 + 0.0025 / 0.9975))) / (precioOperacion * opeComisPeg);
+		precioReferencia = books[msg[0]]["asks"][0].rate;			
+		
+		
+		
+		
+		volRef = 2 / precioReferencia;
+		volRef = volRef.toFixed(8);
+		
+		volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
+		volOP = volOP.toFixed(8);
+		
+		volRemate = volOP * (1 - 0.0015 / 0.9985);
+		volRemate = volRemate.toFixed(8);
+		
+		
+		
+		
+		
+		/*var gasto = (1 / (precioReferencia * (1 + 0.0025 / 0.9975))) / (precioOperacion * opeComisPeg);
 		var retorno =  gasto * precioTransada * (1 - 0.0025 / 0.9975);
-		//console.log("Referencia:" + precioReferencia);
-		//console.log("Operacion: " + precioOperacion);
-		//console.log("GASTO:     " + gasto);	
+		*/
 		
+		var balance = (volRemate * (1 - 0.0025 / 0.9975) * precioTransada) - 2;
 		
-		
-		
-		console.log("DIFERENCIA : " + (retorno - gasto));
+		//console.log("DIFERENCIA : " + (retorno - gasto));
 		
 		if(order){
-			if(retorno - gasto < 0){
-				fnCancelacion();	
+			if(balance < 0){
+				console.log("DIFERENCIA : " + (balance));
+				fnCancelacion();
+				swOperacion = false;				
 			}			
-			swOperacion = false;
+			
 		} else {
 			fnEjecucion();
 		}
 		
-		return retorno - gasto;// > 0 ? true : false;
+		return balance;// > 0 ? true : false;
 	}
-	console.log("AUN NO DESUBSCRIBO");
+	console.log("AUN NO DESUBSCRIBO " + contBooks);
 	return -1;
 	
 }
@@ -649,11 +603,25 @@ function fnOrdenes(msg){
 }
 
 function fnCancelacion(){
+	swBLoqueo = true;
 	clientOrd.cancelOrder({orderNumber:order.orderNumber}).then(response => {
 	  const { status, data } = response;
 	  console.log(data);
 	  //process.send({ cmd: 'fin proceso', capital: capital });
-	  
+	  if(data.success == 0){
+			if(data.error == 'Invalid order number, or you are not the person who placed the order.'){
+				var objParam = {};
+				objParam.opt = 'buy';
+				console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
+				objParam.data = {currencyPair: msg[0], rate: precioReferencia, amount: volRef};
+				arrOrdenes[1].send(objParam);										
+				console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate});
+				objParam.opt = 'sell';
+				objParam.data = {currencyPair: msg[2], rate: precioTransada, amount: volRemate};
+				swOperacion = false;
+				arrOrdenes[2].send(objParam);
+			}
+	  }
 	  console.log("CANCELACION EXITOSA");
 	  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "CANCELACION EXITOSA de " + order.orderNumber + "\n", (err) => {
 			if (err) throw err;
@@ -687,21 +655,14 @@ function fnEjecucion(){
 		swBLoqueo = true;
 		//capital = capital * ((retorno - gasto) * 100 / gasto);
 								
-		var volRef = 2 / precioReferencia;
-		volRef = volRef.toFixed(8);
-		//console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef});
-		var volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
-		volOP = volOP.toFixed(8);
-		console.log({currencyPair: msg[1], rate: precioOperacion, amount: volOP});	
-		volRemate = volOP * (1 - 0.0025 / 0.9975) * precioTransada;
-		volRemate = volRemate.toFixed(8);
+		
 		//console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate});	
 		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "{currencyPair: " + msg[1] + ", rate: " + precioOperacion + ", amount: " + volOP + "}\n", (err) => {
 			if (err) throw err;
 				////console.log('The "data to append" was appended to file!');
 			});
-		var precOper = ((books[msg[1]]['asks'][0].rate - books[msg[1]]['bids'][0].rate) / 2) + books[msg[1]]['bids'][0].rate;
-		clientOrd.buy({currencyPair: msg[1], rate: precOper, amount: volOP, postOnly: 1})
+		var precOper = ((Number(books[msg[1]]['asks'][0].rate) - Number(books[msg[1]]['bids'][0].rate)) / 2) + Number(books[msg[1]]['bids'][0].rate);
+		clientOrd.buy({currencyPair: msg[1], rate: precOper, amount: volOP})
 			  .then(response => {
 				  
 				  const { status, data } = response;
@@ -709,19 +670,20 @@ function fnEjecucion(){
 				  
 				  if(data.error){
 					console.log("\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-					console.log("**** __ CANCELADA __****");
+					console.log("**** __ CANCELADA (fnEjecucion)__****");
 					console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n");
 					swBLoqueo = false;
 				  } else if(data.resultingTrades.length > 0){					
-					 
+				    console.log("EJECUCION");
+					 console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef})
+					var objParam = {};
 					objParam.data = {currencyPair: msg[0], rate: precioReferencia, amount: volRef};															
 					arrOrdenes[1].send(objParam);										
-					volRemate = volOP * (1 - 0.0025 / 0.9975);
-					volRemate = volRemate.toFixed(8);
-					//console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate});	
+					 console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate})
 					objParam.opt = 'sell';
 					objParam.data = {currencyPair: msg[2], rate: precioTransada, amount: volRemate};
-					arrOrdenes[2].send(objParam);					 
+					arrOrdenes[2].send(objParam);
+					swOperacion = false;					
 					 
 				  } else {
 					//clientOrd.cancelOrder(data.orderNumber);

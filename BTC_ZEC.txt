@@ -1,0 +1,7 @@
+{currencyPair: BTC_ZEC, rate: 0.03669700, amount: 0.00494520}
+{currencyPair: BTC_ZEC, rate: 0.03655915, amount: 0.00495975}
+{currencyPair: BTC_ZEC, rate: 0.03564294, amount: 0.00503883}
+{currencyPair: BTC_ZEC, rate: 0.03518641, amount: 0.00508720}
+NUEVA ORDEN: 107964036070
+{currencyPair: BTC_ZEC, rate: 0.03511850, amount: 0.00512601}
+NUEVA ORDEN: 107983972114

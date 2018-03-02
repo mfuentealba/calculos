@@ -1,0 +1,1 @@
+{currencyPair: ETH_ETC, rate: 0.03748868, amount: 0.06081786}
