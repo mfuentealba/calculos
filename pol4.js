@@ -568,7 +568,10 @@ function fnDiferencia(){
 			}			
 			
 		} else {
-			fnEjecucion();
+			if(balance > 0){
+					fnEjecucion();
+			}
+			
 		}
 		
 		return balance;// > 0 ? true : false;
