@@ -1,2 +1,0 @@
-{currencyPair: XMR_NXT, rate: 0.00066020, amount: 9.87514264}
-{currencyPair: XMR_NXT, rate: 0.00066252, amount: 9.69326867}

@@ -1,8 +1,8 @@
 const poloniexOrd = require('poloniex-exchange-api');
 
 const clientOrd = poloniexOrd.getClient({
-    publicKey : 'WZG48KNT-L35B2XGQ-CDCU7AG1-DFG3NWC9', // Your public key
-    privateKey: '966c91801fa03f37778de06e14b5fc6885a63f14220f446aaf698492df7da7b86556efe1751ce2083309348db66363664c2d22dbd82d664c7e6d6a74aa13677e', // Your private key
+    publicKey : 'V9UKNHPD-B34K0DFY-OR4J4EXK-INYEBUBX', // Your public key
+    privateKey: '0054838ebdd4d8c3bc8c3d6962a368c5ff562f49d2cfc0f28b2427efca5eb1f2b5919846f467b17cdfbcc2315ce2b863c99d4d6d6e1cfdef6d99edfb2971a447', // Your private key
 });
 
 
