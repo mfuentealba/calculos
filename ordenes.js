@@ -38,36 +38,44 @@ function fnOrden(msgReq){
 process.send({ cmd: process.pid });
 
 function fnCancelacion(){
-	clientOrd.cancelOrder({orderNumber:order.orderNumber}).then(response => {
-	  const { status, data } = response;
-	  console.log(data);
-	  //process.send({ cmd: 'fin proceso', capital: capital });
-	  
-	  console.log("CANCELACION EXITOSA");
-	  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "CANCELACION EXITOSA de " + order.orderNumber + "\n", (err) => {
-			if (err) throw err;
-				////console.log('The "data to append" was appended to file!');
-			});
-	  swBLoqueo = false;
-	  order = null;
-	  if(salir == 'Salir'){
-		  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "fnCancelacion\n\n\n\n\n", (err) => {
-			if (err) throw err;
-				////console.log('The "data to append" was appended to file!');
-			});
-		process.send({ cmd: 'fin proceso', capital: capital });
-		process.exit();	
-	  }
-	})
-	.catch(err => {
-		console.error(err);
-		console.log("ERROR CANCELACION");
-		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "ERROR CANCELACION\n", (err) => {
-			if (err) throw err;
-				////console.log('The "data to append" was appended to file!');
-			});
-		fnCancelacion()
-	});
+	if(swBLoqueo == false && order == null){
+		clientOrd.cancelOrder({orderNumber:order.orderNumber}).then(response => {
+		  const { status, data } = response;
+		  console.log(data);
+		  //process.send({ cmd: 'fin proceso', capital: capital });
+		  
+		  console.log("CANCELACION EXITOSA");
+		  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "CANCELACION EXITOSA de " + order.orderNumber + "\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+		  swBLoqueo = false;
+		  order = null;
+		  if(salir == 'Salir'){
+			  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "fnCancelacion\n\n\n\n\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+			process.send({ cmd: 'fin proceso', capital: capital });
+			process.exit();	
+		  }
+		})
+		.catch(err => {
+			console.error(err);
+			console.log("ERROR CANCELACION");
+			fsLauncher.appendFileSync('./' + msg[1] + '.txt', "ERROR CANCELACION\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+			fnCancelacion()
+		});
+	} else {
+		console.log("CANCELACION NO REALIZADA");
+		  fsLauncher.appendFileSync('./' + msg[1] + '.txt', "CANCELACION NO REALIZADA\n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+	}
 }
 
 
