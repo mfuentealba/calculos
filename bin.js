@@ -1,34 +1,32 @@
-const binance = require('../node-binance-api.js');
+const binance = require('node-binance-api');
 binance.options({
-  'APIKEY':'<api key>',
-  'APISECRET':'<api secret>'
+  'APIKEY':'tfdrBVQrUdxkvRLDaMA6HnmTSNMBSlZcnDkPDLdjOGdecEJaVYxDZFugmzH5H1wb',
+  'APISECRET':'0sxAG7s1t9YHxCBFJ91NiKyC1CKpZiA4rYyrR9sxAEwaxxhlXfR3aKUmkVMs41Dc'
 });
 
-// Get bid/ask prices
-//binance.allBookTickers(function(error, json) {
-//  console.log("allBookTickers",json);
-//});
+
 
 // Getting latest price of a symbol
+/*
 binance.prices(function(error, ticker) {
 	console.log("prices()", ticker);
 	console.log("Price of BNB: ", ticker.BNBBTC);
 });
-
+*/	
 // Getting list of current balances
-binance.balance(function(error, balances) {
+/*binance.balance(function(error, balances) {
 	console.log("balances()", balances);
 	if ( typeof balances.ETH !== "undefined" ) {
 		console.log("ETH balance: ", balances.ETH.available);
 	}
-});
+});*/
 
 // Getting bid/ask prices for a symbol
-//binance.bookTickers(function(error, ticker) {
-//	console.log("bookTickers()", ticker);
-//	console.log("Price of BNB: ", ticker.BNBBTC);
-//});
-
+/*binance.bookTickers(function(error, ticker) {
+	console.log("bookTickers()", ticker);
+	console.log("Price of BNB: ", ticker.BNBBTC);
+});
+*/
 // Get market depth for a symbol
 //binance.depth("SNMBTC", function(error, json) {
 //	console.log("market depth",json);
@@ -71,16 +69,17 @@ binance.balance(function(error, balances) {
 //binance.sell(symbol, quantity, 0, "MARKET");
 
 // Periods: 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
-binance.candlesticks("BNBBTC", "5m", function(error, ticks) {
+/*binance.candlesticks("BNBBTC", "5m", function(error, ticks) {
 	console.log("candlesticks()", ticks);
 	let last_tick = ticks[ticks.length - 1];
 	let [time, open, high, low, close, volume, closeTime, assetVolume, trades, buyBaseVolume, buyAssetVolume, ignored] = last_tick;
 	console.log("BNBBTC last close: "+close);
-});
+});*/
 
 
 // Maintain Market Depth Cache Locally via WebSocket
-binance.websockets.depthCache(["BNBBTC"], function(symbol, depth) {
+
+binance.websockets.depthCache(["BTCUSDT"], function(symbol, depth) {
 	let max = 10; // Show 10 closest orders only
 	let bids = binance.sortBids(depth.bids, max);
 	let asks = binance.sortAsks(depth.asks, max);

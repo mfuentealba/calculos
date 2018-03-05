@@ -18,7 +18,7 @@
     "cluster": "^0.7.7",
     "express": "^4.16.2",
     "https": "^1.0.0",
-    "node-binance-api": "^0.4.8",
+    "node-binance-api": "^0.4.22",
     "poloniex-api-node": "^1.8.1",
     "poloniex-exchange-api": "^0.4.0",
     "socket.io": "^2.0.4"
