@@ -2,8 +2,8 @@ const poloniexOrd = require('poloniex-exchange-api');
 var fsLauncher = require('fs');
 
 const clientOrd = poloniexOrd.getClient({
-    publicKey : 'ZSJMN2PC-CHDIRN2Q-QNEIGD5E-6IQSVNGK', // Your public key
-    privateKey: '0c6a560357d29eb001438d18783a73f3428f99516011b7f5e5511082b796c83ab7be50762b5ce525e4e45faeb9e6955e6a192efcd0c407087f6c61baba171701', // Your private key
+    publicKey : '0NP8Y42K-0OIG2UWY-Z3XYC9J8-YD716RQX', // Your public key
+    privateKey: '0e51040bbd62bb0b6b733424224a732bb21b4e2f89a6d41d95aab0b5e1bb032f1cf14fb3b2931da0e8932f9340149d1ca20280e2bc63e4679bef407f05d6ad60', // Your private key
 });
 
 var objCancel = {};
@@ -19,8 +19,8 @@ var salir = '';
 
 
 var books = {};
-var channelName = 'BTC_ETC';
-books[channelName] = {};
+
+
 var reg = 'ask';
 var libro = 'asks';
 var msg;
@@ -252,9 +252,9 @@ poloniex.on('message', (channelName, data, seq) => {
 
 
 function orderBookModify(channelName, obj){
-	//console.log(channelName + '  HHHHHHHHH  ' + obj.data.type + " ES IGUAL A " + msg[1] + " ? ");
-	//console.log(order);
-	if(books[channelName] && books[channelName][obj.data.type + 's']){
+	/*console.log(channelName + '  HHHHHHHHH  ' + obj.data.type + " ES IGUAL A " + msg[1] + " ? ");
+	console.log(books);*/
+	if(books[channelName]){
 		
 		if(obj.data.amount == 0){
 			if(books[channelName] && books[channelName]["asks"] && books[channelName]["bids"]){
@@ -308,6 +308,7 @@ function orderBookModify(channelName, obj){
 					
 				}	
 			} else {
+				//console.log(books[channelName][obj.data.type + 's'][0]);
 				if(obj.data.rate == books[channelName][obj.data.type + 's'][0].rate){
 					//console.log("ES IGUAL AL [0]");
 					books[channelName][obj.data.type + 's'][0].amount = obj.data.amount;
@@ -341,7 +342,7 @@ function orderBookModify(channelName, obj){
 				}	
 			}					
 		}
-		fnDiferencia(obj);		
+		fnDiferencia(obj, channelName);		
 	}
 		
 		
@@ -418,7 +419,7 @@ poloniex.openWebSocket({ version: 2 });
 
 
 var opeComisPeg = (1 + 0.0015 / 0.9985);
-function fnDiferencia(obj){
+function fnDiferencia(obj, channelName){
 	
 	if(contBooks == 3 && !swBLoqueo && books[channelName] && books[channelName][obj.data.type + 's']){	
 		
@@ -586,7 +587,7 @@ function fnDiferencia(obj){
 	}
 	//console.log("AUN NO DESUBSCRIBO " + contBooks);
 	
-	fsLauncher.appendFileSync('./' + msg[1] + '.txt', "XXXXXXX\n", (err) => {
+	fsLauncher.appendFileSync('./' + msg[1] + '.txt', "XXXXXXX " + contBooks + " " + swBLoqueo + " " + JSON.stringify(books[channelName]) + ' ' + obj.data.type + " " + channelName + "\n", (err) => {
 		if (err) throw err;
 			////console.log('The "data to append" was appended to file!');
 		});

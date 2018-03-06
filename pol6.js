@@ -2,8 +2,8 @@ const poloniexOrd = require('poloniex-exchange-api');
 var fsLauncher = require('fs');
 
 const clientOrd = poloniexOrd.getClient({
-    publicKey : '0NP8Y42K-0OIG2UWY-Z3XYC9J8-YD716RQX', // Your public key
-    privateKey: '0e51040bbd62bb0b6b733424224a732bb21b4e2f89a6d41d95aab0b5e1bb032f1cf14fb3b2931da0e8932f9340149d1ca20280e2bc63e4679bef407f05d6ad60', // Your private key
+    publicKey : 'PBMWDHM0-YCD05QGE-5JT1U02H-BWJ96QSM', // Your public key
+    privateKey: '840a5f51eaf0f75002d0292c205ad602c134a656667bcaa3c7b1fdedbe16e53c07089832f4b6967ed866841300c7ac083d790b446abd7327bade08b86d16a4eb', // Your private key
 });
 
 var objCancel = {};
@@ -30,6 +30,7 @@ function myStopFunction() {
 }
 
 var books = {};
+
 var reg = 'ask';
 var libro = 'asks';
 var msg;
@@ -66,7 +67,7 @@ var arrOrdenes = [];
 var wk = cluster.fork();
 
 wk.socket = this;
-//objOperacion[wk.process.pid] = [str, data.currencyPair, 'USDT_' + ref];
+//objOperacion[wk.process.pid] = [str, data.currencyPair, 'BTC_' + ref];
 arrOrdenes.push(wk);
 wk.on('message', fnOrdenes);
 
@@ -88,7 +89,18 @@ wk.on('message', fnOrdenes);
 				
 
 var objCriptos = {};
-var objRematablesUSDT = {ETC: 'ETC', XRP: 'XRP', ETH: 'ETH', LTC: 'LTC', BCH: 'BCH', STR: 'STR', XMR: 'XMR', ZEC: 'ZEC', NXT: 'NXT', DASH: 'DASH', REP: 'REP'};
+
+
+var arrC = ["BTC_AMP","BTC_ARDR","BTC_BCH","BTC_BCN","BTC_BCY","BTC_BELA","BTC_BLK","BTC_BTCD","BTC_BTM","BTC_BTS","BTC_BURST","BTC_CLAM","BTC_CVC","BTC_DASH","BTC_DCR","BTC_DGB","BTC_DOGE","BTC_EMC2","BTC_ETC","BTC_ETH","BTC_EXP","BTC_FCT","BTC_FLDC","BTC_FLO","BTC_GAME","BTC_GAS","BTC_GNO","BTC_GNT","BTC_GRC","BTC_HUC","BTC_LBC","BTC_LSK","BTC_LTC","BTC_MAID","BTC_NAV","BTC_NEOS","BTC_NMC","BTC_NXC","BTC_NXT","BTC_OMG","BTC_OMNI","BTC_PASC","BTC_PINK","BTC_POT","BTC_PPC","BTC_RADS","BTC_REP","BTC_RIC","BTC_SBD","BTC_SC","BTC_STEEM","BTC_STORJ","BTC_STR","BTC_STRAT","BTC_SYS","BTC_VIA","BTC_VRC","BTC_VTC","BTC_XBC","BTC_XCP","BTC_XEM","BTC_XMR","BTC_XPM","BTC_XRP","BTC_XVC","BTC_ZEC","BTC_ZRX","ETH_BCH","ETH_CVC","ETH_ETC","ETH_GAS","ETH_GNO","ETH_GNT","ETH_LSK","ETH_OMG","ETH_REP","ETH_STEEM","ETH_ZEC","ETH_ZRX","BTC_BCH","BTC_BTC","BTC_DASH","BTC_ETC","BTC_ETH","BTC_LTC","BTC_NXT","BTC_REP","BTC_STR","BTC_XMR","BTC_XRP","BTC_ZEC","XMR_BCN","XMR_BLK","XMR_BTCD","XMR_DASH","XMR_LTC","XMR_MAID","XMR_NXT","XMR_ZEC"];
+
+var objRematablesUSDT = {};
+
+for(var s = 0; s < arrC.length; s++){
+	var oj = arrC[s].split('_');
+	objRematablesUSDT[oj[1]] = oj[1];
+}
+
+
 poloniex.on('message', (channelName, data, seq) => {
   if (channelName === 'ticker') {
     objCriptos[data.currencyPair] = data;
@@ -99,21 +111,16 @@ poloniex.on('message', (channelName, data, seq) => {
 				});*/
 	if(swOperacion){
 		
-	} else if(data.currencyPair != 'USDT_BTC' && data.currencyPair != 'USDT_XMR' && data.currencyPair != 'USDT_ETH'){
+	} else if(data.currencyPair != 'BTC_XMR' && data.currencyPair != 'BTC_ETH'){
 		var monedas = data.currencyPair.split('_');
 		//console.log(data);
 		var change = 0;
 		var obj = {};
 		if(objRematablesUSDT[monedas[1]]){
-			/*if(objCriptos('USDT_' + monedas[1])){
-			obj['USDT_' + monedas[1]] = objCriptos('USDT_' + monedas[1]);
+			/*if(objCriptos('BTC_' + monedas[1])){
+			obj['BTC_' + monedas[1]] = objCriptos('BTC_' + monedas[1]);
 			change++;
 			} */ 
-			
-			if(objCriptos['BTC_' + monedas[1]]){
-				obj['BTC_' + monedas[1]] = objCriptos['BTC_' + monedas[1]];
-				change++;
-			}  
 			
 			if(objCriptos['XMR_' + monedas[1]]){
 				obj['XMR_' + monedas[1]] = objCriptos['XMR_' + monedas[1]];
@@ -127,18 +134,18 @@ poloniex.on('message', (channelName, data, seq) => {
 			
 			if(change > 1){
 				var res = {};
-				var remate = objCriptos['USDT_' + monedas[1]];
+				var remate = objCriptos['BTC_' + monedas[1]];
 				if(remate){
 					var evalMejor;
 					for(var str in obj){					
 											
 						var ref = str.split('_')[0];
-						if(objCriptos['USDT_' + ref] && objCriptos[str]['lowestAsk'] && objCriptos['USDT_' + ref]['lowestAsk']){
+						if(objCriptos['BTC_' + ref] && objCriptos[str]['lowestAsk'] && objCriptos['BTC_' + ref]['lowestAsk'] && objCriptos['USDT_BTC']['lowestAsk']){
 							
 							var precioTraspasando = (1 - 0.0025 / 0.9975) * remate['highestBid'] * (1 - 0.0025 / 0.9975);
 							
 							precioTraspasando = precioTraspasando.toFixed(8);
-							var precioDirecto = objCriptos['USDT_' + ref]['lowestAsk'] * (1 + 0.0025 / 0.9975) * objCriptos[str]['highestBid'];//(((objCriptos[str]['lowestAsk'] - objCriptos[str]['highestBid']) / 2) + objCriptos[str]['highestBid']);
+							var precioDirecto = objCriptos['BTC_' + ref]['lowestAsk'] * (1 + 0.0025 / 0.9975) * objCriptos[str]['highestBid'];//(((objCriptos[str]['lowestAsk'] - objCriptos[str]['highestBid']) / 2) + objCriptos[str]['highestBid']);
 							
 							precioDirecto = precioDirecto.toFixed(8);
 							
@@ -146,7 +153,7 @@ poloniex.on('message', (channelName, data, seq) => {
 							
 							
 							
-							var gasto =  (1 / (objCriptos['USDT_' + ref]['lowestAsk'] * (1 + 0.0025 / 0.9975))) / (objCriptos[str]['lowestAsk'] * (1 + 0.0015 / 0.9985));
+							var gasto =  (1 / (objCriptos['BTC_' + ref]['lowestAsk'] * (1 + 0.0025 / 0.9975))) / (objCriptos[str]['lowestAsk'] * (1 + 0.0015 / 0.9985));
 							gasto = gasto.toFixed(8);
 							var retorno = gasto * remate['highestBid'] * (1 - 0.0025 / 0.9975);
 							retorno = retorno.toFixed(8);
@@ -155,7 +162,7 @@ poloniex.on('message', (channelName, data, seq) => {
 							
 							
 							
-							volRef = 1 / objCriptos['USDT_' + ref]['lowestAsk'];
+							volRef = 1 / objCriptos['BTC_' + ref]['lowestAsk'];
 							volRef = volRef.toFixed(8);
 							
 							volOP = volRef * (1 - 0.0025 / 0.9975) / Number(objCriptos[str]['lowestAsk']);
@@ -172,15 +179,15 @@ poloniex.on('message', (channelName, data, seq) => {
 							if (err) throw err;
 								////console.log('The "data to append" was appended to file!');
 							});
-							if(volRemate > 0){
+							//if(volRemate > 0){
 								console.log("[ " + (volRemate) + " ] ----> " + str);
-							}
+							//}
 							//console.log(precioDirecto);
 							if(volRemate > 0){// && (precioTraspasando - precioDirecto) * 100 / precioDirecto > 0.09
 								if(!evalMejor){
-									evalMejor = {gasto: 'USDT_' + ref, ope: str, ganancia: 'USDT_' + monedas[1], result: volRemate, m1: objCriptos['USDT_' + ref]['lowestAsk'], m2: objCriptos[str]['highestBid'], m3: remate['lowestAsk']};
+									evalMejor = {gasto: 'BTC_' + ref, ope: str, ganancia: 'BTC_' + monedas[1], result: volRemate, m1: objCriptos['BTC_' + ref]['lowestAsk'], m2: objCriptos[str]['highestBid'], m3: remate['lowestAsk']};
 								} else if(volRemate > evalMejor.result){
-									evalMejor = {gasto: 'USDT_' + ref, ope: str, ganancia: 'USDT_' + monedas[1], result: volRemate};
+									evalMejor = {gasto: 'BTC_' + ref, ope: str, ganancia: 'BTC_' + monedas[1], result: volRemate};
 								}
 								
 							}
@@ -189,7 +196,7 @@ poloniex.on('message', (channelName, data, seq) => {
 						
 						
 						/************************************************/
-						//res[str] = {objCriptos[data.currencyPair].objCriptos['USDT_' + str]}
+						//res[str] = {objCriptos[data.currencyPair].objCriptos['BTC_' + str]}
 					}	
 					if(evalMejor){
 						console.log(evalMejor);
@@ -197,12 +204,14 @@ poloniex.on('message', (channelName, data, seq) => {
 						msg[0] = evalMejor.gasto;
 						msg[1] = evalMejor.ope;
 						msg[2] = evalMejor.ganancia;
+						msg[3] = objCriptos['USDT_BTC'];
 						
 						console.log(msg);
 						
 						poloniex.subscribe(msg[0]);
 						poloniex.subscribe(msg[1]);
 						poloniex.subscribe(msg[2]);
+						poloniex.subscribe(msg[3]);
 						poloniex.unsubscribe('ticker');		
 						console.log("SUSCRITOS");	
 						fsLauncher.appendFileSync('./' + msg[1] + '.txt', JSON.stringify(evalMejor) + "\n", (err) => {
@@ -263,7 +272,7 @@ poloniex.on('message', (channelName, data, seq) => {
 function orderBookModify(channelName, obj){
 	//console.log(channelName + '  HHHHHHHHH  ' + obj.data.type + " ES IGUAL A " + msg[1] + " ? ");
 	//console.log(order);
-	if(books[channelName]){
+	if(books[channelName] && books[channelName][obj.data.type + 's']){
 		
 		if(obj.data.amount == 0){
 			if(books[channelName] && books[channelName]["asks"] && books[channelName]["bids"]){
@@ -350,7 +359,7 @@ function orderBookModify(channelName, obj){
 				}	
 			}					
 		}
-		fnDiferencia(obj, channelName);		
+		fnDiferencia(obj);		
 	}
 		
 		
@@ -427,7 +436,7 @@ poloniex.openWebSocket({ version: 2 });
 
 
 var opeComisPeg = (1 + 0.0025 / 0.9975);
-function fnDiferencia(obj, channelName){
+function fnDiferencia(obj){
 	
 	if(contBooks == 3 && !swBLoqueo){	
 		
@@ -440,12 +449,16 @@ function fnDiferencia(obj, channelName){
 			ms = " sin una orden ";
 			precioOperacion = Number(books[msg[1]]['asks'][0].rate)/* + 0.00000001*/;/*Number((books[msg[1]]['asks'][0].rate - books[msg[1]]['bids'][0].rate) / 12) + Number(books[msg[1]]['bids'][0].rate);*/
 			precioOperacion = precioOperacion.toFixed(8);	
-		}		
+		}	
+
+
+		precioEnDolar = Number(books[msg[3]]['asks'][0].rate);
+		precioEnDolar = precioEnDolar.toFixed(8);	
 		
 		precioTransada = books[msg[2]]["bids"][0].rate;		
 		precioReferencia = books[msg[0]]["asks"][0].rate;		
 		
-		volRef = 2 / precioReferencia;
+		volRef = (2 / precioEnDolar)/ precioReferencia;
 		volRef = volRef.toFixed(8);
 		
 		volOP = volRef * (1 - 0.0025 / 0.9975) / precioOperacion;
@@ -558,7 +571,7 @@ function fnOrdenes(msg){
         default:
 			/*var obj = {};
 			obj.opt = 'sell';
-			obj.data = {currencyPair: 'USDT_BTC', rate: 15000, amount: 0.001};
+			obj.data = {currencyPair: 'BTC_BTC', rate: 15000, amount: 0.001};
 			this.send(obj);*/
         break;
     }
@@ -593,9 +606,9 @@ function fnEjecucion(st){
 		var objParam = {};
 		objParam.opt = 'buy';
 		objParam.data = {currencyPair: msg[1], rate: precOper, amount: volOP};															
-		arrOrdenes[0].send(objParam);										
-		console.log({currencyPair: msg[1], rate: precOper, amount: volOP})
-		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "PETICION DE ORDEN " + msg[2] + "\n" + JSON.stringify({currencyPair: msg[1], rate: precOper, amount: volOP}) + "\n", (err) => {
+		arrOrdenes[1].send(objParam);										
+		console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate})
+		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "PETICION DE ORDEN " + msg[2] + "\n" + JSON.stringify({currencyPair: msg[2], rate: precioTransada, amount: volRemate}) + "\n", (err) => {
 				if (err) throw err;
 					////console.log('The "data to append" was appended to file!');
 				});
@@ -606,8 +619,8 @@ function fnEjecucion(st){
 		objParam.opt = 'buy';
 		objParam.data = {currencyPair: msg[0], rate: Number(precioReferencia) /*- 0.00000001*/, amount: volRef};															
 		arrOrdenes[1].send(objParam);										
-		console.log({currencyPair: msg[0], rate: precioReferencia, amount: volRef})
-		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "PETICION DE ORDEN " + msg[2] + "\n" + JSON.stringify({currencyPair: msg[0], rate: precioReferencia, amount: volRef}) + "\n", (err) => {
+		console.log({currencyPair: msg[2], rate: precioTransada, amount: volRemate})
+		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "PETICION DE ORDEN " + msg[2] + "\n" + JSON.stringify({currencyPair: msg[2], rate: precioTransada, amount: volRemate}) + "\n", (err) => {
 				if (err) throw err;
 					////console.log('The "data to append" was appended to file!');
 				});
@@ -616,7 +629,7 @@ function fnEjecucion(st){
 		arrOrdenes[2].send(objParam);
 		swOperacion = false;					
 		order = null;
-		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "PETICION DE ORDEN " + msg[0] + "\n" + JSON.stringify({currencyPair: msg[2], rate: precioTransada, amount: volRemate}) + "\n", (err) => {
+		fsLauncher.appendFileSync('./' + msg[1] + '.txt', "PETICION DE ORDEN " + msg[0] + "\n" + JSON.stringify({currencyPair: msg[0], rate: precioReferencia, amount: volRef}) + "\n", (err) => {
 				if (err) throw err;
 					////console.log('The "data to append" was appended to file!');
 				});

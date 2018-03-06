@@ -82,6 +82,9 @@ binance.websockets.depthCache(["ETHUSDT"], function(symbol, depth) {
 });
 
 var validacionDatos = {};
+var sw = false;
+var acum = 0;
+var acum2 = 0;
 function fnCruce(orig, data, currencyPair, op){
 	if(!validacionDatos[currencyPair]){
 		validacionDatos[currencyPair] = {};
@@ -91,21 +94,32 @@ function fnCruce(orig, data, currencyPair, op){
 	validacionDatos[currencyPair].data = data;
 	if(validacionDatos['ETHUSDT'] && validacionDatos['BTCUSDT'] && validacionDatos['ETHBTC'] && validacionDatos['BTC_ETH']){
 		var result = 1 / binance.first(validacionDatos['BTCUSDT'].data);
-		result = result * (1 - 0.001 / 0.999) / validacionDatos['BTC_ETH'].data.lowestAsk;
-		result = result * (1 - 0.0025 / 0.9975) * binance.first(validacionDatos['ETHUSDT'].data);
+		result = result * (1 - 0.001 / 0.999) / validacionDatos['BTC_ETH'].data.highestBid;//lowestAsk;
+		result = result * (1 - 0.0015 / 0.9985) * binance.first(validacionDatos['ETHUSDT'].data);
 		result = result * (1 - 0.001 / 0.999);
 		result = result - 1;
 		
 		var result2 = 1 / binance.first(validacionDatos['BTCUSDT'].data);
-		result2 = result2 * (1 - 0.0005 / 0.9995) / binance.first(validacionDatos['ETHBTC'].data);
-		result2 = result2 * (1 - 0.0005 / 0.9995) * binance.first(validacionDatos['ETHUSDT'].data);
-		result2 = result2 * (1 - 0.0005 / 0.9995);
+		result2 = result2 * (1 - 0.001 / 0.999) / binance.first(validacionDatos['ETHBTC'].data);
+		result2 = result2 * (1 - 0.001 / 0.999) * binance.first(validacionDatos['ETHUSDT'].data);
+		result2 = result2 * (1 - 0.001 / 0.999);
 		result2 = result2 - 1;
-		
-		console.log("[ " + result + " :: " + result2 + " ]");
-		if(result > 0 || result2 > 0){
-			proccess.exit();
+		if((result > 0 || result2 > 0) && !sw){
+			console.log("*********************************************");
+			sw = true;
+			acum += Number(result) > 0 ? Number(result) : 0;
+			acum2 += Number(result2) > 0 ? Number(result2) : 0;
+			fsLauncher.appendFileSync('./bin.txt', " [ " + (acum) + " :: " + acum2 + " ]\n", (err) => {
+						if (err) throw err;
+							////console.log('The "data to append" was appended to file!');
+						});
 		}
+		if(result < 0 && result2 < 0 && sw){
+			console.log("*********************************************");
+			sw = false;
+		}
+		console.log("[ " + result + " :: " + result2 + " ]");
+		
 	}
 }
 
