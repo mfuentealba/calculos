@@ -10,7 +10,7 @@ const cluster = require('cluster');
 
 
 
-binance.websockets.depthCache(["IOTABTC"], function(symbol, depth) {
+binance.websockets.depthCache(["BNBBTC"], function(symbol, depth) {
 	let max = 10; // Show 10 closest orders only
 	let bids = binance.sortBids(depth.bids, max);
 	let asks = binance.sortAsks(depth.asks, max);
@@ -22,7 +22,7 @@ binance.websockets.depthCache(["IOTABTC"], function(symbol, depth) {
 	fnCruce('bin', asks, 'BNBBTC', 'buy');
 });
 
-binance.websockets.depthCache(["IOTABNB"], function(symbol, depth) {
+binance.websockets.depthCache(["ADXBNB"], function(symbol, depth) {
 	let max = 10; // Show 10 closest orders only
 	let bids = binance.sortBids(depth.bids, max);
 	let asks = binance.sortAsks(depth.asks, max);
@@ -31,10 +31,10 @@ binance.websockets.depthCache(["IOTABNB"], function(symbol, depth) {
 	console.log("bids", bids);
 	console.log("ask: "+binance.first(asks));
 	console.log("bid: "+binance.first(bids));*/
-	fnCruce('bin', asks, 'IOTABNB', 'buy');
+	fnCruce('bin', asks, 'ADXBNB', 'buy');
 });
 
-binance.websockets.depthCache(["BNBBTC"], function(symbol, depth) {
+binance.websockets.depthCache(["ADXBTC"], function(symbol, depth) {
 	let max = 10; // Show 10 closest orders only
 	let bids = binance.sortBids(depth.bids, max);
 	let asks = binance.sortAsks(depth.asks, max);
@@ -43,7 +43,7 @@ binance.websockets.depthCache(["BNBBTC"], function(symbol, depth) {
 	console.log("bids", bids);
 	console.log("ask: "+binance.first(asks));
 	console.log("bid: "+binance.first(bids));*/
-	fnCruce('bin', bids, 'IOTABTC', 'sell');
+	fnCruce('bin', bids, 'ADXBTC', 'sell');
 });
 var fsLauncher = require('fs');
 
@@ -58,12 +58,19 @@ function fnCruce(orig, data, currencyPair, op){
 	} 
 	
 	validacionDatos[currencyPair].data = data;
-	if(validacionDatos['BNBBTC'] && validacionDatos['IOTABNB'] && validacionDatos['IOTABTC']){
-		var result = 1 / binance.first(validacionDatos['BNBBTC'].data);
-		result = result * (1 - 0.001 / 0.999) / binance.first(validacionDatos['IOTABNB'].data);//lowestAsk;
-		result = result * (1 - 0.001 / 0.999) * binance.first(validacionDatos['IOTABTC'].data);
+	//console.log(currencyPair);
+	if(validacionDatos['BNBBTC'] && validacionDatos['ADXBNB'] && validacionDatos['ADXBTC']){
+		var result = 1 / binance.first(validacionDatos['BNBBTC'].data)
+		/*console.log(binance.first(validacionDatos['BTCBNB'].data));
+		console.log(result);*/
+		result = result * (1 - 0.001 / 0.999) / binance.first(validacionDatos['ADXBNB'].data);//lowestAsk;
+		//console.log(result);
+		result = result * (1 - 0.001 / 0.999) * binance.first(validacionDatos['ADXBTC'].data);
+		//console.log(result);
 		result = result * (1 - 0.001 / 0.999);
+		//console.log(result);
 		result = result - 1;
+		//console.log(result);
 		
 	
 		if((result > 0 ) && !sw){
