@@ -544,7 +544,7 @@ function fnDiferencia(obj, channelName){
 						//console.log("CANCELANDO ORDEN " + swBLoqueo);
 						if(swBLoqueo == false){
 							//console.log("CANCELANDO ORDEN " + order.orderNumber + " PORQUE " + order.rate + " < " + obj.data.rate + " Y DIFERENCIA = " + fnDiferencia());
-							fsLauncher.appendFileSync('./' + msg[1] + '.txt', "PETICION DE CANCELACION PORQUE ORDEN ES DE  " + order.rate + " Y NUEVA ES DE " +  Number(books[msg[1]]['bids'][s].rate)  + " y el volumen de las anteriores es de " + acum + "\n", (err) => {
+							fsLauncher.appendFileSync('./' + msg[1] + '.txt', "PETICION DE CANCELACION PORQUE ORDEN ES DE  " + order.rate + " Y NUEVA ES DE " +  (s == Number(books[msg[1]]['bids']).length ? Number(books[msg[1]]['bids'][s - 1].rate) : Number(books[msg[1]]['bids'][s].rate))  + " y el volumen de las anteriores es de " + acum + "\n", (err) => {
 								if (err) throw err;
 									////console.log('The "data to append" was appended to file!');
 								});
