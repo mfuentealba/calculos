@@ -237,7 +237,7 @@ poloniex.on('message', (channelName, data, seq) => {
 				poloniex.unsubscribe(msg[1]);
 				poloniex.unsubscribe(msg[2]);
 				objCriptos = {};
-				
+				books = {};
 				poloniex.subscribe('ticker');	
 				ee.removeListener('orderBookRemove', orderBookModify);
 				ee.removeListener('orderBookModify', orderBookModify);
