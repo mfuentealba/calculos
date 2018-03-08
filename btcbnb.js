@@ -22,7 +22,7 @@ binance.websockets.depthCache(["BNBBTC"], function(symbol, depth) {
 	fnCruce('bin', asks, 'BNBBTC', 'buy');
 });
 
-binance.websockets.depthCache(["ADXBNB"], function(symbol, depth) {
+binance.websockets.depthCache(["VIABNB"], function(symbol, depth) {
 	let max = 10; // Show 10 closest orders only
 	let bids = binance.sortBids(depth.bids, max);
 	let asks = binance.sortAsks(depth.asks, max);
@@ -31,10 +31,10 @@ binance.websockets.depthCache(["ADXBNB"], function(symbol, depth) {
 	console.log("bids", bids);
 	console.log("ask: "+binance.first(asks));
 	console.log("bid: "+binance.first(bids));*/
-	fnCruce('bin', asks, 'ADXBNB', 'buy');
+	fnCruce('bin', asks, 'VIABNB', 'buy');
 });
 
-binance.websockets.depthCache(["ADXBTC"], function(symbol, depth) {
+binance.websockets.depthCache(["VIABTC"], function(symbol, depth) {
 	let max = 10; // Show 10 closest orders only
 	let bids = binance.sortBids(depth.bids, max);
 	let asks = binance.sortAsks(depth.asks, max);
@@ -43,7 +43,7 @@ binance.websockets.depthCache(["ADXBTC"], function(symbol, depth) {
 	console.log("bids", bids);
 	console.log("ask: "+binance.first(asks));
 	console.log("bid: "+binance.first(bids));*/
-	fnCruce('bin', bids, 'ADXBTC', 'sell');
+	fnCruce('bin', bids, 'VIABTC', 'sell');
 });
 var fsLauncher = require('fs');
 
@@ -59,13 +59,13 @@ function fnCruce(orig, data, currencyPair, op){
 	
 	validacionDatos[currencyPair].data = data;
 	//console.log(currencyPair);
-	if(validacionDatos['BNBBTC'] && validacionDatos['ADXBNB'] && validacionDatos['ADXBTC']){
+	if(validacionDatos['BNBBTC'] && validacionDatos['VIABNB'] && validacionDatos['VIABTC']){
 		var result = 1 / binance.first(validacionDatos['BNBBTC'].data)
 		/*console.log(binance.first(validacionDatos['BTCBNB'].data));
 		console.log(result);*/
-		result = result * (1 - 0.001 / 0.999) / binance.first(validacionDatos['ADXBNB'].data);//lowestAsk;
+		result = result * (1 - 0.001 / 0.999) / binance.first(validacionDatos['VIABNB'].data);//lowestAsk;
 		//console.log(result);
-		result = result * (1 - 0.001 / 0.999) * binance.first(validacionDatos['ADXBTC'].data);
+		result = result * (1 - 0.001 / 0.999) * binance.first(validacionDatos['VIABTC'].data);
 		//console.log(result);
 		result = result * (1 - 0.001 / 0.999);
 		//console.log(result);
