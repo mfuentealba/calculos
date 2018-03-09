@@ -254,7 +254,7 @@ poloniex.on('message', (channelName, data, seq) => {
 function orderBookModify(channelName, obj){
 	/*console.log(channelName + '  HHHHHHHHH  ' + obj.data.type + " ES IGUAL A " + msg[1] + " ? ");
 	console.log(books);*/
-	if(books[channelName]){
+	if(books[channelName] && contBooks == 3 ){
 		
 		if(obj.data.amount == 0){
 			if(books[channelName] && books[channelName]["asks"] && books[channelName]["bids"]){
