@@ -533,7 +533,7 @@ function fnDiferencia(obj, channelName){
 					var acum = 0;
 					for(var s = 0; s < books[msg[1]]['bids'].length; s++){
 						if(books[msg[1]]['bids'][s].rate == order.rate){
-							acum += books[msg[1]]['bids'][s].amount - order.amount;
+							//acum += books[msg[1]]['bids'][s].amount - order.amount;
 							break;
 						} else {
 							acum += Number(books[msg[1]]['bids'][s].amount);

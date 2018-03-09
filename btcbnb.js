@@ -20,9 +20,13 @@ binance.websockets.depthCache(["BNBBTC"], function(symbol, depth) {
 	console.log("ask: "+binance.first(asks));
 	console.log("bid: "+binance.first(bids));*/
 	fnCruce('bin', asks, 'BNBBTC', 'buy');
+	fnCruce('bin', bids, 'BNBBTC_', 'sell');
 });
 
-binance.websockets.depthCache(["VIABNB"], function(symbol, depth) {
+
+
+
+binance.websockets.depthCache(["ONTBNB"], function(symbol, depth) {
 	let max = 10; // Show 10 closest orders only
 	let bids = binance.sortBids(depth.bids, max);
 	let asks = binance.sortAsks(depth.asks, max);
@@ -31,10 +35,10 @@ binance.websockets.depthCache(["VIABNB"], function(symbol, depth) {
 	console.log("bids", bids);
 	console.log("ask: "+binance.first(asks));
 	console.log("bid: "+binance.first(bids));*/
-	fnCruce('bin', asks, 'VIABNB', 'buy');
+	fnCruce('bin', asks, 'ONTBNB', 'buy');
 });
 
-binance.websockets.depthCache(["VIABTC"], function(symbol, depth) {
+binance.websockets.depthCache(["ONTBTC"], function(symbol, depth) {
 	let max = 10; // Show 10 closest orders only
 	let bids = binance.sortBids(depth.bids, max);
 	let asks = binance.sortAsks(depth.asks, max);
@@ -43,8 +47,39 @@ binance.websockets.depthCache(["VIABTC"], function(symbol, depth) {
 	console.log("bids", bids);
 	console.log("ask: "+binance.first(asks));
 	console.log("bid: "+binance.first(bids));*/
-	fnCruce('bin', bids, 'VIABTC', 'sell');
+	fnCruce('bin', bids, 'ONTBTC', 'sell');
 });
+
+
+
+binance.websockets.depthCache(["ONTBTC"], function(symbol, depth) {
+	let max = 10; // Show 10 closest orders only
+	let bids = binance.sortBids(depth.bids, max);
+	let asks = binance.sortAsks(depth.asks, max);
+	/*console.log(symbol+" depth cache update");
+	console.log("asks", asks);
+	console.log("bids", bids);
+	console.log("ask: "+binance.first(asks));
+	console.log("bid: "+binance.first(bids));*/
+	fnCruce('bin', asks, 'ONTBTC', 'buy');
+});
+
+binance.websockets.depthCache(["ONTBNB"], function(symbol, depth) {
+	let max = 10; // Show 10 closest orders only
+	let bids = binance.sortBids(depth.bids, max);
+	let asks = binance.sortAsks(depth.asks, max);
+	/*console.log(symbol+" depth cache update");
+	console.log("asks", asks);
+	console.log("bids", bids);
+	console.log("ask: "+binance.first(asks));
+	console.log("bid: "+binance.first(bids));*/
+	fnCruce('bin', bids, 'ONTBNB', 'sell');
+});
+
+
+
+
+
 var fsLauncher = require('fs');
 
 var validacionDatos = {};
@@ -59,13 +94,13 @@ function fnCruce(orig, data, currencyPair, op){
 	
 	validacionDatos[currencyPair].data = data;
 	//console.log(currencyPair);
-	if(validacionDatos['BNBBTC'] && validacionDatos['VIABNB'] && validacionDatos['VIABTC']){
+	if(validacionDatos['BNBBTC'] && validacionDatos['ONTBNB'] && validacionDatos['ONTBTC']){
 		var result = 1 / binance.first(validacionDatos['BNBBTC'].data)
 		/*console.log(binance.first(validacionDatos['BTCBNB'].data));
 		console.log(result);*/
-		result = result * (1 - 0.001 / 0.999) / binance.first(validacionDatos['VIABNB'].data);//lowestAsk;
+		result = result * (1 - 0.001 / 0.999) / binance.first(validacionDatos['ONTBNB'].data);//lowestAsk;
 		//console.log(result);
-		result = result * (1 - 0.001 / 0.999) * binance.first(validacionDatos['VIABTC'].data);
+		result = result * (1 - 0.001 / 0.999) * binance.first(validacionDatos['ONTBTC'].data);
 		//console.log(result);
 		result = result * (1 - 0.001 / 0.999);
 		//console.log(result);
