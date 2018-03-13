@@ -80,20 +80,20 @@ function fnCruce(orig, data, currencyPair, op){
 		var qty1 = 0.002 / binance.first(validacionDatos['BNBBTC'].data);
 		qty1 = Number(qty1.toFixed(2))
 		var px1 = binance.first(validacionDatos['BNBBTC'].data);
-		var amount1 = qty1 * px1 * (1 - 0.0015 / 0.9985);
+		var amount1 = qty1 * px1 * (1 - 0.001 / 0.999);
 		//console.log(binance.first(validacionDatos['BNBBTC_'].data));
 		console.log("px: " + px1 + ", qty: " + qty1 + ", amount: " + amount1);
-		var qty2 = qty1 * (1 - 0.0015 / 0.9985) / binance.first(validacionDatos['ONTBNB'].data);//lowestAsk;
+		var qty2 = qty1 * (1 - 0.001 / 0.999) / binance.first(validacionDatos['ONTBNB'].data);//lowestAsk;
 		qty2 = Number(qty2.toFixed(0))
 		var px2 = binance.first(validacionDatos['ONTBNB'].data);//lowestAsk;
-		var amount2 = qty2 * px2 * (1 - 0.0015 / 0.9985);
+		var amount2 = qty2 * px2 * (1 - 0.001 / 0.999);
 		console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 		
 		
-		var qty3 = qty2 * (1 - 0.0015 / 0.9985);// * binance.first(validacionDatos['ONTBNB_'].data);
+		var qty3 = qty2 * (1 - 0.001 / 0.999);// * binance.first(validacionDatos['ONTBNB_'].data);
 		qty3 = Number(qty3.toFixed(0));
 		var px3 = binance.first(validacionDatos['ONTBTC'].data);
-		var amount3 = qty3 * px3 * (1 - 0.0015 / 0.9985);
+		var amount3 = qty3 * px3 * (1 - 0.001 / 0.999);
 		console.log("px: " + px3 + ", qty: " + qty3 + ", amount: " + amount3);
 		var result = amount3;
 		console.log(result);
@@ -132,7 +132,7 @@ function fnCruce(orig, data, currencyPair, op){
 			countOrd++;
 			console.log('\u0007');
 			console.log('qty1: ' + qty1);
-			binance.buy("BNBBTC", qty1, px1, {type:'LIMIT'}, (error, response) => {
+			binance.MarketBuy("BNBBTC", qty1, px1, {type:'LIMIT'}, (error, response) => {
 			  console.log("Limit Buy response", response);
 			  console.log("order id: " + response.orderId);
 			  if(error && error.body){
@@ -150,7 +150,7 @@ function fnCruce(orig, data, currencyPair, op){
 			});
 			
 			console.log('qty2: ' + qty2);
-			binance.buy("ONTBNB", qty2, px2, {type:'LIMIT'}, (error, response) => {
+			binance.MarketBuy("ONTBNB", qty2, px2, {type:'LIMIT'}, (error, response) => {
 			  console.log("Limit Buy response", response);
 			  console.log("order id: " + response.orderId);
 			  if(error && error.body){
@@ -167,7 +167,7 @@ function fnCruce(orig, data, currencyPair, op){
 			});
 			
 			console.log('qty3: ' + qty3);
-			binance.sell("ONTBTC", qty3, px3, {type:'LIMIT'}, (error, response) => {
+			binance.MarketSell("ONTBTC", qty3, px3, {type:'LIMIT'}, (error, response) => {
 			  console.log("Limit Buy response", response);
 			  console.log("order id: " + response.orderId);
 			  if(error && error.body){

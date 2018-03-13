@@ -17,8 +17,8 @@ binance.websockets.depthCache(['BNBBTC'], (symbol, depth) => {
 */
 
 
-var quantity = 2.30, price = 0.0007;
-binance.buy("BNBBTC", quantity, price, {type:'LIMIT'}, (error, response) => {
+var quantity = 2.34, price = 0.1;
+binance.sell("BNBBTC", quantity, price, {type:'LIMIT'}, (error, response) => {
   console.log("Limit Buy response", response);
   console.log("order id: " + response.orderId);
   console.log(error.body);
