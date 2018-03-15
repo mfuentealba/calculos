@@ -77,7 +77,7 @@ function fnCruce(orig, data, currencyPair, op){
 	if(validacionDatos['BTCUSDT'] && validacionDatos['BNBBTC'] && validacionDatos['BNBUSDT']
 	&& validacionDatos['BTCUSDT_'] && validacionDatos['BNBUSDT_'] && validacionDatos['BNBBTC_']
 	){
-		
+		//console.log(order);
 		if(order != null){
 			
 			/*if(order.price < binance.first(validacionDatos['BTCUSDT']).data && order.side == 'BUY'){
@@ -92,58 +92,71 @@ function fnCruce(orig, data, currencyPair, op){
 				});
 			}
 			*/
+			if(order.orderId != null){
+				console.log("ORDER: " + countOrd);
+				var qty1 = 11.9 / order.price;
+				qty1 = Number(qty1.toFixed(6))
+				var px1 = binance.first(validacionDatos['BTCUSDT'].data);
+				var amount1 = qty1 * px1 * (1 - 0.001 / 0.999);
+				//console.log(binance.first(validacionDatos['BTCUSDT_'].data));
+				console.log("px: " + px1 + ", qty: " + qty1 + ", amount: " + amount1);
+				var qty2 = qty1 * (1 - 0.001 / 0.999) / binance.first(validacionDatos['BNBBTC_'].data);//lowestAsk;
+				qty2 = Number(qty2.toFixed(2))
+				var px2 = binance.first(validacionDatos['BNBBTC'].data);//lowestAsk;
+				var amount2 = qty2 * px2 * (1 - 0.001 / 0.999);
+				console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
+				
+				
+				var qty3 = qty2 * (1 - 0.001 / 0.999);// * binance.first(validacionDatos['BNBBTC_'].data);
+				qty3 = Number(qty3.toFixed(3));
+				var px3 = binance.first(validacionDatos['BNBUSDT'].data);
+				var amount3 = qty3 * px3 * (1 - 0.001 / 0.999);
+				console.log("px: " + px3 + ", qty: " + qty3 + ", amount: " + amount3);
+				var result = amount3;
+				console.log(result);
+				result = result - 11.9;
+				console.log("RES: " + ((qty1 * px1) - amount3));
+				
+				
+				
+				
+				
+				
+				
+				
+				var qty4 = 11.9 / order.price;
+				qty4 = Number(qty4.toFixed(6));
+				var px4 = binance.first(validacionDatos['BTCUSDT_'].data);
+				var amount4 = qty4 * px4 * (1 - 0.001 / 0.999);
+				//console.log(binance.first(validacionDatos['BTCUSDT_'].data));
+				console.log("px: " + px4 + ", qty: " + qty4 + ", amount: " + amount4);
+				var qty5 = amount4 / binance.first(validacionDatos['BNBUSDT_'].data);//lowestAsk;
+				qty5 = Number(qty5.toFixed(3));	
+				var px5 = binance.first(validacionDatos['BNBUSDT_'].data);//lowestAsk;
+				var amount5 = qty5 * px5 * (1 - 0.001 / 0.999);
+				console.log("px: " + px5 + ", qty: " + qty5 + ", amount: " + amount5);
+				var qty6 = qty5 * (1 - 0.001 / 0.999);// * binance.first(validacionDatos['BNBBTC_'].data);
+				qty6 = Number(qty6.toFixed(2));
+				var px6 = binance.first(validacionDatos['BNBBTC_'].data);
+				var amount6 = qty6 * px6 * (1 - 0.001 / 0.999);
+				console.log("px: " + px6 + ", qty: " + qty6 + ", amount: " + amount6);
+				var result2 = amount6;
+				console.log(result2);
+				result2 = result2 - qty4;
+				console.log("RES2: " + ((qty4) - amount6));
+				
+				
+				if(result < 0 && order.side == 'BUY'){
+					binance.cancel(order.symbol, order.orderId, (error, response, symbol) => {
+					  //console.log(symbol+" cancel response:", response);
+						order = null;
+					});
+					
+				}	
+			}
 			
-		/*	console.log("ORDER: " + countOrd);
-			var qty1 = 11.9 / order.price;
-			qty1 = Number(qty1.toFixed(6))
-			var px1 = binance.first(validacionDatos['BTCUSDT'].data);
-			var amount1 = qty1 * px1 * (1 - 0.001 / 0.999);
-			//console.log(binance.first(validacionDatos['BTCUSDT_'].data));
-			console.log("px: " + px1 + ", qty: " + qty1 + ", amount: " + amount1);
-			var qty2 = qty1 * (1 - 0.001 / 0.999) / binance.first(validacionDatos['BNBBTC_'].data);//lowestAsk;
-			qty2 = Number(qty2.toFixed(2))
-			var px2 = binance.first(validacionDatos['BNBBTC'].data);//lowestAsk;
-			var amount2 = qty2 * px2 * (1 - 0.001 / 0.999);
-			console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 			
 			
-			var qty3 = qty2 * (1 - 0.001 / 0.999);// * binance.first(validacionDatos['BNBBTC_'].data);
-			qty3 = Number(qty3.toFixed(3));
-			var px3 = binance.first(validacionDatos['BNBUSDT'].data);
-			var amount3 = qty3 * px3 * (1 - 0.001 / 0.999);
-			console.log("px: " + px3 + ", qty: " + qty3 + ", amount: " + amount3);
-			var result = amount3;
-			console.log(result);
-			result = result - 11.9;
-			console.log("RES: " + ((qty1 * px1) - amount3));
-			
-			
-			
-			
-			
-			
-			
-			
-			var qty4 = 11.9 / order.price;
-			qty4 = Number(qty4.toFixed(6));
-			var px4 = binance.first(validacionDatos['BTCUSDT_'].data);
-			var amount4 = qty4 * px4 * (1 - 0.001 / 0.999);
-			//console.log(binance.first(validacionDatos['BTCUSDT_'].data));
-			console.log("px: " + px4 + ", qty: " + qty4 + ", amount: " + amount4);
-			var qty5 = amount4 / binance.first(validacionDatos['BNBUSDT_'].data);//lowestAsk;
-			qty5 = Number(qty5.toFixed(3));	
-			var px5 = binance.first(validacionDatos['BNBUSDT_'].data);//lowestAsk;
-			var amount5 = qty5 * px5 * (1 - 0.001 / 0.999);
-			console.log("px: " + px5 + ", qty: " + qty5 + ", amount: " + amount5);
-			var qty6 = qty5 * (1 - 0.001 / 0.999);// * binance.first(validacionDatos['BNBBTC_'].data);
-			qty6 = Number(qty6.toFixed(2));
-			var px6 = binance.first(validacionDatos['BNBBTC_'].data);
-			var amount6 = qty6 * px6 * (1 - 0.001 / 0.999);
-			console.log("px: " + px6 + ", qty: " + qty6 + ", amount: " + amount6);
-			var result2 = amount6;
-			console.log(result2);
-			result2 = result2 - qty4;
-			console.log("RES2: " + ((qty4) - amount6));*/
 			
 		} else {
 			
@@ -213,6 +226,7 @@ function fnCruce(orig, data, currencyPair, op){
 					console.log("order id: " + response.orderId);
 					if(error && error.body){
 						console.log(error.body);
+						order = null;
 						fsLauncher.appendFileSync('./bin2.txt', 'BTCUSDT\n' + JSON.stringify(error.body) + " \n", (err) => {
 							if (err) throw err;
 								////console.log('The "data to append" was appended to file!');
@@ -360,6 +374,7 @@ function fnCruce(orig, data, currencyPair, op){
 	} else {
 		if(swOrd && order && order.orderId){
 			swOrd = false;
+			console.log("******** consultando orden " + order.orderId + " ******* --> " + swOrd);
 			fnConsulta();	
 		}
 		
@@ -369,44 +384,60 @@ function fnCruce(orig, data, currencyPair, op){
 
 function fnConsulta(){
 	
-	
-	binance.orderStatus(order.symbol, order.orderId, (error, orderStatus, symbol) => {
-		console.log(symbol + " order status:", orderStatus);
-		if(orderStatus == 'FILLED'){
-			console.log('qty2: ' + qty2);
-			binance.buy("BNBBTC", qty2, px2, {type:'LIMIT'}, (error, response) => {
-				countOrd++;
-			  console.log("Limit Buy response", response);
-			  console.log("order id: " + response.orderId);
-			  if(error && error.body){
-				console.log(error.body);
-				fsLauncher.appendFileSync('./bin2.txt', 'BNBBTC\n' + JSON.stringify(error.body) + " \n", (err) => {
-						if (err) throw err;
-							////console.log('The "data to append" was appended to file!');
-						});  
-			  }
-			  
-			  console.log("ORDER: " + countOrd);
-			});
+	if(order && order.orderId){
+		binance.orderStatus(order.symbol, order.orderId, (error, orderStatus, symbol) => {
+			console.log(symbol + " order status:", orderStatus);
 			
-			console.log('qty3: ' + qty3);
-			binance.sell("BNBUSDT", qty3, px3, {type:'LIMIT'}, (error, response) => {
-				countOrd++;
-			  console.log("Limit Buy response", response);
-			  console.log("order id: " + response.orderId);
-			  if(error && error.body){
+			if(error && error.body){
 				console.log(error.body);
-				fsLauncher.appendFileSync('./bin2.txt', 'BNBUSDT\n' + JSON.stringify(error.body) + " \n", (err) => {
+				
+				fsLauncher.appendFileSync('./bin2.txt', JSON.stringify(error.body) + " \n", (err) => {
 					if (err) throw err;
 						////console.log('The "data to append" was appended to file!');
 					});  
-			  }
-			  
-			  console.log("ORDER: " + countOrd);
-			});
-		}
-		swOrd = true;
-	});
+				console.log("******** consultando orden " + order.orderId + " ******* --> " + swOrd);
+				fnConsulta();
+			}
+			
+			if(orderStatus.status == 'FILLED'){
+				console.log('qty2: ' + qty2);
+				binance.buy("BNBBTC", qty2, px2, {type:'LIMIT'}, (error, response) => {
+					countOrd++;
+				  console.log("Limit Buy response", response);
+				  console.log("order id: " + response.orderId);
+				  if(error && error.body){
+					console.log(error.body);
+					fsLauncher.appendFileSync('./bin2.txt', 'BNBBTC\n' + JSON.stringify(error.body) + " \n", (err) => {
+							if (err) throw err;
+								////console.log('The "data to append" was appended to file!');
+							});  
+				  }
+				  
+				  console.log("ORDER: " + countOrd);
+				});
+				
+				console.log('qty3: ' + qty3);
+				binance.sell("BNBUSDT", qty3, px3, {type:'LIMIT'}, (error, response) => {
+					countOrd++;
+				  console.log("Limit Buy response", response);
+				  console.log("order id: " + response.orderId);
+				  if(error && error.body){
+					console.log(error.body);
+					fsLauncher.appendFileSync('./bin2.txt', 'BNBUSDT\n' + JSON.stringify(error.body) + " \n", (err) => {
+						if (err) throw err;
+							////console.log('The "data to append" was appended to file!');
+						});  
+				  }
+				  
+				  console.log("ORDER: " + countOrd);
+				  
+				});
+			} 
+			console.log("******** Fin Consulta orden " + order.orderId + " ******* --> " + swOrd);
+			swOrd = true;
+		});	
+	}
+	
 	
 }
 
