@@ -21,9 +21,21 @@ binance.websockets.depthCache(['BNBBTC'], (symbol, depth) => {
 });
 */
 
+/*
+binance.trades("BTCUSDT", (error, trades, symbol) => {
+  console.log(symbol+" trade history", trades);
+});
 
-var quantity = 2.34, price = 1;
-binance.sell("BNBBTC", quantity, price, {type:'LIMIT'}, (error, response) => {
+*/
+
+binance.balance((error, balances) => {
+  console.log("balances()", balances);
+  console.log("ETH balance: ", balances.ETH.available);
+});
+
+/*
+var quantity = 1.29, price = 10000;
+binance.sell("BNBUSDT", quantity, price, {type:'LIMIT'}, (error, response) => {
   console.log("Limit Buy response", response);
   console.log("order id: " + response.orderId);
   if(error && error.body){
@@ -31,11 +43,6 @@ binance.sell("BNBBTC", quantity, price, {type:'LIMIT'}, (error, response) => {
 	
   }
   
-  
-  /*binance.cancel(response.symbol, response.orderId, (error, response, symbol) => {
-				  console.log(symbol+" cancel response:", response);
-				});*/
-  //console.log(error.body);
   
   console.log(response.symbol + ", " + response.orderId);
 	binance.orderStatus(response.symbol, response.orderId, (error, orderStatus, symbol) => {
@@ -54,7 +61,7 @@ binance.sell("BNBBTC", quantity, price, {type:'LIMIT'}, (error, response) => {
   
 });
 
-
+*/
 
 
 
