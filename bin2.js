@@ -1,7 +1,11 @@
 const binance = require('node-binance-api');
 binance.options({
   'APIKEY':'tfdrBVQrUdxkvRLDaMA6HnmTSNMBSlZcnDkPDLdjOGdecEJaVYxDZFugmzH5H1wb',
-  'APISECRET':'0sxAG7s1t9YHxCBFJ91NiKyC1CKpZiA4rYyrR9sxAEwaxxhlXfR3aKUmkVMs41Dc'
+  'APISECRET':'0sxAG7s1t9YHxCBFJ91NiKyC1CKpZiA4rYyrR9sxAEwaxxhlXfR3aKUmkVMs41Dc',
+  useServerTime: true,
+  log: log => {
+    console.log(log); // You can create your own logger here, or disable console output
+  }
 });
 
 
@@ -76,25 +80,30 @@ var countOrd = 0;
 var order;
 
 
-function fnCancel(){
-	swOrd = false;
-	binance.cancel(order.symbol, order.orderId, (error, response, symbol) => {
-	  //console.log(symbol+" cancel response:", response);
-		fsLauncher.appendFileSync('./bin2.txt', JSON.stringify(response) + " \n", (err) => {
-					if (err) throw err;
-						////console.log('The "data to append" was appended to file!');
-					}); 
-		if(error && error.body){
-			console.log(error.body);
-			fsLauncher.appendFileSync('./bin2.txt', 'BNBBTC\n' + JSON.stringify(error.body) + " \n", (err) => {
-					if (err) throw err;
-						////console.log('The "data to append" was appended to file!');
-					});  
-		  } else {
-			order = null;  
-		  }
-		  swOrd = true;
-	});
+function fnCancel(qty2, px2, qty3, px3, symbol1, symbol2, msg){
+	if(swOrd == true){
+		swOrd = false;
+		console.log("CANCELACION DE ORDEN " + order.orderId);
+		binance.cancel(order.symbol, order.orderId, (error, response, symbol) => {
+		  //console.log(symbol+" cancel response:", response);
+			fsLauncher.appendFileSync('./bin2.txt', "CANCELACION DE ORDEN " + order.orderId + '\n' + msg + '\n' + JSON.stringify(response) + " \n", (err) => {
+						if (err) throw err;
+							////console.log('The "data to append" was appended to file!');
+						}); 
+			if(error && error.body){
+				console.log(error.body);
+				fsLauncher.appendFileSync('./bin2.txt', JSON.stringify(error.body) + " \n", (err) => {
+						if (err) throw err;
+							////console.log('The "data to append" was appended to file!');
+						});  
+			  } else {
+				order = null;  
+			  }
+			  swOrd = true;
+		});
+	}
+	
+	
 	
 }
 
@@ -128,7 +137,7 @@ function fnCruce(orig, data, currencyPair, op){
 			if(order.orderId != null){
 				if(order.side == 'BUY'){
 					console.log("ORDER: " + countOrd);
-					var qty1 = 11.9 / order.price;
+					var qty1 = 11.9 / Number(binance.first(validacionDatos['BTCUSDT'].data));
 					qty1 = Number(qty1.toFixed(6))
 					var px1 = binance.first(validacionDatos['BTCUSDT'].data);
 					var amount1 = qty1 * px1 * (1 - 0.001 / 0.999);
@@ -136,7 +145,7 @@ function fnCruce(orig, data, currencyPair, op){
 					console.log("px: " + px1 + ", qty: " + qty1 + ", amount: " + amount1);
 					var qty2 = qty1 * (1 - 0.001 / 0.999) / order.price;//lowestAsk;
 					qty2 = Number(qty2.toFixed(2))
-					var px2 = binance.first(validacionDatos['BNBBTC'].data);//lowestAsk;
+					var px2 = order.price;//lowestAsk;
 					var amount2 = qty2 * px2 * (1 - 0.001 / 0.999);
 					console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);			
 					var qty3 = qty2 * (1 - 0.001 / 0.999);// * binance.first(validacionDatos['BNBBTC_'].data);
@@ -157,23 +166,27 @@ function fnCruce(orig, data, currencyPair, op){
 						}
 						
 					}
+					console.log("[ " + result + " ]");
 					
-					if(result < 0 || volAnt > order.origQty * 500){
-						console.log("CANCELACION DE ORDEN " + order.orderId)
+					if(result < 0){
 						
-						fnCancel();
+						//fnCancel(qty1, px1, qty3, px3, 'BTCUSDT', 'BNBUSDT', " Se Pierde dif: " + result);
+						fnConsulta(qty1, px1, qty3, px3, 'BTCUSDT', 'BNBUSDT', " Se Pierde dif: " + result, result);
+						
+					} else if(volAnt > order.origQty * 5000 && order.status == 'NEW'){
+						//fnCancel(qty1, px1, qty3, px3, 'BTCUSDT', 'BNBUSDT', " Se Pierde Posicion");
+						fnConsulta(qty1, px1, qty3, px3, 'BTCUSDT', 'BNBUSDT', " Se Pierde Posicion", -10);
 					}
 					
 					
-					
 				} else if(order.side == 'SELL'){
-					var qty4 = 11.9 / order.price;
+					var qty4 = 11.9 / Number(binance.first(validacionDatos['BTCUSDT_'].data));
 					qty4 = Number(qty4.toFixed(6));
 					var px4 = binance.first(validacionDatos['BTCUSDT_'].data);
 					var amount4 = qty4 * px4 * (1 - 0.001 / 0.999);
 					//console.log(binance.first(validacionDatos['BTCUSDT_'].data));
 					console.log("px: " + px4 + ", qty: " + qty4 + ", amount: " + amount4);
-					var qty5 = amount4 / binance.first(validacionDatos['BNBUSDT_'].data);//lowestAsk;
+					var qty5 = amount4 / order.price;//lowestAsk;
 					qty5 = Number(qty5.toFixed(3));	
 					var px5 = order.price;//lowestAsk;
 					var amount5 = qty5 * px5 * (1 - 0.001 / 0.999);
@@ -196,11 +209,15 @@ function fnCruce(orig, data, currencyPair, op){
 						}
 						
 					}
-					
-					if(result2 < 0 || volAnt > order.origQty * 500){
-						console.log("CANCELACION DE ORDEN " + order.orderId)
-						fnCancel();
+					console.log("[ " + result2 + " ]");
+					if(result2 < 0){
 						
+						//fnCancel(qty4, px4, qty6, px6, 'BTCUSDT', 'BNBBTC', " Se Pierde dif: " + result2);
+						fnConsulta(qty4, px4, qty6, px6, 'BTCUSDT', 'BNBBTC', " Se Pierde dif: " + result2, result2);
+						
+					} else if(volAnt > order.origQty * 5000 && order.status == 'NEW'){
+						//fnCancel(qty4, px4, qty6, px6, 'BTCUSDT', 'BNBBTC', " Se Pierde Posicion");
+						fnConsulta(qty4, px4, qty6, px6, 'BTCUSDT', 'BNBBTC', " Se Pierde Posicion", -10);
 					}
 					
 				}
@@ -209,7 +226,12 @@ function fnCruce(orig, data, currencyPair, op){
 				if(swOrd && order && order.orderId){
 					
 					console.log("******** consultando orden " + order.orderId + " ******* --> " + swOrd);
-					fnConsulta();	
+					if(order.side == 'BUY'){
+						fnConsulta(qty1, px1, qty3, px3, 'BTCUSDT', 'BNBUSDT');		
+					} else if(order.side == 'SELL'){
+						fnConsulta(qty4, px4, qty6, px6, 'BTCUSDT', 'BNBBTC');		
+					}
+					
 				}
 				
 				
@@ -284,6 +306,10 @@ function fnCruce(orig, data, currencyPair, op){
 				
 					countOrd++;
 					console.log("Limit Buy response", response);
+					fsLauncher.appendFileSync('./bin2.txt',"Limit Buy response, " + JSON.stringify(response) + " \n", (err) => {
+							if (err) throw err;
+								////console.log('The "data to append" was appended to file!');
+							});
 					console.log("order id: " + response.orderId);
 					if(error && error.body){
 						console.log(error.body);
@@ -298,14 +324,18 @@ function fnCruce(orig, data, currencyPair, op){
 							console.log('qty1: ' + qty1);
 							binance.buy("BTCUSDT", qty1, px1, {type:'LIMIT'}, (error, response) => {
 								countOrd++;
-							  console.log("Limit Buy response", response);
-							  console.log("order id: " + response.orderId);
-							  if(error && error.body){
-								console.log(error.body);
-								fsLauncher.appendFileSync('./bin2.txt', 'BNBBTC\n' + JSON.stringify(error.body) + " \n", (err) => {
+							    console.log("Limit Buy response", response);
+								fsLauncher.appendFileSync('./bin2.txt',"Limit Buy response, " + JSON.stringify(response) + " \n", (err) => {
+									if (err) throw err;
+										////console.log('The "data to append" was appended to file!');
+									});
+							    console.log("order id: " + response.orderId);
+							    if(error && error.body){
+									console.log(error.body);
+									fsLauncher.appendFileSync('./bin2.txt', 'BNBBTC\n' + JSON.stringify(error.body) + " \n", (err) => {
 										if (err) throw err;
 											////console.log('The "data to append" was appended to file!');
-										});  
+									});  
 							  }
 							  
 							  console.log("ORDER: " + countOrd);
@@ -315,6 +345,10 @@ function fnCruce(orig, data, currencyPair, op){
 							binance.sell("BNBUSDT", qty3, px3, {type:'LIMIT'}, (error, response) => {
 								countOrd++;
 							  console.log("Limit Buy response", response);
+							  fsLauncher.appendFileSync('./bin2.txt',"Limit Buy response, " + JSON.stringify(response) + " \n", (err) => {
+									if (err) throw err;
+										////console.log('The "data to append" was appended to file!');
+									});
 							  console.log("order id: " + response.orderId);
 							  if(error && error.body){
 								console.log(error.body);
@@ -327,9 +361,9 @@ function fnCruce(orig, data, currencyPair, op){
 							  console.log("ORDER: " + countOrd);
 							});
 							
-						} else {
-							fnConsulta();
-						}
+						} /*else {
+							fnConsulta(qty1, px1, qty3, px3, "BTCUSDT", "BNBUSDT");
+						}*/
 					}
 					
 					
@@ -354,12 +388,13 @@ function fnCruce(orig, data, currencyPair, op){
 				
 				console.log('\u0007');
 				binance.buy("BNBUSDT", qty5, px5, {type:'LIMIT'}, (error, response) => {
-					fsLauncher.appendFileSync('./bin2.txt', JSON.stringify(response) + " \n", (err) => {
-							if (err) throw err;
-								////console.log('The "data to append" was appended to file!');
-							}); 
+					
 				  countOrd++;
 				  console.log("Limit Buy response", response);
+				  fsLauncher.appendFileSync('./bin2.txt',"Limit Buy response, " + JSON.stringify(response) + " \n", (err) => {
+						if (err) throw err;
+							////console.log('The "data to append" was appended to file!');
+						});
 				  console.log("order id: " + response.orderId);
 				  if(error && error.body){
 					console.log(error.body);
@@ -371,12 +406,16 @@ function fnCruce(orig, data, currencyPair, op){
 						order = response;
 						if(order.status == 'FILLED'){
 							binance.sell("BTCUSDT", qty4, px4, {type:'LIMIT'}, (error, response) => {
-								fsLauncher.appendFileSync('./bin2.txt',  JSON.stringify(response) + " \n", (err) => {
-								if (err) throw err;
-									////console.log('The "data to append" was appended to file!');
-								}); 
+								fsLauncher.appendFileSync('./bin2.txt',"Limit Buy response, " + JSON.stringify(response) + " \n", (err) => {
+									if (err) throw err;
+										////console.log('The "data to append" was appended to file!');
+									});
 							  countOrd++;
 							  console.log("Limit Buy response", response);
+							  fsLauncher.appendFileSync('./bin2.txt',"Limit Buy response, " + JSON.stringify(response) + " \n", (err) => {
+									if (err) throw err;
+										////console.log('The "data to append" was appended to file!');
+									});
 							  console.log("order id: " + response.orderId);
 							 if(error && error.body){
 								console.log(error.body);
@@ -397,6 +436,11 @@ function fnCruce(orig, data, currencyPair, op){
 								}); 
 							  countOrd++;	
 							  console.log("Limit Buy response", response);
+							  
+							  fsLauncher.appendFileSync('./bin2.txt',"Limit Buy response, " + JSON.stringify(response) + " \n", (err) => {
+									if (err) throw err;
+										////console.log('The "data to append" was appended to file!');
+									});
 							  console.log("order id: " + response.orderId);
 							  if(error && error.body){
 								console.log(error.body);
@@ -410,7 +454,7 @@ function fnCruce(orig, data, currencyPair, op){
 							});
 							
 						} else {
-							fnConsulta();
+							fnConsulta(qty4, px4, qty6, px6, "BTCUSDT", "BNBBTC");
 						}
 				  }	
 				  
@@ -424,7 +468,8 @@ function fnCruce(orig, data, currencyPair, op){
 			
 		
 			if(((result > 0 ) || (result2 > 0 )) && !sw){
-				console.log("*********************************************");
+				//console.log("*********************************************");
+				console.log("[ " + result + " :: " + result2 + " ]");
 				sw = true;
 				acum += Number(result) > 0 ? Number(result) : 0;
 				acum2 += Number(result2) > 0 ? Number(result2) : 0;
@@ -435,32 +480,37 @@ function fnCruce(orig, data, currencyPair, op){
 							});
 			}
 			if(result < 0 && sw){
-				console.log("*********************************************");
+				//console.log("*********************************************");
 				sw = false;
 			}
-			console.log("[ " + result + " :: " + result2 + " ]");
+			//console.log("[ " + result + " :: " + result2 + " ]");
 			
 		}
 		
 		
 		
-	} else {
+	} /*else {
 		if(swOrd && order && order.orderId){
 			
 			console.log("******** consultando orden " + order.orderId + " ******* --> " + swOrd);
 			fnConsulta();	
 		}
 		
-	}
+	}*/
 }
 
 
-function fnConsulta(){
-	swOrd = false;
-	if(order && order.orderId){
+function fnConsulta(qty2, px2, qty3, px3, symbol1, symbol2, msg, result){
+	
+	if(order && order.orderId && swOrd == true){
+		swOrd = false;
 		binance.orderStatus(order.symbol, order.orderId, (error, orderStatus, symbol) => {
 			console.log(symbol + " order status:", orderStatus);
-			
+			fsLauncher.appendFileSync('./bin2.txt', symbol + " order status: " + JSON.stringify(orderStatus) + " \n", (err) => {
+					if (err) throw err;
+						////console.log('The "data to append" was appended to file!');
+					});  
+				console.log("******** consultando orden " + order.orderId + " ******* --> " + swOrd);
 			if(error && error.body){
 				console.log(error.body);
 				
@@ -474,9 +524,13 @@ function fnConsulta(){
 			order = orderStatus;
 			if(orderStatus.status == 'FILLED'){
 				console.log('qty2: ' + qty2);
-				binance.buy("BNBBTC", qty2, px2, {type:'LIMIT'}, (error, response) => {
+				binance.buy(symbol1, qty2, px2, {type:'LIMIT'}, (error, response) => {
 					countOrd++;
 				  console.log("Limit Buy response", response);
+				  fsLauncher.appendFileSync('./bin2.txt',"Limit Buy response, " + JSON.stringify(response) + " \n", (err) => {
+									if (err) throw err;
+										////console.log('The "data to append" was appended to file!');
+									});
 				  console.log("order id: " + response.orderId);
 				  if(error && error.body){
 					console.log(error.body);
@@ -490,9 +544,13 @@ function fnConsulta(){
 				});
 				
 				console.log('qty3: ' + qty3);
-				binance.sell("BNBUSDT", qty3, px3, {type:'LIMIT'}, (error, response) => {
+				binance.sell(symbol2, qty3, px3, {type:'LIMIT'}, (error, response) => {
 					countOrd++;
 				  console.log("Limit Buy response", response);
+				  fsLauncher.appendFileSync('./bin2.txt',"Limit Buy response, " + JSON.stringify(response) + " \n", (err) => {
+									if (err) throw err;
+										////console.log('The "data to append" was appended to file!');
+									});
 				  console.log("order id: " + response.orderId);
 				  if(error && error.body){
 					console.log(error.body);
@@ -508,6 +566,10 @@ function fnConsulta(){
 			} else if(orderStatus.status == 'CANCELED'){
 				order = null;	
 				
+			} else if(orderStatus.status == 'NEW'){
+				if(result < 0){
+					fnCancel(qty2, px2, qty3, px3, symbol1, symbol2, msg);
+				}
 			}
 			console.log("******** Fin Consulta orden " + order.orderId + " ******* --> " + swOrd);
 			swOrd = true;
