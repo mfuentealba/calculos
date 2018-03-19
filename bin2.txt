@@ -1,13 +1,7 @@
- [ 0.007451685685685661 :: 0 ]
-Limit Buy response, {"symbol":"BNBBTC","orderId":31139670,"clientOrderId":"yu2sRbhff9rmkfZFcPT4eg","transactTime":1521238599274,"price":"0.00108890","origQty":"1.29000000","executedQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY"} 
-BNBBTC DIF: 0.007451685685685661 order status: {"symbol":"BNBBTC","orderId":31139670,"clientOrderId":"yu2sRbhff9rmkfZFcPT4eg","price":"0.00108890","origQty":"1.29000000","executedQty":"1.29000000","status":"FILLED","timeInForce":"GTC","type":"LIMIT","side":"BUY","stopPrice":"0.00000000","icebergQty":"0.00000000","time":1521238599274,"isWorking":true} 
-ORDEN VENTA, BTCUSDT, 0.001401, 8495.57000000 
-ORDEN VENTA, BNBUSDT, 1.289, 9.24700000 
-Limit Buy response, {} 
-BNBUSDT
-"{\"code\":-1013,\"msg\":\"Filter failure: LOT_SIZE\"}" 
-Limit Buy response, {"symbol":"BTCUSDT","orderId":70000954,"clientOrderId":"tAX8N4RKpay4jvgSA3OACe","transactTime":1521238600914,"price":"8495.57000000","origQty":"0.00140100","executedQty":"0.00140100","status":"FILLED","timeInForce":"GTC","type":"LIMIT","side":"BUY"} 
-
-
-
-Limit Buy response, {"symbol":"BNBBTC","orderId":31139674,"clientOrderId":"AgbXugp0LqCcbe7wG6N1eP","transactTime":1521238601261,"price":"0.00108890","origQty":"1.29000000","executedQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY"} 
+ [ 0.025051051051050877 :: 0 ]
+Limit Buy response, {"symbol":"BNBBTC","orderId":31705810,"clientOrderId":"r7uPSNeWsTqCLxlXyHOuRa","transactTime":1521452949774,"price":"0.00103990","origQty":"1.39000000","executedQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY"} 
+BNBBTC DIF: 0.025051051051050877 order status: {"symbol":"BNBBTC","orderId":31705810,"clientOrderId":"r7uPSNeWsTqCLxlXyHOuRa","price":"0.00103990","origQty":"1.39000000","executedQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","stopPrice":"0.00000000","icebergQty":"0.00000000","time":1521452949774,"isWorking":true} 
+BNBBTC DIF: -0.0300936936936953 order status: {"symbol":"BNBBTC","orderId":31705810,"clientOrderId":"r7uPSNeWsTqCLxlXyHOuRa","price":"0.00103990","origQty":"1.39000000","executedQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","stopPrice":"0.00000000","icebergQty":"0.00000000","time":1521452949774,"isWorking":true} 
+CANCELACION DE ORDEN 31705810
+ Se Pierde dif: -0.0300936936936953
+{"symbol":"BNBBTC","origClientOrderId":"r7uPSNeWsTqCLxlXyHOuRa","orderId":31705810,"clientOrderId":"2Xr1iOs4zL3x2Fgcn3y9Dw"} 

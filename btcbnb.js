@@ -63,7 +63,7 @@ var validacionDatos = {};
 var sw = false;
 var acum = 0;
 var acum2 = 0;
-var countOrd = 0;8632
+var countOrd = 0;
 
 function fnCruce(orig, data, currencyPair, op){
 	if(!validacionDatos[currencyPair]){
