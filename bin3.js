@@ -149,34 +149,37 @@ function fnNormal(){
 				if(order.symbol == 'LTCETH'){
 					console.log("ORDER: " + countOrd);
 					
-					var qty2 = 0.1;//qty1 * (1 - 0.001 / 0.999) / order.price;//lowestAsk;
+					var qty2 = 0.1;//qty1 * 0.999 / order.price;//lowestAsk;
 					str = String(qty2).split(".");
 					qty2 = 0.1;//Number(str[0] + '.' + str[1].substr(0, objDecimales['LTCETH']))
 					
 					var px2 = order.price;//lowestAsk;
-					var amount2 = qty2 * px2 * (1 - 0.001 / 0.999);
+					var amount2 = qty2 * px2 * 0.999;
 					//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 					
 					
-					var qty1 = qty2 * px2 * (1 + 0.001 / 0.999);//11.9 / Number(binance.first(validacionDatos['ETHUSDT'].data));
+					var qty1 = qty2 * px2 * 1.001;//11.9 / Number(binance.first(validacionDatos['ETHUSDT'].data));
 					str = String(qty1).split(".");
 					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))
 					var px1 = binance.first(validacionDatos['ETHUSDT'].data);
-					var amount1 = qty1 * px1 * (1 - 0.001 / 0.999);
+					var amount1 = qty1 * px1;// * 0.999;
 					//console.log(binance.first(validacionDatos['ETHUSDT_'].data));
 					//console.log("px: " + px1 + ", qty: " + qty1 + ", amount: " + amount1);
 								
-					var qty3 = qty2 * (1 - 0.001 / 0.999);// * binance.first(validacionDatos['LTCETH_'].data);
+					var qty3 = qty2 * 0.999;// * binance.first(validacionDatos['LTCETH_'].data);
 					str = String(qty3).split(".");
 					qty3 = Number(str[0] + '.' + str[1].substr(0, objDecimales['LTCUSDT']))
 					
 					var px3 = binance.first(validacionDatos['LTCUSDT'].data);
-					var amount3 = qty3 * px3 * (1 - 0.001 / 0.999);
+					var amount3 = qty3 * px3 * 0.999;
 					//console.log("px: " + px3 + ", qty: " + qty3 + ", amount: " + amount3);
 					var result = amount3;
 					//console.log(result);
 					result = result - amount1;
 					//console.log("RES: " + ((qty1 * px1) - amount3));
+					
+					//result = qty1 - amount;
+					
 					var volAnt = 0;
 					for(let obj in validacionDatos['LTCETH_'].data){
 						if(order.price == validacionDatos['LTCETH_'].data[obj]){
@@ -209,26 +212,26 @@ function fnNormal(){
 					
 					
 					var px5 = order.price;//lowestAsk;
-					var amount5 = qty5 * px5 * (1 - 0.001 / 0.999);
-					console.log("px: " + px5 + ", qty: " + qty5 + ", amount: " + amount5);
+					var amount5 = qty5 * px5 * 0.999;
+					//console.log("px: " + px5 + ", qty: " + qty5 + ", amount: " + amount5);
 					
-					var qty4 = (qty5 * px5 * (1 + 0.001 / 0.999)) / (Number(binance.first(validacionDatos['ETHUSDT_'].data)));//11.9 / Number(binance.first(validacionDatos['ETHUSDT_'].data));
+					var qty4 = (qty5 * px5 * 1.001) / (Number(binance.first(validacionDatos['ETHUSDT_'].data)));//11.9 / Number(binance.first(validacionDatos['ETHUSDT_'].data));
 					str = String(qty4).split(".");
 					qty4 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))
 					
 					var px4 = binance.first(validacionDatos['ETHUSDT_'].data);
-					var amount4 = qty4 * px4 * (1 - 0.001 / 0.999);
+					var amount4 = qty4 * px4 * 0.999;
 					//console.log(binance.first(validacionDatos['ETHUSDT_'].data));
-					console.log("px: " + px4 + ", qty: " + qty4 + ", amount: " + amount4);
+					//console.log("px: " + px4 + ", qty: " + qty4 + ", amount: " + amount4);
 					
-					var qty6 = qty5 * (1 - 0.001 / 0.999);// * binance.first(validacionDatos['LTCETH_'].data);
+					var qty6 = qty5 * 0.999;// * binance.first(validacionDatos['LTCETH_'].data);
 					str = String(qty6).split(".");
 					qty6 = Number(str[0] + '.' + str[1].substr(0, objDecimales['LTCETH']))
 					
 					
 					var px6 = binance.first(validacionDatos['LTCETH_'].data);
-					var amount6 = qty6 * px6 * (1 - 0.001 / 0.999);
-					console.log("px: " + px6 + ", qty: " + qty6 + ", amount: " + amount6);
+					var amount6 = qty6 * px6 * 0.999;
+					//console.log("px: " + px6 + ", qty: " + qty6 + ", amount: " + amount6);
 					var result2 = amount6;
 					console.log(result2);
 					result2 = result2 - qty4;
@@ -265,30 +268,30 @@ function fnNormal(){
 			console.log("NO EXISTE");
 			swOrd = true;
 			//console.log("ORDER: " + countOrd);
-			var qty2 = 0.1;//qty1 * (1 - 0.001 / 0.999) / binance.first(validacionDatos['LTCETH_'].data);//lowestAsk;
+			var qty2 = 0.1;//qty1 * 0.999 / binance.first(validacionDatos['LTCETH_'].data);//lowestAsk;
 			str = String(qty2).split(".");
 			qty2 = Number(str[0] + '.' + str[1].substr(0, objDecimales['LTCETH']))
 			var px2 = binance.first(validacionDatos['LTCETH_'].data);//lowestAsk;
-			var amount2 = qty2 * px2 * (1 - 0.001 / 0.999);
+			var amount2 = qty2 * px2 * 0.999;
 			//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 			
-			var qty1 = qty2 * px2 * (1 + 0.001 / 0.999);//lowestAsk; //11.9 / (Number(binance.first(validacionDatos['ETHUSDT'].data)) + 0.000001);
+			var qty1 = qty2 * px2 * 1.001;//lowestAsk; //11.9 / (Number(binance.first(validacionDatos['ETHUSDT'].data)) + 0.000001);
 			str = String(qty1).split(".");
 			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))
 			//console.log(qty1);
 			var px1 = binance.first(validacionDatos['ETHUSDT'].data);
-			var amount1 = qty1 * px1 * (1 - 0.001 / 0.999);
+			var amount1 = qty1 * px1;// * 0.999;
 			//console.log(binance.first(validacionDatos['ETHUSDT_'].data));
 			//console.log("px: " + px1 + ", qty: " + qty1 + ", amount: " + amount1);
 			
 			
 			
 			
-			var qty3 = qty2 * (1 - 0.001 / 0.999);// * binance.first(validacionDatos['LTCETH_'].data);
+			var qty3 = qty2 * 0.999;// * binance.first(validacionDatos['LTCETH_'].data);
 			str = String(qty3).split(".");
 			qty3 = Number(str[0] + '.' + str[1].substr(0, objDecimales['LTCUSDT']))
 			var px3 = binance.first(validacionDatos['LTCUSDT'].data);
-			var amount3 = qty3 * px3 * (1 - 0.001 / 0.999);
+			var amount3 = qty3 * px3 * 0.999;
 			//console.log("px: " + px3 + ", qty: " + qty3 + ", amount: " + amount3);
 			var result = amount3;
 			//console.log(result);
@@ -306,24 +309,24 @@ function fnNormal(){
 			qty5 = Number(str[0] + '.' + str[1].substr(0, objDecimales['LTCUSDT']))
 					
 			var px5 = binance.first(validacionDatos['LTCUSDT'].data);//lowestAsk;
-			var amount5 = qty5 * px5 * (1 - 0.001 / 0.999);
+			var amount5 = qty5 * px5 * 0.999;//----> USDT
 			//console.log("px: " + px5 + ", qty: " + qty5 + ", amount: " + amount5);
 			
-			var qty4 = (qty5 * px5 * (1 + 0.001 / 0.999)) / (Number(binance.first(validacionDatos['ETHUSDT_'].data)) - 0.000001);//11.9 / (Number(binance.first(validacionDatos['ETHUSDT_'].data)) - 0.000001)
+			var qty4 = (qty5 * px5 * 1.001) / (Number(binance.first(validacionDatos['ETHUSDT_'].data)));//11.9 / (Number(binance.first(validacionDatos['ETHUSDT_'].data)) - 0.000001)
 			str = String(qty4).split(".");
 			qty4 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))
 			var px4 = binance.first(validacionDatos['ETHUSDT_'].data);
-			var amount4 = qty4 * px4 * (1 - 0.001 / 0.999);
+			var amount4 = qty4 * px4 * 0.999;
 			//console.log(binance.first(validacionDatos['ETHUSDT_'].data));
 			//console.log("px: " + px4 + ", qty: " + qty4 + ", amount: " + amount4);
 			
-			var qty6 = qty5 * (1 - 0.001 / 0.999);// * binance.first(validacionDatos['LTCETH_'].data);
+			var qty6 = qty5 * 0.999;// * binance.first(validacionDatos['LTCETH_'].data);
 			
 			str = String(qty6).split(".");
 			//console.log(qty6)
 			qty6 = Number(str[0] + '.' + str[1].substr(0, objDecimales['LTCETH']))
 			var px6 = binance.first(validacionDatos['LTCETH_'].data);
-			var amount6 = qty6 * px6 * (1 - 0.001 / 0.999);
+			var amount6 = qty6 * px6 * 0.999;
 			//console.log("px: " + px6 + ", qty: " + qty6 + ", amount: " + amount6);
 			var result2 = amount6;
 			//console.log(result2);
@@ -682,7 +685,14 @@ function fnConsulta(qty2, px2, qty3, px3, symbol1, symbol2, msg, result, op){
 			}
 			order = orderStatus;
 			if(orderStatus.status == 'FILLED'){
-				fnRemate(qty2, px2, qty3, px3, symbol1, symbol2, msg, op);
+				if(result == -10){
+					opG = op;
+					ev = 'remate';
+					swOrd = true;
+				} else {
+					fnRemate(qty2, px2, qty3, px3, symbol1, symbol2, msg, op);	
+				}
+				
 				order = null;
 			} else if(orderStatus.status == 'CANCELED'){
 				console.log("******** Orden Cancelada " + order.orderId + " ******* --> " + swOrd);
