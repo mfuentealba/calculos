@@ -155,14 +155,17 @@ function fnNormal(){
 					
 					var px2 = order.price;//lowestAsk;
 					var amount2 = qty2 * px2 * 0.999;
+					amount2 = amount2.toFixed(8);
 					//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 					
 					
-					var qty1 = qty2 * px2 * 1.001;//11.9 / Number(binance.first(validacionDatos['ETHUSDT'].data));
-					str = String(qty1).split(".");
-					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))
+					var qty1 = (qty2 * px2) / 0.999;//11.9 / Number(binance.first(validacionDatos['ETHUSDT'].data));
+					/*str = String(qty1).split(".");
+					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))*/
+					qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
 					var px1 = binance.first(validacionDatos['ETHUSDT'].data);
 					var amount1 = qty1 * px1;// * 0.999;
+					amount1 = amount1.toFixed(8);
 					//console.log(binance.first(validacionDatos['ETHUSDT_'].data));
 					//console.log("px: " + px1 + ", qty: " + qty1 + ", amount: " + amount1);
 								
@@ -172,6 +175,7 @@ function fnNormal(){
 					
 					var px3 = binance.first(validacionDatos['LTCUSDT'].data);
 					var amount3 = qty3 * px3 * 0.999;
+					amount3 = amount3.toFixed(8);
 					//console.log("px: " + px3 + ", qty: " + qty3 + ", amount: " + amount3);
 					var result = amount3;
 					//console.log(result);
@@ -213,14 +217,16 @@ function fnNormal(){
 					
 					var px5 = order.price;//lowestAsk;
 					var amount5 = qty5 * px5 * 0.999;
+					amount5 = amount5.toFixed(8);
 					//console.log("px: " + px5 + ", qty: " + qty5 + ", amount: " + amount5);
 					
-					var qty4 = (qty5 * px5 * 1.001) / (Number(binance.first(validacionDatos['ETHUSDT_'].data)));//11.9 / Number(binance.first(validacionDatos['ETHUSDT_'].data));
+					var qty4 = (qty5 * px5 / 0.999) / (Number(binance.first(validacionDatos['ETHUSDT_'].data)));//11.9 / Number(binance.first(validacionDatos['ETHUSDT_'].data));
 					str = String(qty4).split(".");
 					qty4 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))
 					
 					var px4 = binance.first(validacionDatos['ETHUSDT_'].data);
 					var amount4 = qty4 * px4 * 0.999;
+					amount4 = amount4.toFixed(8);
 					//console.log(binance.first(validacionDatos['ETHUSDT_'].data));
 					//console.log("px: " + px4 + ", qty: " + qty4 + ", amount: " + amount4);
 					
@@ -231,6 +237,7 @@ function fnNormal(){
 					
 					var px6 = binance.first(validacionDatos['LTCETH_'].data);
 					var amount6 = qty6 * px6 * 0.999;
+					amount6 = amount6.toFixed(8);
 					//console.log("px: " + px6 + ", qty: " + qty6 + ", amount: " + amount6);
 					var result2 = amount6;
 					console.log(result2);
@@ -273,14 +280,17 @@ function fnNormal(){
 			qty2 = Number(str[0] + '.' + str[1].substr(0, objDecimales['LTCETH']))
 			var px2 = binance.first(validacionDatos['LTCETH_'].data);//lowestAsk;
 			var amount2 = qty2 * px2 * 0.999;
+			amount2 = amount2.toFixed(8);
 			//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 			
-			var qty1 = qty2 * px2 * 1.001;//lowestAsk; //11.9 / (Number(binance.first(validacionDatos['ETHUSDT'].data)) + 0.000001);
-			str = String(qty1).split(".");
-			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))
+			var qty1 = (qty2 * px2) / 0.999;;//lowestAsk; //11.9 / (Number(binance.first(validacionDatos['ETHUSDT'].data)) + 0.000001);
+			/*str = String(qty1).split(".");
+			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))*/
+			qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
 			//console.log(qty1);
 			var px1 = binance.first(validacionDatos['ETHUSDT'].data);
 			var amount1 = qty1 * px1;// * 0.999;
+			amount1 = amount1.toFixed(8);
 			//console.log(binance.first(validacionDatos['ETHUSDT_'].data));
 			//console.log("px: " + px1 + ", qty: " + qty1 + ", amount: " + amount1);
 			
@@ -292,6 +302,7 @@ function fnNormal(){
 			qty3 = Number(str[0] + '.' + str[1].substr(0, objDecimales['LTCUSDT']))
 			var px3 = binance.first(validacionDatos['LTCUSDT'].data);
 			var amount3 = qty3 * px3 * 0.999;
+			amount3 = amount3.toFixed(8);
 			//console.log("px: " + px3 + ", qty: " + qty3 + ", amount: " + amount3);
 			var result = amount3;
 			//console.log(result);
@@ -310,13 +321,15 @@ function fnNormal(){
 					
 			var px5 = binance.first(validacionDatos['LTCUSDT'].data);//lowestAsk;
 			var amount5 = qty5 * px5 * 0.999;//----> USDT
+			amount5 = amount5.toFixed(8);
 			//console.log("px: " + px5 + ", qty: " + qty5 + ", amount: " + amount5);
 			
-			var qty4 = (qty5 * px5 * 1.001) / (Number(binance.first(validacionDatos['ETHUSDT_'].data)));//11.9 / (Number(binance.first(validacionDatos['ETHUSDT_'].data)) - 0.000001)
+			var qty4 = (qty5 * px5 / 0.999) / (Number(binance.first(validacionDatos['ETHUSDT_'].data)));//11.9 / (Number(binance.first(validacionDatos['ETHUSDT_'].data)) - 0.000001)
 			str = String(qty4).split(".");
 			qty4 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))
 			var px4 = binance.first(validacionDatos['ETHUSDT_'].data);
 			var amount4 = qty4 * px4 * 0.999;
+			amount4 = amount4.toFixed(8);
 			//console.log(binance.first(validacionDatos['ETHUSDT_'].data));
 			//console.log("px: " + px4 + ", qty: " + qty4 + ", amount: " + amount4);
 			
@@ -327,6 +340,7 @@ function fnNormal(){
 			qty6 = Number(str[0] + '.' + str[1].substr(0, objDecimales['LTCETH']))
 			var px6 = binance.first(validacionDatos['LTCETH_'].data);
 			var amount6 = qty6 * px6 * 0.999;
+			amount6 = amount6.toFixed(8);
 			//console.log("px: " + px6 + ", qty: " + qty6 + ", amount: " + amount6);
 			var result2 = amount6;
 			//console.log(result2);
@@ -542,10 +556,11 @@ function fnEspera(){
 	ee.removeListener('remate', fnEspera);
 	
 	for(let str in objOrdenRemateFallo){
+		console.log(str);
 		var ordA = objOrdenRemateFallo[str];
 		binance.orderStatus(ordA.symbol, ordA.orderId, (error, orderStatus, symbol) => {
 			console.log(symbol + " order status:", orderStatus);
-			fsLauncher.appendFileSync('./bin3.txt', symbol + " DIF: " +  result + " order status: " + JSON.stringify(orderStatus) + " \n", (err) => {
+			fsLauncher.appendFileSync('./bin3.txt', symbol + " order status: " + JSON.stringify(orderStatus) + " \n", (err) => {
 					if (err) throw err;
 						////console.log('The "data to append" was appended to file!');
 					});  
@@ -685,7 +700,7 @@ function fnConsulta(qty2, px2, qty3, px3, symbol1, symbol2, msg, result, op){
 			}
 			order = orderStatus;
 			if(orderStatus.status == 'FILLED'){
-				if(result == -10){
+				if(result < 0){
 					opG = op;
 					ev = 'remate';
 					swOrd = true;
