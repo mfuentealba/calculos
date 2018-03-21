@@ -160,9 +160,10 @@ function fnNormal(){
 					
 					
 					var qty1 = (qty2 * px2) / 0.999;//11.9 / Number(binance.first(validacionDatos['ETHUSDT'].data));
-					/*str = String(qty1).split(".");
-					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))*/
-					qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
+					str = String(qty1).split(".");
+					
+					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT'])) + Math.pow(10, -objDecimales['ETHUSDT']);
+					//qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
 					var px1 = binance.first(validacionDatos['ETHUSDT'].data);
 					var amount1 = qty1 * px1;// * 0.999;
 					amount1 = amount1.toFixed(8);
@@ -284,9 +285,9 @@ function fnNormal(){
 			//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 			
 			var qty1 = (qty2 * px2) / 0.999;;//lowestAsk; //11.9 / (Number(binance.first(validacionDatos['ETHUSDT'].data)) + 0.000001);
-			/*str = String(qty1).split(".");
-			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))*/
-			qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
+			str = String(qty1).split(".");
+			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT'])) + Math.pow(10, -objDecimales['ETHUSDT']);
+			//qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
 			//console.log(qty1);
 			var px1 = binance.first(validacionDatos['ETHUSDT'].data);
 			var amount1 = qty1 * px1;// * 0.999;
@@ -564,7 +565,7 @@ function fnEspera(){
 					if (err) throw err;
 						////console.log('The "data to append" was appended to file!');
 					});  
-			console.log("******** consultando orden " + order.orderId + " ******* --> " + swOrd);
+			console.log("******** consultando orden " + ordA.orderId + " ******* --> " + swOrd);
 			if(error && error.body){
 				console.log(error.body);
 				
@@ -572,7 +573,7 @@ function fnEspera(){
 					if (err) throw err;
 						////console.log('The "data to append" was appended to file!');
 					});  
-				console.log("******** ERROR EN BUSQUEDA " + order.orderId + " ******* --> " + swOrd);
+				console.log("******** ERROR EN BUSQUEDA " + ordA.orderId + " ******* --> " + swOrd);
 				swOrd = true;
 				
 			}
@@ -592,7 +593,7 @@ function fnEspera(){
 				order = null;
 			} else {
 				ee.on('remate', fnEspera);
-				console.log("******** Fin Consulta orden " + order.orderId + " ******* --> " + swOrd);
+				console.log("******** Fin Consulta orden " + ordA.orderId + " ******* --> " + swOrd);
 				swOrd = true;	
 			}
 			
