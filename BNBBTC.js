@@ -160,9 +160,9 @@ function fnNormal(){
 					
 					
 					var qty1 = (qty2 * px2) / 0.999;//11.9 / Number(binance.first(validacionDatos['BTCUSDT'].data));
-					/*str = String(qty1).split(".");
-					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['BTCUSDT']))*/
-					qty1 = qty1.toFixed(objDecimales['BTCUSDT']);
+					str = String(qty1).split(".");
+					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['BTCUSDT'])) + Math.pow(10, -objDecimales['BTCUSDT']);
+					//qty1 = qty1.toFixed(objDecimales['BTCUSDT']);
 					var px1 = binance.first(validacionDatos['BTCUSDT'].data);
 					var amount1 = qty1 * px1;// * 0.999;
 					amount1 = amount1.toFixed(8);
@@ -284,9 +284,9 @@ function fnNormal(){
 			//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 			
 			var qty1 = (qty2 * px2) / 0.999;;//lowestAsk; //11.9 / (Number(binance.first(validacionDatos['BTCUSDT'].data)) + 0.000001);
-			/*str = String(qty1).split(".");
-			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['BTCUSDT']))*/
-			qty1 = qty1.toFixed(objDecimales['BTCUSDT']);
+			str = String(qty1).split(".");
+			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['BTCUSDT'])) + Math.pow(10, -objDecimales['BTCUSDT']);
+			//qty1 = qty1.toFixed(objDecimales['BTCUSDT']);
 			//console.log(qty1);
 			var px1 = binance.first(validacionDatos['BTCUSDT'].data);
 			var amount1 = qty1 * px1;// * 0.999;

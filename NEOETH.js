@@ -149,7 +149,7 @@ function fnNormal(){
 				if(order.symbol == 'NEOETH'){
 					console.log("ORDER: " + countOrd);
 					
-					var qty2 = 10;//qty1 * 0.999 / order.price;//lowestAsk;
+					var qty2 = 0.5;//qty1 * 0.999 / order.price;//lowestAsk;
 					/*str = String(qty2).split(".");
 					qty2 = 10;//Number(str[0] + '.' + str[1].substr(0, objDecimales['NEOETH']))
 					*/
@@ -160,9 +160,10 @@ function fnNormal(){
 					
 					
 					var qty1 = (qty2 * px2) / 0.999;//11.9 / Number(binance.first(validacionDatos['ETHUSDT'].data));
-					/*str = String(qty1).split(".");
-					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))*/
-					qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
+					str = String(qty1).split(".");
+					
+					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT'])) + Math.pow(10, -objDecimales['ETHUSDT']);
+					//qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
 					var px1 = binance.first(validacionDatos['ETHUSDT'].data);
 					var amount1 = qty1 * px1;// * 0.999;
 					amount1 = amount1.toFixed(8);
@@ -210,7 +211,7 @@ function fnNormal(){
 					
 				} else if(order.symbol == 'NEOUSDT'){
 					
-					var qty5 = 10;//amount4 / order.price;//lowestAsk;
+					var qty5 = 0.5;//amount4 / order.price;//lowestAsk;
 					/*str = String(qty5).split(".");
 					qty5 = Number(str[0] + '.' + str[1].substr(0, objDecimales['NEOUSDT']))
 					*/
@@ -275,7 +276,7 @@ function fnNormal(){
 			console.log("NO EXISTE");
 			swOrd = true;
 			//console.log("ORDER: " + countOrd);
-			var qty2 = 10;//qty1 * 0.999 / binance.first(validacionDatos['NEOETH_'].data);//lowestAsk;
+			var qty2 = 0.5;//qty1 * 0.999 / binance.first(validacionDatos['NEOETH_'].data);//lowestAsk;
 			/*str = String(qty2).split(".");
 			qty2 = Number(str[0] + '.' + str[1].substr(0, objDecimales['NEOETH']))*/
 			var px2 = binance.first(validacionDatos['NEOETH_'].data);//lowestAsk;
@@ -284,9 +285,9 @@ function fnNormal(){
 			//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 			
 			var qty1 = (qty2 * px2) / 0.999;;//lowestAsk; //11.9 / (Number(binance.first(validacionDatos['ETHUSDT'].data)) + 0.000001);
-			/*str = String(qty1).split(".");
-			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']))*/
-			qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
+			str = String(qty1).split(".");
+			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT'])) + Math.pow(10, -objDecimales['ETHUSDT']);
+			//qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
 			//console.log(qty1);
 			var px1 = binance.first(validacionDatos['ETHUSDT'].data);
 			var amount1 = qty1 * px1;// * 0.999;
@@ -314,7 +315,7 @@ function fnNormal(){
 			
 			
 			
-			var qty5 = 10;//amount4 / binance.first(validacionDatos['NEOUSDT'].data);//lowestAsk;
+			var qty5 = 0.5;//amount4 / binance.first(validacionDatos['NEOUSDT'].data);//lowestAsk;
 			
 			/*str = String(qty5).split(".");
 			qty5 = Number(str[0] + '.' + str[1].substr(0, objDecimales['NEOUSDT']))*/
