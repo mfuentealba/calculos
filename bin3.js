@@ -38,9 +38,21 @@ function balance_update(data) {
 	for ( let obj of data.B ) {
 		let { a:asset, f:available, l:onOrder } = obj;
 		if ( available == "0.00000000" ) continue;
-		console.log(asset+"\tavailable: "+available+" ("+onOrder+" on order)");
+		var balance = asset+"\tavailable: "+available+" ("+onOrder+" on order)";
+		console.log(balance);
+		fsBalance.appendFileSync('./Balance.txt', balance + " \n", (err) => {
+			if (err) throw err;
+				////console.log('The "data to append" was appended to file!');
+			}); 
 	}
+	
+	fsBalance.appendFileSync('./Balance.txt', "\n\n\n\n\n", (err) => {
+			if (err) throw err;
+				////console.log('The "data to append" was appended to file!');
+			})
 }
+
+
 function execution_update(data) {
 	let { x:executionType, s:symbol, p:price, q:quantity, S:side, o:orderType, i:orderId, X:orderStatus } = data;
 	if ( executionType == "NEW" ) {
@@ -113,6 +125,7 @@ binance.websockets.depthCache(["LTCUSDT"], function(symbol, depth) {
 
 
 var fsLauncher = require('fs');
+var fsBalance = require('fs');
 
 var validacionDatos = {};
 var sw = false;
@@ -186,10 +199,10 @@ function fnNormal(){
 					//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 					
 					
-					var qty1 = (qty2 * px2) / 0.999;//11.9 / Number(binance.first(validacionDatos['ETHUSDT'].data));
+					var qty1 = ((qty2 * px2) / 0.999) + Math.pow(10, -objDecimales['ETHUSDT']);//11.9 / Number(binance.first(validacionDatos['ETHUSDT'].data));
 					str = String(qty1).split(".");
 					
-					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT'])) + Math.pow(10, -objDecimales['ETHUSDT']);
+					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']));
 					//qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
 					var px1 = binance.first(validacionDatos['ETHUSDT'].data);
 					var amount1 = qty1 * px1;// * 0.999;
@@ -311,9 +324,9 @@ function fnNormal(){
 			amount2 = amount2.toFixed(8);
 			//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 			
-			var qty1 = (qty2 * px2) / 0.999;;//lowestAsk; //11.9 / (Number(binance.first(validacionDatos['ETHUSDT'].data)) + 0.000001);
+			var qty1 = ((qty2 * px2) / 0.999) + Math.pow(10, -objDecimales['ETHUSDT']);//lowestAsk; //11.9 / (Number(binance.first(validacionDatos['ETHUSDT'].data)) + 0.000001);
 			str = String(qty1).split(".");
-			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT'])) + Math.pow(10, -objDecimales['ETHUSDT']);
+			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['ETHUSDT']));
 			//qty1 = qty1.toFixed(objDecimales['ETHUSDT']);
 			//console.log(qty1);
 			var px1 = binance.first(validacionDatos['ETHUSDT'].data);

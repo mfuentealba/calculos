@@ -29,6 +29,42 @@ var swOrd = true;
 var ord1 = {};
 var ord2 = {};
 
+function balance_update(data) {
+	console.log("Balance Update");
+	for ( let obj of data.B ) {
+		let { a:asset, f:available, l:onOrder } = obj;
+		if ( available == "0.00000000" ) continue;
+		var balance = asset+"\tavailable: "+available+" ("+onOrder+" on order)";
+		console.log(balance);
+		fsBalance.appendFileSync('./Balance.txt', balance + " \n", (err) => {
+			if (err) throw err;
+				////console.log('The "data to append" was appended to file!');
+			}); 
+	}
+	
+	fsBalance.appendFileSync('./Balance.txt', "\n\n\n\n\n", (err) => {
+			if (err) throw err;
+				////console.log('The "data to append" was appended to file!');
+			})
+}
+
+
+function execution_update(data) {
+	let { x:executionType, s:symbol, p:price, q:quantity, S:side, o:orderType, i:orderId, X:orderStatus } = data;
+	if ( executionType == "NEW" ) {
+		if ( orderStatus == "REJECTED" ) {
+			console.log("Order Failed! Reason: "+data.r);
+		}
+		console.log(symbol+" "+side+" "+orderType+" ORDER #"+orderId+" ("+orderStatus+")");
+		console.log("..price: "+price+", quantity: "+quantity);
+		return;
+	}
+	//NEW, CANCELED, REPLACED, REJECTED, TRADE, EXPIRED
+	console.log(symbol+"\t"+side+" "+executionType+" "+orderType+" ORDER #"+orderId);
+}
+
+binance.websockets.userData(balance_update, execution_update);
+
 
 binance.websockets.depthCache(["ETHUSDT"], function(symbol, depth) {
 	let max = 10; // Show 10 closest orders only
@@ -565,7 +601,7 @@ function fnEspera(){
 					if (err) throw err;
 						////console.log('The "data to append" was appended to file!');
 					});  
-			console.log("******** consultando orden " + order.orderId + " ******* --> " + swOrd);
+			console.log("******** consultando orden " + ordA.orderId + " ******* --> " + swOrd);
 			if(error && error.body){
 				console.log(error.body);
 				
@@ -573,7 +609,7 @@ function fnEspera(){
 					if (err) throw err;
 						////console.log('The "data to append" was appended to file!');
 					});  
-				console.log("******** ERROR EN BUSQUEDA " + order.orderId + " ******* --> " + swOrd);
+				console.log("******** ERROR EN BUSQUEDA " + ordA.orderId + " ******* --> " + swOrd);
 				swOrd = true;
 				
 			}

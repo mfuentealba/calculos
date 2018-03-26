@@ -23,6 +23,42 @@ var swOrd = true;
 var ord1 = {};
 var ord2 = {};
 
+function balance_update(data) {
+	console.log("Balance Update");
+	for ( let obj of data.B ) {
+		let { a:asset, f:available, l:onOrder } = obj;
+		if ( available == "0.00000000" ) continue;
+		var balance = asset+"\tavailable: "+available+" ("+onOrder+" on order)";
+		console.log(balance);
+		fsBalance.appendFileSync('./Balance.txt', balance + " \n", (err) => {
+			if (err) throw err;
+				////console.log('The "data to append" was appended to file!');
+			}); 
+	}
+	
+	fsBalance.appendFileSync('./Balance.txt', "\n\n\n\n\n", (err) => {
+			if (err) throw err;
+				////console.log('The "data to append" was appended to file!');
+			})
+}
+
+
+function execution_update(data) {
+	let { x:executionType, s:symbol, p:price, q:quantity, S:side, o:orderType, i:orderId, X:orderStatus } = data;
+	if ( executionType == "NEW" ) {
+		if ( orderStatus == "REJECTED" ) {
+			console.log("Order Failed! Reason: "+data.r);
+		}
+		console.log(symbol+" "+side+" "+orderType+" ORDER #"+orderId+" ("+orderStatus+")");
+		console.log("..price: "+price+", quantity: "+quantity);
+		return;
+	}
+	//NEW, CANCELED, REPLACED, REJECTED, TRADE, EXPIRED
+	console.log(symbol+"\t"+side+" "+executionType+" "+orderType+" ORDER #"+orderId);
+}
+
+binance.websockets.userData(balance_update, execution_update);
+
 
 var objDecimales = {BNBBTC: 2, ONTBTC: 0, NEOBTC: 2, QTUMBTC: 2, 
 					BNBUSDT: 2, NEOUSDT: 3, BTCUSDT: 6, ETHUSDT: 5, LTCUSDT: 5, BCCUSDT: 5, QTUMBTC: 3,
@@ -161,9 +197,9 @@ function fnNormal(){
 					//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 					
 					
-					var qty1 = (qty2 * px2) / 0.999;//11.9 / Number(binance.first(validacionDatos['BTCUSDT'].data));
+					var qty1 = ((qty2 * px2) / 0.999) + Math.pow(10, -objDecimales['BTCUSDT']);//11.9 / Number(binance.first(validacionDatos['BTCUSDT'].data));
 					str = String(qty1).split(".");
-					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['BTCUSDT'])) + Math.pow(10, -objDecimales['BTCUSDT']);
+					qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['BTCUSDT']));
 					//qty1 = qty1.toFixed(objDecimales['BTCUSDT']);
 					var px1 = binance.first(validacionDatos['BTCUSDT'].data);
 					var amount1 = qty1 * px1;// * 0.999;
@@ -285,9 +321,9 @@ function fnNormal(){
 			amount2 = amount2.toFixed(8);
 			//console.log("px: " + px2 + ", qty: " + qty2 + ", amount: " + amount2);
 			
-			var qty1 = (qty2 * px2) / 0.999;;//lowestAsk; //11.9 / (Number(binance.first(validacionDatos['BTCUSDT'].data)) + 0.000001);
+			var qty1 = ((qty2 * px2) / 0.999) + Math.pow(10, -objDecimales['BTCUSDT']);
 			str = String(qty1).split(".");
-			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['BTCUSDT'])) + Math.pow(10, -objDecimales['BTCUSDT']);
+			qty1 = Number(str[0] + '.' + str[1].substr(0, objDecimales['BTCUSDT']));
 			//qty1 = qty1.toFixed(objDecimales['BTCUSDT']);
 			//console.log(qty1);
 			var px1 = binance.first(validacionDatos['BTCUSDT'].data);
@@ -566,7 +602,7 @@ function fnEspera(){
 					if (err) throw err;
 						////console.log('The "data to append" was appended to file!');
 					});  
-			console.log("******** consultando orden " + order.orderId + " ******* --> " + swOrd);
+			console.log("******** consultando orden " + ordA.orderId + " ******* --> " + swOrd);
 			if(error && error.body){
 				console.log(error.body);
 				
@@ -574,7 +610,7 @@ function fnEspera(){
 					if (err) throw err;
 						////console.log('The "data to append" was appended to file!');
 					});  
-				console.log("******** ERROR EN BUSQUEDA " + order.orderId + " ******* --> " + swOrd);
+				console.log("******** ERROR EN BUSQUEDA " + ordA.orderId + " ******* --> " + swOrd);
 				swOrd = true;
 				
 			}
