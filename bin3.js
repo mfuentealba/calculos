@@ -55,12 +55,25 @@ function balance_update(data) {
 
 function execution_update(data) {
 	let { x:executionType, s:symbol, p:price, q:quantity, S:side, o:orderType, i:orderId, X:orderStatus } = data;
+	
+	fsBalance.appendFileSync('./Balance.txt', JSON.stringify(data) + " \n", (err) => {
+		if (err) throw err;
+			////console.log('The "data to append" was appended to file!');
+		});	
 	if ( executionType == "NEW" ) {
 		if ( orderStatus == "REJECTED" ) {
 			console.log("Order Failed! Reason: "+data.r);
 		}
 		console.log(symbol+" "+side+" "+orderType+" ORDER #"+orderId+" ("+orderStatus+")");
+		fsBalance.appendFileSync('./Balance.txt', symbol+" "+side+" "+orderType+" ORDER #"+orderId+" ("+orderStatus+")" + " \n", (err) => {
+		if (err) throw err;
+			////console.log('The "data to append" was appended to file!');
+		});
 		console.log("..price: "+price+", quantity: "+quantity);
+		fsBalance.appendFileSync('./Balance.txt', "..price: "+price+", quantity: "+quantity + " \n", (err) => {
+		if (err) throw err;
+			////console.log('The "data to append" was appended to file!');
+		});
 		return;
 	}
 	//NEW, CANCELED, REPLACED, REJECTED, TRADE, EXPIRED
