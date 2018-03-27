@@ -61,6 +61,10 @@ function execution_update(data) {
 	}
 	//NEW, CANCELED, REPLACED, REJECTED, TRADE, EXPIRED
 	console.log(symbol+"\t"+side+" "+executionType+" "+orderType+" ORDER #"+orderId);
+	fsBalance.appendFileSync('./Balance.txt', symbol+"\t"+side+" "+executionType+" "+orderType+" ORDER #"+orderId + " \n", (err) => {
+		if (err) throw err;
+			////console.log('The "data to append" was appended to file!');
+		});
 }
 
 binance.websockets.userData(balance_update, execution_update);
