@@ -56,6 +56,31 @@ function balance_update(data) {
 function execution_update(data) {
 	let { x:executionType, s:symbol, p:price, q:quantity, S:side, o:orderType, i:orderId, X:orderStatus } = data;
 	
+	if(executionType == 'FILLED'){
+		if(result < 0){
+			opG = op;
+			ev = 'remate';
+			swOrd = true;
+		} else {
+			fnRemate(qty2, px2, qty3, px3, symbol1, symbol2, msg, op);	
+		}
+		
+		order = null;
+	} else if(executionType == 'PARTIALLY_FILLED'){
+		if(result == -10){
+			fsLauncher.appendFileSync('./bin3.txt', "ORDEN TAPADA \n", (err) => {
+				if (err) throw err;
+					////console.log('The "data to append" was appended to file!');
+				});
+		} else {
+			opG = op;
+			ev = 'remate';
+			
+		}
+		swOrd = true;
+	}
+	
+	
 	fsBalance.appendFileSync('./Balance.txt', JSON.stringify(data) + " \n", (err) => {
 		if (err) throw err;
 			////console.log('The "data to append" was appended to file!');
@@ -255,14 +280,14 @@ function fnNormal(){
 					
 					if(result < 0){
 						
-						//fnCancel(qty1, px1, qty3, px3, 'ETHUSDT', 'LTCUSDT', " Se Pierde dif: " + result);
-						fnConsulta(qty1, px1, qty3, px3, 'ETHUSDT', 'LTCUSDT', " Se Pierde dif: " + result, result, 'buy');
+						fnCancel(qty1, px1, qty3, px3, 'ETHUSDT', 'LTCUSDT', " Se Pierde dif: " + result);
+						//fnConsulta(qty1, px1, qty3, px3, 'ETHUSDT', 'LTCUSDT', " Se Pierde dif: " + result, result, 'buy');
 						
 					} else if(volAnt > order.origQty * 500 && order.status == 'NEW'){
-						//fnCancel(qty1, px1, qty3, px3, 'ETHUSDT', 'LTCUSDT', " Se Pierde Posicion");
-						fnConsulta(qty1, px1, qty3, px3, 'ETHUSDT', 'LTCUSDT', " Se Pierde Posicion", -10, 'buy');
+						fnCancel(qty1, px1, qty3, px3, 'ETHUSDT', 'LTCUSDT', " Se Pierde Posicion");
+						//fnConsulta(qty1, px1, qty3, px3, 'ETHUSDT', 'LTCUSDT', " Se Pierde Posicion", -10, 'buy');
 					} else {
-						fnConsulta(qty1, px1, qty3, px3, 'ETHUSDT', 'LTCUSDT', " COnsulta ordinaria ", 10, 'buy');
+						//fnConsulta(qty1, px1, qty3, px3, 'ETHUSDT', 'LTCUSDT', " COnsulta ordinaria ", 10, 'buy');
 					}
 					
 					
@@ -313,14 +338,14 @@ function fnNormal(){
 					console.log("[ " + result2 + " ]");
 					if(result2 < 0){
 						
-						//fnCancel(qty4, px4, qty6, px6, 'ETHUSDT', 'LTCETH', " Se Pierde dif: " + result2);
-						fnConsulta(qty4, px4, qty6, px6, 'ETHUSDT', 'LTCETH', " Se Pierde dif: " + result2, result2, 'sell');
+						fnCancel(qty4, px4, qty6, px6, 'ETHUSDT', 'LTCETH', " Se Pierde dif: " + result2);
+						//fnConsulta(qty4, px4, qty6, px6, 'ETHUSDT', 'LTCETH', " Se Pierde dif: " + result2, result2, 'sell');
 						
 					} else if(volAnt > order.origQty * 500 && order.status == 'NEW'){
-						//fnCancel(qty4, px4, qty6, px6, 'ETHUSDT', 'LTCETH', " Se Pierde Posicion");
-						fnConsulta(qty4, px4, qty6, px6, 'ETHUSDT', 'LTCETH', " Se Pierde Posicion", -10, 'sell');
+						fnCancel(qty4, px4, qty6, px6, 'ETHUSDT', 'LTCETH', " Se Pierde Posicion");
+						//fnConsulta(qty4, px4, qty6, px6, 'ETHUSDT', 'LTCETH', " Se Pierde Posicion", -10, 'sell');
 					} else {
-						fnConsulta(qty4, px4, qty6, px6, 'ETHUSDT', 'LTCETH', " Consulta ordinaria", 10, 'sell');
+						//fnConsulta(qty4, px4, qty6, px6, 'ETHUSDT', 'LTCETH', " Consulta ordinaria", 10, 'sell');
 					}
 					
 				}			
