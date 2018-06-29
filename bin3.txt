@@ -4,3 +4,9 @@ LTCETH DIF: 0.004977339999999941 order status: {"symbol":"LTCETH","orderId":1326
 CANCELACION DE ORDEN 13260738
  Se Pierde dif: -0.013733659999999759
 {"symbol":"LTCETH","origClientOrderId":"Jpe2IkfEhGfDogEBz1s66E","orderId":13260738,"clientOrderId":"nQ8GobK2EOt2OeNrCvCyeR"} 
+ [ 0.0016223100000001267 :: 0 ]
+Limit Buy response, {"symbol":"LTCETH","orderId":15100370,"clientOrderId":"TP4ssN8ZV5byqcn3r8J1NU","transactTime":1523635839107,"price":"0.25400000","origQty":"0.10000000","executedQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY"} 
+LTCETH DIF: 0.0016223100000001267 order status: {"symbol":"LTCETH","orderId":15100370,"clientOrderId":"TP4ssN8ZV5byqcn3r8J1NU","price":"0.25400000","origQty":"0.10000000","executedQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","stopPrice":"0.00000000","icebergQty":"0.00000000","time":1523635839107,"isWorking":true} 
+CANCELACION DE ORDEN 15100370
+ Se Pierde dif: -0.009566890000000328
+{"symbol":"LTCETH","origClientOrderId":"TP4ssN8ZV5byqcn3r8J1NU","orderId":15100370,"clientOrderId":"EQhTn0sHELPExMQxKqfwEF"} 
