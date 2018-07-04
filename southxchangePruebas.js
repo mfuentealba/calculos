@@ -6,6 +6,11 @@ Secreto: tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU
 
 //P5Kc7UjcwjTHe8bg6dT9yr1g3kvVj1sw74ogyYHdst7z5h7cNfEP
 
+
+'use strict'
+
+var secret = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
+
 	
 	//try {
 
@@ -49,7 +54,7 @@ Secreto: tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU
 		
 		const crypto = require('crypto');
 				
-		const hmac = crypto.createSign('sha512');//, 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU');
+		const hmac = crypto.createHmac('sha512', secret);
 		
 		//console.log(hmac);
 		
@@ -57,18 +62,18 @@ Secreto: tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU
 		
 		var nonce = date.getTime();
 		
-		var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', listingCurrency: 'CHA', referenceCurrency: 'BTC', type: 'buy', amount: 0.00004, limitPrice: 0.00004}
+		var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', listingCurrency: 'CHA', referenceCurrency: 'BTC', type: 'buy', amount: 0.004, limitPrice: 0.00004}
 		
 		//console.log(req);
 		
-		var hash = hmac.update(req, 'utf-8').sign('tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU')//hmac.update(JSON.stringify(req), 'utf8')//.digest('hex');
+		var hash = hmac.update(JSON.stringify(req), 'utf8').digest('hex');
 		
 		console.log(hash);
 		
 		var headers = {
 			//'User-Agent':       'Super Agent/0.0.1',
 			'Content-Type':     'application/json',
-			'Hash': 			hash
+			'Hash': 			hash//createToken()
 		}
 		
 		var options = {
@@ -84,8 +89,10 @@ Secreto: tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU
 		
 		
 		
-		request.post(options, function(respuesta) {
-			console.log(respuesta);
+		request.post(options, function(err,httpResponse,body) {
+			console.log(err);
+			console.log(httpResponse);
+			console.log(body);
 		}).on('error', function(error) {
 		  // Ocurrió un error en el request
 		  console.log('Error encontrado al realizar la consulta: ' + error.message);

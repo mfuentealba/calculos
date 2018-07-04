@@ -12,6 +12,8 @@
     "graphql-client": "^2.0.0",
     "graphql-tag": "^2.6.1",
     "jssha": "^2.3.1",
+    "jwt-simple": "^0.5.1",
+    "moment": "^2.22.2",
     "node-fetch": "^1.7.3"
   },
   "devDependencies": {
