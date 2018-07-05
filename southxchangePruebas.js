@@ -24,7 +24,7 @@ var secret = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
 		// Realiza la petición
 		var http = require('https');
 		//console.log(URL);
-		/*var peticion = http.get(URL, function(respuesta) {
+		var peticion = http.get(URL, function(respuesta) {
 		
 		  
 		  var cancionesJSON = '';
@@ -46,7 +46,7 @@ var secret = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
 		}).on('error', function(error) {
 		  // Ocurrió un error en el request
 		  console.log('Error encontrado al realizar la consulta: ' + error.message);
-		});*/
+		});
 		//var request = require('request');
 		
 		
@@ -90,9 +90,76 @@ var secret = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
 		
 		
 		request.post(options, function(err,httpResponse,body) {
-			console.log(err);
-			console.log(httpResponse);
-			console.log(body);
+			/*console.log(err);
+			console.log(httpResponse);*/
+			console.log(body.split(" ").length);
+			if(body.split(" ").length == 1){
+				console.log(body);
+				var date = new Date;
+		
+				var nonce = date.getTime();
+				
+				var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', orderCode: body}
+				
+				console.log(req);
+				const hmac = crypto.createHmac('sha512', secret);
+				
+				var hash = hmac.update(JSON.stringify(req), 'utf8').digest('hex');
+				
+				console.log(hash);
+				
+				var headers = {
+					//'User-Agent':       'Super Agent/0.0.1',
+					'Content-Type':     'application/json',
+					'Hash': 			hash//createToken()
+				}
+				
+				var options = {
+					url     : 'https://www.southxchange.com/api/cancelOrder ',
+					method  : 'POST',
+					//jar     : true,
+					headers : headers,
+					json : true,
+					body:	req//JSON.stringify(req)
+				}
+
+				request.post(options, function(err,httpResponse,body) {
+					console.log(body);
+						console.log(body);
+					var date = new Date;
+			
+					var nonce = date.getTime();
+					
+					var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}
+					
+					console.log(req);
+					const hmac = crypto.createHmac('sha512', secret);
+					
+					var hash = hmac.update(JSON.stringify(req), 'utf8').digest('hex');
+					
+					console.log(hash);
+					
+					var headers = {
+						//'User-Agent':       'Super Agent/0.0.1',
+						'Content-Type':     'application/json',
+						'Hash': 			hash//createToken()
+					}
+					
+					var options = {
+						url     : 'https://www.southxchange.com/api/listOrders',
+						method  : 'POST',
+						//jar     : true,
+						headers : headers,
+						json : true,
+						body:	req//JSON.stringify(req)
+					}
+
+					request.post(options, function(err,httpResponse,body) {
+						console.log(body);
+					});
+				});
+					
+			}
 		}).on('error', function(error) {
 		  // Ocurrió un error en el request
 		  console.log('Error encontrado al realizar la consulta: ' + error.message);
