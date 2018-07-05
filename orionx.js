@@ -32,7 +32,7 @@ process.on('message', (msg) => {
    */
   async function fullQuery(url, query, apiKey, apiSecretKey) {
     // New actual Time-Stamp
-    let timeStamp = new Date().getTime() / 1000;
+    let timeStamp = new Date().getTime();
   
     // Operating info of shaObj
     shaObj.setHMACKey(apiSecretKey, 'TEXT');
