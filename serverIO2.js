@@ -1,8 +1,13 @@
 'use strict'
 
-setInterval(fnOrionx, 10000);
+setInterval(fnOrionx, 3000);
+const crypto = require('crypto');
+var request = require('request');
+var arrOrionBuy;
+var arrOrionSell;
 
-
+var arrSouthBuy;
+var arrSouthSell;
 
 async function fnOrionx(){
 	let query = {                        
@@ -11,18 +16,55 @@ async function fnOrionx(){
 
 	var libroOrion = await main(query);
 	
-	console.log(libroOrion);
-	
+	//console.log(libroOrion);
+  
+  arrOrionBuy = libroOrion.data.marketOrderBook.buy;
+  arrOrionSell = libroOrion.data.marketOrderBook.sell;
 	var secret = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
 
-	
-	//try {
+  
+				
+  var hmac = crypto.createHmac('sha512', secret);
+	var date = new Date;
+			
+  var nonce = date.getTime();
+  
+  var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}
+  
+  console.log(req);
+  var hmac = crypto.createHmac('sha512', secret);
+  
+  var hash = hmac.update(JSON.stringify(req), 'utf8').digest('hex');
+  
+  console.log(hash);
+  
+  var headers = {
+    //'User-Agent':       'Super Agent/0.0.1',
+    'Content-Type':     'application/json',
+    'Hash': 			hash//createToken()
+  }
+  
+  var options = {
+    url     : 'https://www.southxchange.com/api/listOrders',
+    method  : 'POST',
+    //jar     : true,
+    headers : headers,
+    json : true,
+    body:	req//JSON.stringify(req)
+  }
 
-	  // URLs para consulta y formación de links
-	  var URL = 'https://www.southxchange.com/api/book/CHA/BTC';
+  request.post(options, function(err,httpResponse,body) {
+    console.log(body);
+    arrSouthBuy = body.OrderBuys;
+  });
+  
+  
+
+
+	var URL = 'https://www.southxchange.com/api/book/CHA/BTC';
 	  
 	  
-		var respJSON;
+		var respJSON = '';
 	  
 		
 		// Realiza la petición
@@ -39,11 +81,12 @@ async function fnOrionx(){
 		  // Una vez finalizada la respuesta se procesa
 		  respuesta.on('end', function() {
 			  
-			//var data = JSON.parse(respJSON); 
+			
 			
 			//console.log(respJSON);
-			
-			
+			var data = JSON.parse(respJSON); 
+      arrSouthBuy = data.BuyOrders;
+      arrSouthSell = data.SellOrders;
 			
 		  });
 
@@ -51,7 +94,6 @@ async function fnOrionx(){
 		  // Ocurrió un error en el request
 		  console.log('Error encontrado al realizar la consulta: ' + error.message);
 		});
-	
 	
 }
 
