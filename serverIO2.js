@@ -1,13 +1,21 @@
 'use strict'
 
-setInterval(fnOrionx, 3000);
+
+
+
 const crypto = require('crypto');
 var request = require('request');
 var arrOrionBuy;
 var arrOrionSell;
-
+var balanceSouth;	
+var indexBalance = {};
 var arrSouthBuy;
 var arrSouthSell;
+var order;
+var secretSouth = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
+
+fnBalanceSouth();
+setInterval(fnBalanceSouth, 20000);
 
 async function fnOrionx(){
 	let query = {                        
@@ -18,82 +26,98 @@ async function fnOrionx(){
 	
 	//console.log(libroOrion);
   
-  arrOrionBuy = libroOrion.data.marketOrderBook.buy;
-  arrOrionSell = libroOrion.data.marketOrderBook.sell;
-	var secret = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
+	arrOrionBuy = libroOrion.data.marketOrderBook.buy;
+	arrOrionSell = libroOrion.data.marketOrderBook.sell; 
+	
+	
+	
+	
+	
+	var date = new Date;			
+	var nonce = date.getTime();  
+	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}  
+	var headers = fnHeader(req);
 
-  
-				
-  var hmac = crypto.createHmac('sha512', secret);
-	var date = new Date;
-			
-  var nonce = date.getTime();
-  
-  var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}
-  
-  console.log(req);
-  var hmac = crypto.createHmac('sha512', secret);
-  
-  var hash = hmac.update(JSON.stringify(req), 'utf8').digest('hex');
-  
-  console.log(hash);
-  
-  var headers = {
-    //'User-Agent':       'Super Agent/0.0.1',
-    'Content-Type':     'application/json',
-    'Hash': 			hash//createToken()
-  }
-  
-  var options = {
-    url     : 'https://www.southxchange.com/api/listOrders',
-    method  : 'POST',
-    //jar     : true,
-    headers : headers,
-    json : true,
-    body:	req//JSON.stringify(req)
-  }
+	var options = {
+	url     : 'https://www.southxchange.com/api/listOrders',
+	method  : 'POST',
+	//jar     : true,
+	headers : headers,
+	json : true,
+	body:	req//JSON.stringify(req)
+	}
 
-  request.post(options, function(err,httpResponse,body) {
-    console.log(body);
-    arrSouthBuy = body.OrderBuys;
-  });
-  
-  
-
-
-	var URL = 'https://www.southxchange.com/api/book/CHA/BTC';
-	  
-	  
-		var respJSON = '';
-	  
-		
+	request.post(options, function(err,httpResponse,body) {
+		console.log(body);
+		order = body[0]
+		var URL = 'https://www.southxchange.com/api/book/CHA/BTC';  
+		var respJSON = '';		
 		// Realiza la petición
 		var http = require('https');
 		//console.log(URL);
-		var peticion = http.get(URL, function(respuesta) {
-		
-		  
-		  var cancionesJSON = '';
-		  respuesta.on('data', function(respuestaJSON) {
+		var peticion = http.get(URL, function(respuesta) {		  
+			var cancionesJSON = '';
+			respuesta.on('data', function(respuestaJSON) {
 			respJSON += respuestaJSON;
-		  });
+			});
+			// Una vez finalizada la respuesta se procesa
+			respuesta.on('end', function() {				
+				//console.log(respJSON);
+				var data = JSON.parse(respJSON); 
+				arrSouthBuy = data.BuyOrders;
+				arrSouthSell = data.SellOrders;		
 
-		  // Una vez finalizada la respuesta se procesa
-		  respuesta.on('end', function() {
-			  
-			
-			
-			//console.log(respJSON);
-			var data = JSON.parse(respJSON); 
-      arrSouthBuy = data.BuyOrders;
-      arrSouthSell = data.SellOrders;
-			
-		  });
+				if(order && arrSouthBuy[0].Price > order.LimitPrice){
+					fnCancelOrder();
+				}
+				
+				console.log("Orion Buy: " + (arrOrionBuy[0].limitPrice / 100000000));
+				console.log("Orion Sell: " + (arrOrionSell[0].limitPrice / 100000000));
+				console.log("South Buy: " + arrSouthBuy[0].Price);
+				console.log("South Sell: " + arrSouthSell[0].Price);
+				
+				if(!order){
+					console.log("Sin Orden");
+					if(arrOrionBuy[0].limitPrice / 100000000 - arrSouthBuy[0].Price > 0.000001 || arrSouthBuy[0].Price / (arrOrionBuy[0].limitPrice / 100000000) > 0.1){
+						console.log("Creando Orden");
+						fnCreateOrder();
+					}
+				}
+				var arrMercado = [];
+				
+				for(let datOr of arrOrionBuy){
+					if(arrSouthSell[0].Price < datOr){
+						arrMercado.push(datOr); 
+					} else {
+						break;
+					}
+				}
+				
+				
+				for(let datSo of arrSouthSell){
+					for(let datOr of arrOrionBuy){
+						if(datSo.Price < datOr){
+							arrMercado.push(datOr); 
+						} else {
+							break;
+						}
+					}
+				}
+				
+				
+				if(arrSouthBuy[0].Price > order.LimitPrice){
+					
+				}
+				
+			});
 
 		}).on('error', function(error) {
 		  // Ocurrió un error en el request
 		  console.log('Error encontrado al realizar la consulta: ' + error.message);
 		});
+	  
+    
+  })	
 	
 }
 
@@ -179,3 +203,137 @@ let mutation = {
   
   };
 //main(mutation);
+
+
+function fnCancelOrder(){
+	var date = new Date;		
+	var nonce = date.getTime();
+	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', orderCode: order.Code}	
+	var headers = fnHeader(req);
+	
+	var options = {
+		url     : 'https://www.southxchange.com/api/cancelOrder ',
+		method  : 'POST',
+		//jar     : true,
+		headers : headers,
+		json : true,
+		body:	req//JSON.stringify(req)
+	}
+
+	request.post(options, function(err,httpResponse,body) {
+		console.log(body);
+			
+	});
+}
+
+function fnHeader(req){
+				
+	const hmac = crypto.createHmac('sha512', secretSouth);	
+	var hash = hmac.update(JSON.stringify(req), 'utf8').digest('hex');	
+	return {
+		//'User-Agent':       'Super Agent/0.0.1',
+		'Content-Type':     'application/json',
+		'Hash': 			hash//createToken()
+	}
+}
+
+function fnCreateOrder(){
+	var date = new Date;		
+	var nonce = date.getTime();
+	
+	var vol = indexBalance['BTC'].Available / 2;
+	vol = vol / (arrSouthBuy[0].Price + 0.00000001);
+	
+	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', listingCurrency: 'CHA', referenceCurrency: 'BTC', type: 'buy', amount: 50, limitPrice: (arrSouthBuy[0].Price + 0.00000001)}	
+	var headers = fnHeader(req);
+	
+	
+	var options = {
+		url     : 'https://www.southxchange.com/api/placeOrder',
+		method  : 'POST',
+		//jar     : true,
+		headers : headers,
+		json : true,
+		body:	req//JSON.stringify(req)
+	}	
+		
+	request.post(options, function(err,httpResponse,body) {
+		console.log(body);
+		if(body.split(" ").length == 1){
+			console.log(body);
+			
+				
+		}
+	}).on('error', function(error) {
+	  // Ocurrió un error en el request
+	  console.log('Error encontrado al realizar la consulta: ' + error.message);
+	});
+}
+
+function fnCreateOrderMarket(){
+	var date = new Date;		
+	var nonce = date.getTime();
+	
+	var vol = indexBalance['BTC'].Available;
+	vol = vol / (arrSouthSell[0].Price);
+	
+	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', listingCurrency: 'CHA', referenceCurrency: 'BTC', type: 'buy', amount: 50, limitPrice: (arrSouthSell[0].Price)}	
+	var headers = fnHeader(req);
+	
+	
+	var options = {
+		url     : 'https://www.southxchange.com/api/placeOrder',
+		method  : 'POST',
+		//jar     : true,
+		headers : headers,
+		json : true,
+		body:	req//JSON.stringify(req)
+	}	
+		
+	request.post(options, function(err,httpResponse,body) {
+		console.log(body);
+		if(body.split(" ").length == 1){
+			console.log(body);
+			
+				
+		}
+	}).on('error', function(error) {
+	  // Ocurrió un error en el request
+	  console.log('Error encontrado al realizar la consulta: ' + error.message);
+	});
+}
+
+function fnBalanceSouth(){
+	var date = new Date;		
+	var nonce = date.getTime();
+	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}	
+	var headers = fnHeader(req);
+	
+	
+	var options = {
+		url     : 'https://www.southxchange.com/api/listBalances',
+		method  : 'POST',
+		//jar     : true,
+		headers : headers,
+		json : true,
+		body:	req//JSON.stringify(req)
+	}	
+		
+	request.post(options, function(err,httpResponse,body) {
+		console.log(body);
+		
+		balanceSouth = body;
+		
+		for(var i = 0; i < balanceSouth.length; i++){
+			var obj = balanceSouth[i];
+			indexBalance[obj.Currency] = obj;
+		}
+		
+		fnOrionx();
+	}).on('error', function(error) {
+	  // Ocurrió un error en el request
+	  console.log('Error encontrado al realizar la consulta: ' + error.message);
+	});
+	
+	
+}
