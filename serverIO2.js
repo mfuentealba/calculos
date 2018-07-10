@@ -1,7 +1,11 @@
 'use strict'
 
+
 const crypto = require('crypto');
 var request = require('request');
+var moment = require('moment');
+var day = moment(1318781876406);
+console.log(day);
 var fs = require('fs');
 var arrOrionBuy;
 var arrOrionSell;
@@ -15,16 +19,21 @@ var secretSouth = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
 var objTrades = {};
 
 fs.readFile("./data.txt", 'utf8', function(err, data) {
-  var arr = data.split("\n");
-  console.log(arr);
-  for(let i of arr){
-    if(i == ''){
-      break;
-    }
-    let obj = JSON.parse(arr[i]);
-    objTrades[obj.Code] = obj;
-    
+  try{
+	var arr = data.split("\n");
+	 console.log(arr);
+	 for(let i of arr){
+		if(i == ''){
+		  break;
+		}
+		let obj = JSON.parse(arr[i]);
+		objTrades[obj.Code] = obj;
+		
+	  }  
+  } catch(err){
+	  console.log(err);
   }
+  
   fnBalanceSouth();
   setInterval(fnBalanceSouth, 20000);
   
@@ -38,6 +47,13 @@ fs.readFile("./data.txt", 'utf8', function(err, data) {
 
 
 async function fnOrionx(){
+	let query = {                        
+		query: '{marketOrderBook(marketCode: "CHABTC", limit:20){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
+	};
+
+	var libroOrion = await main(query);
+	
+	
 	let query = {                        
 		query: '{marketOrderBook(marketCode: "CHABTC", limit:20){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
 	};
@@ -71,6 +87,10 @@ async function fnOrionx(){
 	
 }
 
+
+
+
+
 async function fnListOrders(err,httpResponse,body) {
   console.log(body);
   orders = body;
@@ -83,11 +103,15 @@ async function fnListOrders(err,httpResponse,body) {
     } else {
       objTrades[order.Code].Amount = order.Amount;
       order.ejecutados = order.OriginalAmount - order.Amount;
+	  if(order.OriginalAmount != order.Amount){
+		  fs.appendFileSync('./data.txt', JSON.stringify(order) + "\n", (err) => {
+			  if (err) throw err;
+			  console.log('The "data to append" was appended to file!');
+			});
+		  
+	  }
     }
-    fs.appendFileSync('./data.txt', JSON.stringify(order) + "\n", (err) => {
-      if (err) throw err;
-      console.log('The "data to append" was appended to file!');
-    });
+    
   }
   var URL = 'https://www.southxchange.com/api/book/CHA/BTC';  
   var respJSON = '';		
@@ -127,7 +151,7 @@ async function fnListOrders(err,httpResponse,body) {
           console.log((arrOrionBuy[0].limitPrice / 100000000)  >  arrSouthSell[0].Price);
           console.log((arrSouthSell[1].Price  - arrSouthSell[0].Price)  > 0.0000001);
           console.log((arrSouthSell[1].Price  - arrSouthSell[0].Price));
-          console.log('EVALUANDO');
+          console.log('FIN EVALUACION');
 
           if(arrSouthSell[0].Price < order.LimitPrice || arrOrionBuy[0].limitPrice / 100000000 > arrSouthSell[0].Price || arrSouthSell[1].Price - arrSouthSell[0].Price > 0.0000001){
             await fnCancelOrder(order);
@@ -186,7 +210,8 @@ async function fnListOrders(err,httpResponse,body) {
         await fnEnviaMoneda();
       } else {
         if(indexBalance['CHA'].Available > 0){
-          await fnCreateOrder('sell');
+			await fnCreateOrder('sell');	
+			
         }
       }
 
@@ -481,6 +506,10 @@ function fnBalanceSouth(){
 		//console.log(body);
 		
 		balanceSouth = body;
+		if(balanceSouth.length == 0){
+			console.log("No hay balance");
+			return;
+		} 
     console.log(balanceSouth);
     try{
       for(var i = 0; i < balanceSouth.length; i++){
@@ -500,5 +529,10 @@ function fnBalanceSouth(){
 	  console.log('Error encontrado al realizar la consulta: ' + error.message);
 	});
 	
+	
+}
+
+
+function fnBalanceOrion(){
 	
 }
