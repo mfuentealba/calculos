@@ -13,20 +13,31 @@ var arrSouthSell;
 var orders;
 var secretSouth = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
 var objTrades = {};
+var balanceOrion;
+var indexOrionBalance = {};
+var tradesOrion;
+var moment = require('moment');
+console.log(moment());
 
 fs.readFile("./data.txt", 'utf8', function(err, data) {
-  var arr = data.split("\n");
-  console.log(arr);
-  for(let i of arr){
-    if(i == ''){
-      break;
-    }
-    let obj = JSON.parse(arr[i]);
-    objTrades[obj.Code] = obj;
-    
-  }
-  fnBalanceSouth();
-  setInterval(fnBalanceSouth, 20000);
+	try{
+		var arr = data.split("\n");
+		//console.log(arr);
+		for(let i of arr){
+			console.log(i);
+			if(i == ''){
+			  break;
+			}
+			let obj = JSON.parse(i);
+			objTrades[obj.Code] = obj;
+
+		}	
+	} catch(err){
+		console.log(err);
+	}
+  
+	fnBalanceSouth();
+	setInterval(fnBalanceSouth, 20000);
   
 });
 
@@ -46,18 +57,65 @@ async function fnOrionx(){
   
 
 	let query2 = {                        
-		query: `{wallets(userId:"RwbP7oG97zoLShK6H") {
-      _id
-      balance
-      availableBalance
-      unconfirmedBalance
-}}`
+		query: `query getUserWallets {
+  me {
+    _id
+    country {
+      code
+      __typename
+    }
+    wallets {
+      currency {
+        code
+        __typename
+      }
+      ...walletListItem
+      __typename
+    }
+    __typename
+  }
+}
+
+fragment walletListItem on Wallet {
+  _id
+  balance  
+  availableBalance
+  unconfirmedBalance  
+}`
   };
   
-  console.log(await main(query2));
+  //console.log(await main(query2));
+  balanceOrion = await main(query2);
+  balanceOrion = balanceOrion.data;
+  balanceOrion = balanceOrion.me;
+  balanceOrion = balanceOrion.wallets;
+  console.log("khsdgfjksgfkljsgjkldf");
+  //balanceOrion = await main(query2).data.me.wallets;
 
+	for(let objWallet of balanceOrion){
+		indexOrionBalance[objWallet.currency.code];
+	}
 	
-	//console.log(libroOrion);
+	
+	let query3 = {                        
+		query: `{
+  history: marketTradeHistory(marketCode: "CHABTC") {
+    _id
+    amount
+    price
+    date
+    __typename
+  }
+}`
+  };
+	
+	tradesOrion = await main(query3);
+	tradesOrion = tradesOrion.data;
+	tradesOrion = tradesOrion.history;
+	//console.log(tradesOrion);
+	
+	//for()
+	
   
 	arrOrionBuy = libroOrion.data.marketOrderBook.buy;
 	arrOrionSell = libroOrion.data.marketOrderBook.sell; 
@@ -85,6 +143,7 @@ async function fnOrionx(){
 async function fnListOrders(err,httpResponse,body) {
   console.log(body);
   orders = body;
+  var buyOrder = false;
   for(let order of orders){
     if(!objTrades[order.Code]){
       order.liquidados = 0;
@@ -120,13 +179,63 @@ async function fnListOrders(err,httpResponse,body) {
       arrSouthBuy = data.BuyOrders;
       arrSouthSell = data.SellOrders;
       
-      console.log(arrSouthSell[0]);
+      console.log(arrSouthSell[0]);  
       console.log(arrSouthBuy[0]);
+	  
+	  
+	  var price = 0;
+	  var priceLibro = 0;
+	  var vol = 0;
+	  
+	  for(let datoSo of arrSouthBuy){
+		  vol = indexBalance['BTC'].Deposited / 2;
+		  vol = (vol / datoSo.Price + 0.00000001);
+		  price = (datoSo.Price + 0.00000001);
+		  priceLibro = datoSo.Price;
+		  var ganancia = 0;
+		  var swDif = false;
+		  var dif = 0;
+		  var difPercent = 0;
+		  console.log("PRUEBA VALOR " + price);
+		  
+		  console.log("Volumen estimado: " + vol);
+		  for(let dato of arrOrionBuy){
+			//console.log((dato.limitPrice / 100000000) + ' - ' + price);  
+			//console.log(dato.amount / 100000000);
+			//console.log(dif + ' + ' + (((dato.limitPrice / 100000000) - price) * dato.amount / 100000000));
+			dif = ((dato.limitPrice / 100000000) - price)// * dato.amount / 100000000;
+			difPercent = 1 - (price / (dato.limitPrice / 100000000))// * dato.amount / 100000000;
+			
+			
+			
+			
+			if(difPercent < 0.1/*dif < 0*/){
+				swDif = false;
+				console.log("No sirve");
+				break;
+			} else if(vol - dato.amount / 100000000 < 0){
+				swDif = true;
+				dif = dif * vol;
+				console.log((dif / vol) + ' <--------> ' + vol + ' price: ' + (dato.limitPrice / 100000000));
+				break;
+			} else {
+				vol -= dato.amount / 100000000;
+				dif = dif * dato.amount / 100000000;
+			}
+			console.log((dif / (dato.amount / 100000000)) + ' <--------> ' + vol + ' price: ' + (dato.limitPrice / 100000000));
+			ganancia += dif;
+		  } 
+		  if(swDif){
+			break;
+		  }
+	  }
+	  console.log(ganancia);
+	  console.log("FIN PRUEBA VALOR: " + swDif);
 
       for(let order of orders){
         if(order.Type == 'buy'){
-          console.log(arrSouthBuy[0].Price + ' - ' + arrSouthBuy[1].Price)
-          if(arrSouthBuy[0].Price > order.LimitPrice || arrSouthBuy[0].Price - arrSouthBuy[1].Price > 0.0000001 || arrOrionBuy[0].limitPrice / 100000000 - arrSouthBuy[1].Price < 0.000001){
+          console.log(priceLibro + ' > ' + order.LimitPrice);
+          if(/*arrSouthBuy[0].Price*/ priceLibro > order.LimitPrice/* || arrSouthBuy[0].Price - arrSouthBuy[1].Price > 0.000001 || arrOrionBuy[0].limitPrice / 100000000 - arrSouthBuy[1].Price < 0.000001*/){
             await fnCancelOrder(order);
             console.log('eliminada');
           }
@@ -156,13 +265,21 @@ async function fnListOrders(err,httpResponse,body) {
       console.log("South Buy: " + arrSouthBuy[0].Price);
       console.log("South Sell: " + arrSouthSell[0].Price);
       
+	  
+	  
       if(!orders){
         console.log("Sin Orden");
         console.log(arrOrionBuy[0].limitPrice / 100000000 - arrSouthBuy[0].Price > 0.000001);
         console.log(1 - (arrSouthBuy[0].Price / (arrOrionBuy[0].limitPrice / 100000000)) > 0.1);
-        if('1 - ' + arrOrionBuy[0].limitPrice / 100000000 - arrSouthBuy[0].Price > 0.000001 || 1 - (arrSouthBuy[0].Price / (arrOrionBuy[0].limitPrice / 100000000)) > 0.1){
+		
+		
+		
+		
+        if(swDif/* || 1 - (arrSouthBuy[0].Price / (arrOrionBuy[0].limitPrice / 100000000)) > 0.1*/){
           console.log("Creando Orden");
-          var f = await fnCreateOrder('buy').then();
+		  vol = indexBalance['BTC'].Available / 2;
+		  vol = (vol / price);
+          var f = await fnCreateOrder('buy', price, vol).then();
           console.log(f);
           console.log('orden creada');
         }
@@ -178,31 +295,43 @@ async function fnListOrders(err,httpResponse,body) {
           console.log(arrOrionBuy[0].limitPrice / 100000000 - arrSouthBuy[0].Price > 0.000001);
           console.log(1 - arrSouthBuy[0].Price / (arrOrionBuy[0].limitPrice / 100000000) > 0.1);
           console.log('1 - ' + arrSouthBuy[0].Price + ' / ' + (arrOrionBuy[0].limitPrice / 100000000) + ' > ' + 0.1);
-          if(arrOrionBuy[0].limitPrice / 100000000 - arrSouthBuy[0].Price > 0.000001 || 1 - (arrSouthBuy[0].Price / (arrOrionBuy[0].limitPrice / 100000000)) > 0.1){
+		  
+		  
+		  
+          if(swDif/* || 1 - (arrSouthBuy[0].Price / (arrOrionBuy[0].limitPrice / 100000000)) > 0.1*/){
             console.log("Creando Orden");
-            var f = await fnCreateOrder('buy').then();
+			vol = indexBalance['BTC'].Available / 2;
+			vol = (vol / price);
+            var f = await fnCreateOrder('buy', price, vol).then();
             console.log(f);
             console.log('orden creada');
           }         
         }
       }
       console.log('EvalOrderMarket');
-      await fnEvalOrderMarket();
+	  
+	  if(indexBalance['CHA']){
+		await fnEvalOrderMarket();
+		if(indexBalance['CHA'].Deposited > 500){
+			if(indexBalance['CHA'].Available < indexBalance['CHA'].Deposited){
+			  for(let order of orders){
+				if(order.Type == 'sell'){
+				  await fnCancelOrder(order);
+				}
+			  }
+			}         
+			await fnEnviaMoneda();
+		  } else {
+			if(indexBalance['CHA'].Available > 0){
+			  vol = indexBalance['CHA'].Available;
+			  price = (arrSouthSell[0].Price);
+			  await fnCreateOrder('sell', price, vol);
+			}
+		  }  
+	  }
       
-      if(indexBalance['CHA'].Deposited > 500){
-        if(indexBalance['CHA'].Available < indexBalance['CHA'].Deposited){
-          for(let order of orders){
-            if(order.Type == 'sell'){
-              await fnCancelOrder(order);
-            }
-          }
-        }         
-        await fnEnviaMoneda();
-      } else {
-        if(indexBalance['CHA'].Available > 0){
-          await fnCreateOrder('sell');
-        }
-      }
+      
+      
 
       
       
@@ -401,20 +530,11 @@ function fnHeader(req){
 	}
 }
 
-async function fnCreateOrder(type){
+async function fnCreateOrder(type, price, vol){
   //return new Promise(resolve => {
     var date = new Date;		
     var nonce = date.getTime();
-    var vol;
-    var price;
-    if(type == 'buy'){
-      vol = indexBalance['BTC'].Available / 2;
-      vol = vol / (arrSouthBuy[0].Price + 0.00000001);
-      price = (arrSouthBuy[0].Price + 0.00000001);
-    } else {
-      vol = indexBalance['CHA'].Available;
-      price = (arrSouthSell[0].Price);
-    }
+    
     
     var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', listingCurrency: 'CHA', referenceCurrency: 'BTC', type: type, amount: vol, limitPrice: price}	
     var headers = fnHeader(req);

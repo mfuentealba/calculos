@@ -62,7 +62,7 @@ async function main(query) {
     );
 
     console.log('*** Response ***');    // Se imprime la respuesta que llega
-    console.log(res);
+    console.log(res.data.me.wallets[2]);
 
   } catch (e) {
     throw(e);
@@ -78,10 +78,49 @@ let query = {
   }}
 `};
 
+let query2 = {                        
+		query: `{wallets(userId:"RwbP7oG97zoLShK6H") {
+      _id
+      
+}}`
+  };
+
+
+let query3 ={
+	query: `query getUserWallets {
+  me {
+    _id
+    country {
+      code
+      __typename
+    }
+    wallets {
+      currency {
+        code
+        __typename
+      }
+      ...walletListItem
+      __typename
+    }
+    __typename
+  }
+}
+
+fragment walletListItem on Wallet {
+  _id
+  balance  
+  availableBalance
+  unconfirmedBalance  
+}`
+	
+}  
+  console.log(main(query3));
+
+
 //main(query);   
 
 let mutation = {                        
     query: 'mutation {placeLimitOrder(marketCode: "CHABTC", amount:100000000, limitPrice: 1000, sell:false){_id __typename }}'
   
   };
-main(mutation);
+//main(mutation);
