@@ -1,9 +1,26 @@
 // Código creado por AAPABLAZA con base en código de Orionx.io
 const JSSHA = require('jssha');
 const fetch = require('node-fetch');
+var dateFormat = require('dateformat');
+const crypto = require('crypto');
+var request = require('request');
 
 // Creating SHA-OBJ
 const shaObj = new JSSHA('SHA-512', 'TEXT');
+var secretSouth = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
+
+function fnHeader(req){
+				
+	const hmac = crypto.createHmac('sha512', secretSouth);	
+	var hash = hmac.update(JSON.stringify(req), 'utf8').digest('hex');	
+	return {
+		//'User-Agent':       'Super Agent/0.0.1',
+		'Content-Type':     'application/json',
+		'Hash': 			hash//createToken()
+	}
+}
+
+
 
 /**
  * FullQuery() execs queries to an url with a query body, apiKey and secretKey.
@@ -62,7 +79,20 @@ async function main(query) {
     );
 
     console.log('*** Response ***');    // Se imprime la respuesta que llega
-    console.log(res.data.me.wallets[2]);
+	//console.log(res.data.marketOrderBook);
+    /*for(let obj of res.data.history){
+		let d = new Date(obj.date);// - 14400000)
+		
+		console.log(dateFormat(d, "yyyy/mm/dd  HH:MM:ss") + ', price: ' + (obj.price / 100000000) + ', amount: ' + (obj.amount / 100000000));
+	}*/
+	
+	
+	for(let obj of res.data.marketOrderBook.buy){
+		obj.limitPrice = obj.limitPrice / 100000000;
+		obj.amount = obj.amount / 100000000;
+		obj.accumulated = obj.accumulated / 100000000;
+		console.log(obj);
+	}
 
   } catch (e) {
     throw(e);
@@ -71,7 +101,7 @@ async function main(query) {
 
 /* Basic GrapghQL Query */
 let query = {                        
-    query: `{market(code: "BCHBTC"){
+    query: `{market(code: "CASHBTC"){
     lastTrade{
       price
     }
@@ -85,36 +115,42 @@ let query2 = {
 }}`
   };
 
-
-let query3 ={
-	query: `query getUserWallets {
-  me {
+/*
+let query3 = {                        
+		query: `{
+  history: marketTradeHistory(marketCode: "BCHBTC") {
     _id
-    country {
-      code
-      __typename
-    }
-    wallets {
-      currency {
-        code
-        __typename
-      }
-      ...walletListItem
-      __typename
-    }
+    amount
+    price
+    date
     __typename
   }
-}
-
-fragment walletListItem on Wallet {
-  _id
-  balance  
-  availableBalance
-  unconfirmedBalance  
 }`
-	
-}  
-  console.log(main(query3));
+  };
+  
+  
+  let query3 = {                        
+		query: `{
+  history: marketTradeHistory(marketCode: "BCHBTC") {
+    _id
+    amount
+    price
+    date
+    __typename
+  }
+}`
+  };
+  */
+  
+  let query3 = {                        
+		query: '{marketOrderBook(marketCode: "CHABTC", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
+	};
+ main(query3);
+ 
+ 
+ 
+ 
+ 
 
 
 //main(query);   

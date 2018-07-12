@@ -124,7 +124,7 @@ fragment walletListItem on Wallet {
 	
 	var date = new Date;			
 	var nonce = date.getTime();  
-	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}  
+	var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}  
 	var headers = fnHeader(req);
 
 	var options = {
@@ -179,6 +179,7 @@ function fnEvaluaSituacion(){
       swDif = true;
       dif = dif * vol;
       console.log((dif / vol) + ' <--------> ' + vol + ' price: ' + (dato.limitPrice / 100000000));
+	  ganancia += dif;
       break;
     } else {
       vol -= dato.amount / 100000000;
@@ -327,10 +328,10 @@ async function fnListOrders(err,httpResponse,body) {
         }
       }
       console.log('EvalOrderMarket');
-	  
+	  await fnEvalOrderMarket();
 	  if(indexBalance['CHA']){
-		await fnEvalOrderMarket();
-		if(indexBalance['CHA'].Deposited > 500){
+		//await fnEvalOrderMarket();
+		if(indexBalance['CHA'].Deposited > 350){
 			if(indexBalance['CHA'].Available < indexBalance['CHA'].Deposited){
 			  for(let order of orders){
 				if(order.Type == 'sell'){
@@ -368,7 +369,7 @@ function fnEnviaMoneda(){
   console.log('ENVIAR MONEDAS');
   var date = new Date;		
 	var nonce = date.getTime();
-	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', currency: 'CHA', address: 'cZxnpT3boZySKMvdYQMizYTsx7ZDbfjoat', amount: (indexBalance['CHA'].Available - (0.01 * indexBalance['CHA'].Available))}	
+	var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', currency: 'CHA', address: 'cZxnpT3boZySKMvdYQMizYTsx7ZDbfjoat', amount: (indexBalance['CHA'].Available - (0.01 * indexBalance['CHA'].Available))}	
 	var headers = fnHeader(req);
 	
 	
@@ -395,10 +396,13 @@ function fnEvalOrderMarket(){
   var arrMercado = [];
   var i = 0;
   calcBalance = 0;
+  console.log("Comparando Libros");
   for(let datSo of arrSouthSell){
     let datOr = arrOrionBuy[i];
     datOr.dat = 'holas';
     //console.log(datOr);  
+	  
+	console.log(((datSo.Price  * 100000000) + 100) + ' < ' + datOr.limitPrice);
     if((datSo.Price  * 100000000) + 100 < datOr.limitPrice){
       arrMercado.push(datSo);
       datSo.qty = datSo.Amount;
@@ -429,6 +433,7 @@ function fnEvalOrderMarket(){
       qty += obj.Amount - obj.qty;
     }
     console.log(arrMercado);
+	console.log("CREANDO ORDEN A MERCADO");
     fnCreateOrderMarket(price, qty);
   }
 
@@ -519,7 +524,7 @@ let mutation = {
 async function fnCancelOrder(order){
 	var date = new Date;		
 	var nonce = date.getTime();
-	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', orderCode: order.Code}	
+	var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', orderCode: order.Code}	
 	var headers = fnHeader(req);
 	
 	var options = {
@@ -554,7 +559,7 @@ async function fnCreateOrder(type, price, vol){
     var nonce = date.getTime();
     
     
-    var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', listingCurrency: 'CHA', referenceCurrency: 'BTC', type: type, amount: vol, limitPrice: price}	
+    var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', listingCurrency: 'CHA', referenceCurrency: 'BTC', type: type, amount: vol, limitPrice: price}	
     var headers = fnHeader(req);
     
     
@@ -586,7 +591,7 @@ function fnCreateOrderMarket(price, qty){
 	var vol = indexBalance['BTC'].Available;
 	
 	
-	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', listingCurrency: 'CHA', referenceCurrency: 'BTC', type: 'buy', amount: qty, limitPrice: price}	
+	var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh', listingCurrency: 'CHA', referenceCurrency: 'BTC', type: 'buy', amount: qty, limitPrice: price}	
 	var headers = fnHeader(req);
 	
 	
@@ -616,7 +621,7 @@ function fnBalanceSouth(){
   console.log("*** NUEVA OPERACION ***");
 	var date = new Date;		
 	var nonce = date.getTime();
-	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}	
+	var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}	
 	var headers = fnHeader(req);
 	
 	
@@ -673,7 +678,7 @@ async function fnOrionxBalance(){
 	
 	var date = new Date;			
 	var nonce = date.getTime();  
-	var req = {nonce: nonce, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}  
+	var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}  
 	var headers = fnHeader(req);
 
 	var options = {
