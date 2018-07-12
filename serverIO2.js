@@ -140,6 +140,60 @@ fragment walletListItem on Wallet {
 	
 }
 
+
+function fnEvaluaSituacion(){
+  var price = 0;
+  var priceLibro = 0;
+  var vol = 0;
+  var index = 0;
+  for(let datoSo of arrSouthBuy){
+    
+    index++;
+    vol = indexBalance['BTC'].Deposited / 2;
+    vol = (vol / datoSo.Price + 0.00000001);
+    price = (datoSo.Price + 0.00000001);
+    priceLibro = datoSo.Price;
+    var ganancia = 0;
+    var swDif = false;
+    var dif = 0;
+    var difPercent = 0;
+    
+    console.log("PRUEBA VALOR " + price);
+    
+    console.log("Volumen estimado: " + vol);
+    for(let dato of arrOrionBuy){
+    //console.log((dato.limitPrice / 100000000) + ' - ' + price);  
+    //console.log(dato.amount / 100000000);
+    //console.log(dif + ' + ' + (((dato.limitPrice / 100000000) - price) * dato.amount / 100000000));
+    dif = ((dato.limitPrice / 100000000) - price)// * dato.amount / 100000000;
+    difPercent = 1 - (price / (dato.limitPrice / 100000000))// * dato.amount / 100000000;
+    
+    
+    
+    
+    if(/*difPercent < 0.05 && */dif < 0.00000100){
+      swDif = false;
+      console.log("No sirve");
+      break;
+    } else if(vol - dato.amount / 100000000 < 0){
+      swDif = true;
+      dif = dif * vol;
+      console.log((dif / vol) + ' <--------> ' + vol + ' price: ' + (dato.limitPrice / 100000000));
+      break;
+    } else {
+      vol -= dato.amount / 100000000;
+      dif = dif * dato.amount / 100000000;
+    }
+    console.log((dif / (dato.amount / 100000000)) + ' <--------> ' + vol + ' price: ' + (dato.limitPrice / 100000000));
+    ganancia += dif;
+    } 
+    if(swDif){
+    break;
+    }
+  }
+  return {swDif: swDif, price: price, vol: vol, ganancia: ganancia, priceLibro: priceLibro, index: index};
+}
+
 async function fnListOrders(err,httpResponse,body) {
   console.log(body);
   orders = body;
@@ -183,59 +237,23 @@ async function fnListOrders(err,httpResponse,body) {
       console.log(arrSouthBuy[0]);
 	  
 	  
-	  var price = 0;
-	  var priceLibro = 0;
-	  var vol = 0;
-	  
-	  for(let datoSo of arrSouthBuy){
-		  vol = indexBalance['BTC'].Deposited / 2;
-		  vol = (vol / datoSo.Price + 0.00000001);
-		  price = (datoSo.Price + 0.00000001);
-		  priceLibro = datoSo.Price;
-		  var ganancia = 0;
-		  var swDif = false;
-		  var dif = 0;
-		  var difPercent = 0;
-		  console.log("PRUEBA VALOR " + price);
-		  
-		  console.log("Volumen estimado: " + vol);
-		  for(let dato of arrOrionBuy){
-			//console.log((dato.limitPrice / 100000000) + ' - ' + price);  
-			//console.log(dato.amount / 100000000);
-			//console.log(dif + ' + ' + (((dato.limitPrice / 100000000) - price) * dato.amount / 100000000));
-			dif = ((dato.limitPrice / 100000000) - price)// * dato.amount / 100000000;
-			difPercent = 1 - (price / (dato.limitPrice / 100000000))// * dato.amount / 100000000;
-			
-			
-			
-			
-			if(/*difPercent < 0.05 && */dif < 0.00000100){
-				swDif = false;
-				console.log("No sirve");
-				break;
-			} else if(vol - dato.amount / 100000000 < 0){
-				swDif = true;
-				dif = dif * vol;
-				console.log((dif / vol) + ' <--------> ' + vol + ' price: ' + (dato.limitPrice / 100000000));
-				break;
-			} else {
-				vol -= dato.amount / 100000000;
-				dif = dif * dato.amount / 100000000;
-			}
-			console.log((dif / (dato.amount / 100000000)) + ' <--------> ' + vol + ' price: ' + (dato.limitPrice / 100000000));
-			ganancia += dif;
-		  } 
-		  if(swDif){
-			break;
-		  }
-	  }
+      var objResp = fnEvaluaSituacion();
+      var swDif = objResp.swDif;
+      var price = objResp.price;
+      var vol = objResp.vol;
+      var ganancia = objResp.ganancia;
+      var priceLibro = objResp.priceLibro;
+      var index = objResp.index;
 	  console.log("Ganancia: " + ganancia);
 	  console.log("FIN PRUEBA VALOR: " + swDif);
 
       for(let order of orders){
         if(order.Type == 'buy'){
-          console.log(priceLibro + ' > ' + order.LimitPrice);
-          if(/*arrSouthBuy[0].Price*/ priceLibro > order.LimitPrice/* || arrSouthBuy[0].Price - arrSouthBuy[1].Price > 0.000001 || arrOrionBuy[0].limitPrice / 100000000 - arrSouthBuy[1].Price < 0.000001*/){
+          console.log(priceLibro + ' != ' + order.LimitPrice);
+          console.log(index);
+          console.log(order.LimitPrice + ' - ' + arrSouthBuy[index].Price);
+          console.log(order.LimitPrice - arrSouthBuy[index].Price);
+          if(/*arrSouthBuy[0].Price*/ priceLibro != order.LimitPrice || order.LimitPrice - arrSouthBuy[index].Price > 0.00000002/* || arrOrionBuy[0].limitPrice / 100000000 - arrSouthBuy[1].Price < 0.000001*/){
             await fnCancelOrder(order);
             console.log('eliminada');
           }
