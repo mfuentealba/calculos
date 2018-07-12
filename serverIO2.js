@@ -209,7 +209,7 @@ async function fnListOrders(err,httpResponse,body) {
 			
 			
 			
-			if(difPercent < 0.1/*dif < 0*/){
+			if(/*difPercent < 0.05 && */dif < 0.00000100){
 				swDif = false;
 				console.log("No sirve");
 				break;
@@ -229,7 +229,7 @@ async function fnListOrders(err,httpResponse,body) {
 			break;
 		  }
 	  }
-	  console.log(ganancia);
+	  console.log("Ganancia: " + ganancia);
 	  console.log("FIN PRUEBA VALOR: " + swDif);
 
       for(let order of orders){
