@@ -171,7 +171,7 @@ function fnEvaluaSituacion(){
     
     
     
-    if(/*difPercent < 0.05 && */dif < 0.00000100){
+    if(/*difPercent < 0.05 && */dif < 0.00000050){
       swDif = false;
       console.log("No sirve");
       break;
@@ -264,14 +264,14 @@ async function fnListOrders(err,httpResponse,body) {
           
           console.log(arrSouthSell[0].Price + ' < ' +  order.LimitPrice);
           console.log((arrOrionBuy[0].limitPrice / 100000000) + ' > ' + arrSouthSell[0].Price);
-          console.log(arrSouthSell[1].Price  + ' - ' + arrSouthSell[0].Price + ' > 0.0000001');
+          console.log((arrOrionSell[0].Price / 100000000) + " < " + order.LimitPrice);
           console.log(arrSouthSell[0].Price  <  order.LimitPrice);
           console.log((arrOrionBuy[0].limitPrice / 100000000)  >  arrSouthSell[0].Price);
           console.log((arrSouthSell[1].Price  - arrSouthSell[0].Price)  > 0.0000001);
-          console.log((arrSouthSell[1].Price  - arrSouthSell[0].Price));
+          console.log(arrOrionSell[0].Price / 100000000 < order.LimitPrice);
           console.log('EVALUANDO');
 
-          if(arrSouthSell[0].Price < order.LimitPrice || arrOrionBuy[0].limitPrice / 100000000 > arrSouthSell[0].Price || arrSouthSell[1].Price - arrSouthSell[0].Price > 0.0000001){
+          if(arrSouthSell[0].Price < order.LimitPrice || arrOrionBuy[0].limitPrice / 100000000 > arrSouthSell[0].Price || arrOrionSell[0].Price / 100000000 < order.LimitPrice/* || arrSouthSell[1].Price - arrSouthSell[0].Price > 0.0000001*/){
             await fnCancelOrder(order);
             console.log('eliminada');
           }
@@ -341,7 +341,9 @@ async function fnListOrders(err,httpResponse,body) {
 			}         
 			await fnEnviaMoneda();
 		  } else {
-			if(indexBalance['CHA'].Available > 0){
+			 console.log("arrOrionBuy[0].limitPrice < arrSouthSell[0].Price");
+			 console.log(arrOrionBuy[0].limitPrice / 100000000 + " < " + arrSouthSell[0].Price);
+			if(indexBalance['CHA'].Available > 0 && arrOrionBuy[0].limitPrice / 100000000 < arrSouthSell[0].Price){
 			  vol = indexBalance['CHA'].Available;
 			  price = (arrSouthSell[0].Price);
 			  await fnCreateOrder('sell', price, vol);

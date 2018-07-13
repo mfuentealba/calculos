@@ -79,20 +79,14 @@ async function main(query) {
     );
 
     console.log('*** Response ***');    // Se imprime la respuesta que llega
-	//console.log(res.data.marketOrderBook);
-    /*for(let obj of res.data.history){
-		let d = new Date(obj.date);// - 14400000)
-		
-		console.log(dateFormat(d, "yyyy/mm/dd  HH:MM:ss") + ', price: ' + (obj.price / 100000000) + ', amount: ' + (obj.amount / 100000000));
-	}*/
 	
-	
-	for(let obj of res.data.marketOrderBook.buy){
+	console.log(res.data.history);
+	/*for(let obj of res.data.marketOrderBook.buy){
 		obj.limitPrice = obj.limitPrice / 100000000;
 		obj.amount = obj.amount / 100000000;
 		obj.accumulated = obj.accumulated / 100000000;
 		console.log(obj);
-	}
+	}*/
 
   } catch (e) {
     throw(e);
@@ -115,10 +109,12 @@ let query2 = {
 }}`
   };
 
-/*
-let query3 = {                        
+
+  
+  
+  let query3 = {                        
 		query: `{
-  history: marketTradeHistory(marketCode: "BCHBTC") {
+  history: marketTradeHistory(marketCode: "CHABTC",limit:500) {
     _id
     amount
     price
@@ -129,22 +125,9 @@ let query3 = {
   };
   
   
-  let query3 = {                        
-		query: `{
-  history: marketTradeHistory(marketCode: "BCHBTC") {
-    _id
-    amount
-    price
-    date
-    __typename
-  }
-}`
-  };
-  */
-  
-  let query3 = {                        
+  /*let query3 = {                        
 		query: '{marketOrderBook(marketCode: "CHABTC", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
-	};
+	};*/
  main(query3);
  
  
