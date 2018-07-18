@@ -1,8 +1,7 @@
 {
   "name": "nodegraphql",
   "version": "1.0.0",
-  "description": "",
-  "main": "prueba.js",
+  "main": "serverIO2.js",
   "dependencies": {
     "apollo-cache-inmemory": "^1.1.5",
     "apollo-client": "^2.2.0",
@@ -30,5 +29,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mfuentealba/calculos.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mfuentealba/calculos/issues"
+  },
+  "homepage": "https://github.com/mfuentealba/calculos#readme",
+  "description": ""
 }
