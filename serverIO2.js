@@ -7,7 +7,7 @@ var arrOrionBuy;
 var arrOrionSell;
 var balanceSouth;
 var calcBalance = 0;	
-var indexBalance = {};
+var indexBalance = {precios:[]};
 var arrSouthBuy;
 var arrSouthSell;
 var orders;
@@ -15,10 +15,13 @@ var secretSouth = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
 var objTrades = {};
 var balanceOrion;
 var indexOrionBalance = {};
+var orderOrion;
 var tradesOrion;
 var moment = require('moment');
 console.log(moment());
-var objLiq = {};
+var objLiq = {precios:[]};
+var stopLoss = 0;
+var filled = 0;
 
 fs.readFile("./data.txt", 'utf8', function(err, data) {
 	try{
@@ -45,7 +48,11 @@ fs.readFile("./data.txt", 'utf8', function(err, data) {
 
 
 
-
+function fnOrden(points) {
+    points = points.sort(function(a, b){return a-b});
+	points = points.reverse();
+    
+}
 
 
 
@@ -92,9 +99,9 @@ fragment walletListItem on Wallet {
   balanceOrion = balanceOrion.wallets;
   console.log("khsdgfjksgfkljsgjkldf");
   //balanceOrion = await main(query2).data.me.wallets;
-
+	//console.log(balanceOrion);
 	for(let objWallet of balanceOrion){
-		indexOrionBalance[objWallet.currency.code];
+		indexOrionBalance[objWallet.currency.code] = objWallet;
 	}
 	
 	
@@ -116,10 +123,113 @@ fragment walletListItem on Wallet {
 	//console.log(tradesOrion);
 	
 	//for()
+	let query4 = {                        
+		query: `{
+  orders(marketCode: "CHABTC", onlyOpen: true, limit: 0) {
+    totalCount
+    items {
+      _id
+      sell
+      type
+      amount
+      amountToHold
+      secondaryAmount
+      filled
+      secondaryFilled
+      limitPrice
+      createdAt
+      isStop
+      status
+      stopPriceUp
+      stopPriceDown
+ 
+      __typename
+    }
+    __typename
+  }
+}
+`
+  };
+	
+	orderOrion = await main(query4);
+	orderOrion = orderOrion.data.orders.items;
+	console.log(orderOrion);
+	
+	
+	
 	
   
 	arrOrionBuy = libroOrion.data.marketOrderBook.buy;
 	arrOrionSell = libroOrion.data.marketOrderBook.sell; 
+	
+	
+	
+	var volEstimado = indexOrionBalance.balance / 2;
+	if(orderOrion.length == 0){
+		for(let y = 0; y < objLiq.precios.length; y++){
+			let ob = objLiq[objLiq.precios[y]];
+			if(volEstimado - ob.qty > 0){
+				volEstimado -= ob.qty;	
+				ob.enOrden = ob.qty;
+				ob.qty = 0;
+			} else {
+				ob.qty -= volEstimado;	
+				ob.enOrden += volEstimado;
+				volEstimado = 0;
+				break;
+			}
+			
+		}
+		stopLoss = objLiq.precios[y] * 100000000 + 50;
+		console.log("stopLoss: " + stopLoss)
+		createOrderOrion(indexOrionBalance.balance / 2, arrOrionSell[0].price);
+	} else {
+		if(stopLoss < arrOrionBuy[0].price){
+			//Cancelar orden y remate
+			
+			var queryCancel = {                        
+				query: 'mutation {					  cancelOrder(orderId:"' + orderOrion[0]._id + '") {						_id						__typename					  }}'
+			}
+			console.log(queryCancel);
+			//var resp = await main(queryCancel);
+			//remate
+			var queryRemate = {
+				query: 'mutation {  placeMarketOrder(marketCode: "CHABTC", amount: ' + (orderOrion[0].amount - orderOrion[0].filled) + ', sell: true) {    _id    __typename  }}'
+			};
+			console.log(queryRemate);
+			//resp = await main(queryRemate);
+			
+		} else {
+			if(filled != orderOrion[0].filled){
+				var difFill = orderOrion[0].filled - filled;
+				
+				for(let y = 0; y < objLiq.precios.length; y++){
+					let ob = objLiq[objLiq.precios[y]];
+					if(ob.enOrden - difFill > 0){
+						ob.enOrden -= difFill;
+						ob.liquidados += difFill;
+						break;
+					} else {
+						difFill -= ob.enOrden;
+						ob.liquidados += ob.enOrden;
+						ob.enOrden = 0;
+					}	
+				}
+				
+				for(let z = 0; z < y - 1; z++){
+					var ord = objLiq.precios.shift();
+					fs.appendFileSync('./data.txt', JSON.stringify(ord) + "\n", (err) => {
+						if (err) throw err;
+						console.log('The "data to append" was appended to file!');
+					  });
+				}
+				
+			}
+		}
+		stopLoss = objLiq.precios[0] * 100000000 + 50;
+		filled = orderOrion[0].filled;
+	}
+	
 	
 	
 	
@@ -141,6 +251,13 @@ fragment walletListItem on Wallet {
 	
 }
 
+function createOrderOrion(qty, price){
+	let mutation = {                        
+    query: 'mutation {placeLimitOrder(marketCode: "CHABTC", amount:' + qty + ', limitPrice: ' + price + ', sell:true){_id __typename }}'
+  
+  };
+}
+
 
 function fnEvaluaSituacion(){
   var price = 0;
@@ -153,7 +270,7 @@ function fnEvaluaSituacion(){
     
     index++;
     if(datoSo.Amount > 10){
-      vol = indexBalance['BTC'].Deposited / 2;
+      vol = indexBalance['BTC'].Deposited / 8;
       vol = (vol / datoSo.Price + 0.00000001);
       price = (datoSo.Price + 0.00000001);
       priceLibro = datoSo.Price;
@@ -195,7 +312,7 @@ function fnEvaluaSituacion(){
             ganancia += dif;
             swEval = true;
             console.log('GANANCIA: ' + ganancia);
-            vol = indexBalance['BTC'].Deposited / 2;
+            vol = indexBalance['BTC'].Deposited / 8;
             vol = (vol / price);
             dif = 0;
           }
@@ -274,7 +391,9 @@ async function fnListOrders(err,httpResponse,body) {
       order.liquidados = 0;
       order.ejecutados = order.OriginalAmount;
       objTrades[order.Code] = order;
-      objLiq[order.Price] = {qty: order.Amount, enviado: false};
+      objLiq[order.Price] = {qty: order.Amount, enviado: false, enOrden: 0, liquidados: 0, estado: 'V'};
+	  objLiq.precios.push(order.Price);
+	  fnOrden(objLiq.precios);
     } else {
       objTrades[order.Code].Amount = order.Amount;
       order.ejecutados = order.OriginalAmount - order.Amount;
@@ -368,7 +487,7 @@ async function fnListOrders(err,httpResponse,body) {
 		
         if(swDif/* || 1 - (arrSouthBuy[0].Price / (arrOrionBuy[0].limitPrice / 100000000)) > 0.1*/){
           console.log("Creando Orden");
-          vol = indexBalance['BTC'].Available / 2;
+          vol = indexBalance['BTC'].Available / 8;
           vol = (vol / price);
           var f = await fnCreateOrder('buy', price, vol).then();
           console.log(f);
@@ -391,7 +510,7 @@ async function fnListOrders(err,httpResponse,body) {
 		  
           if(swDif/* || 1 - (arrSouthBuy[0].Price / (arrOrionBuy[0].limitPrice / 100000000)) > 0.1*/){
             console.log("Creando Orden");
-            vol = indexBalance['BTC'].Available / 2;
+            vol = indexBalance['BTC'].Available / 8;
             vol = (vol / price);
             var f = await fnCreateOrder('buy', price, vol).then();
             console.log(f);
@@ -403,7 +522,7 @@ async function fnListOrders(err,httpResponse,body) {
 	  await fnEvalOrderMarket();
 	  if(indexBalance['CHA']){
 		//await fnEvalOrderMarket();
-		if(indexBalance['CHA'].Deposited > 350){
+		if(indexBalance['CHA'].Deposited > 100){
 			if(indexBalance['CHA'].Available < indexBalance['CHA'].Deposited){
 			  for(let order of orders){
           if(order.Type == 'sell'){
@@ -508,7 +627,7 @@ function fnEvalOrderMarket(){
     }
     console.log(arrMercado);
   console.log("CREANDO ORDEN A MERCADO");
-  fs.appendFileSync('./data.txt', 'CREANDO ORDEN A MERCADO' + "\n", (err) => {
+  fs.appendFileSync('./data.txt', 'CREANDO ORDEN A MERCADO' + price + ', ' + qty + "\n", (err) => {
     if (err) throw err;
     console.log('The "data to append" was appended to file!');
   });
@@ -663,6 +782,9 @@ async function fnCreateOrder(type, price, vol){
 }
 
 function fnCreateOrderMarket(price, qty){
+	if(qty > indexOrionBalance['CHA'].availableBalance){
+		qty = indexOrionBalance['CHA'].availableBalance;
+	}
 	var date = new Date;		
 	var nonce = date.getTime();
 	console.log(price + ', ' + qty);
@@ -681,7 +803,12 @@ function fnCreateOrderMarket(price, qty){
 		json : true,
 		body:	req//JSON.stringify(req)
 	}	
-		
+	
+
+	
+
+
+	
 	request.post(options, function(err,httpResponse,body) {
 		console.log(body);
 		if(body.split(" ").length == 1){
@@ -693,6 +820,11 @@ function fnCreateOrderMarket(price, qty){
 	  // Ocurrió un error en el request
 	  console.log('Error encontrado al realizar la consulta: ' + error.message);
 	});
+	
+	var queryRemate = {
+				query: 'mutation {  placeMarketOrder(marketCode: "CHABTC", amount: ' + qty + ', sell: true) {    _id    __typename  }}'
+			};
+	
 }
 
 function fnBalanceSouth(){
