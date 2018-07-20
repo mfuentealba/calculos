@@ -80,7 +80,8 @@ async function main(query) {
 
     console.log('*** Response ***');    // Se imprime la respuesta que llega
 	
-	console.log(res.data.history);
+	//console.log(res.data.marketOrderBook.sell);
+	console.log(res.data);
 	/*for(let obj of res.data.marketOrderBook.buy){
 		obj.limitPrice = obj.limitPrice / 100000000;
 		obj.amount = obj.amount / 100000000;
@@ -112,7 +113,7 @@ let query2 = {
 
   
   
-  let query3 = {                        
+/*  let query3 = {                        
 		query: `{
   history: marketTradeHistory(marketCode: "CHABTC",limit:500) {
     _id
@@ -123,11 +124,11 @@ let query2 = {
   }
 }`
   };
+  */
   
-  
-  /*let query3 = {                        
-		query: '{marketOrderBook(marketCode: "CHABTC", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
-	};*/
+  let query3 = {                        
+		query: '{marketOrderBook(marketCode: "CHACLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
+	};
  main(query3);
  
  
@@ -139,7 +140,7 @@ let query2 = {
 //main(query);   
 
 let mutation = {                        
-    query: 'mutation {placeLimitOrder(marketCode: "CHABTC", amount:100000000, limitPrice: 1000, sell:false){_id __typename }}'
+    query: 'mutation {placeLimitOrder(marketCode: "CHACLP", amount:100000000, limitPrice: 5000, sell:true){_id __typename }}'
   
   };
 //main(mutation);

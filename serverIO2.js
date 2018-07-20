@@ -166,7 +166,7 @@ fragment walletListItem on Wallet {
 	
 	var volEstimado = indexOrionBalance.balance / 2;
 	if(orderOrion.length == 0){
-		for(let y = 0; y < objLiq.precios.length; y++){
+		for(var y = 0; y < objLiq.precios.length; y++){
 			let ob = objLiq[objLiq.precios[y]];
 			if(volEstimado - ob.qty > 0){
 				volEstimado -= ob.qty;	
@@ -205,6 +205,7 @@ fragment walletListItem on Wallet {
 				
 				for(let y = 0; y < objLiq.precios.length; y++){
 					let ob = objLiq[objLiq.precios[y]];
+					console.log(ob);
 					if(ob.enOrden - difFill > 0){
 						ob.enOrden -= difFill;
 						ob.liquidados += difFill;
