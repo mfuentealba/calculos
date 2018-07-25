@@ -5,6 +5,10 @@ var request = require('request');
 var fs = require('fs');
 var arrOrionBuy;
 var arrOrionSell;
+var arrOrionBuyBTCCLP;
+var arrOrionSellBTCCLP;
+var arrOrionBuyCHACLP;
+var arrOrionSellCHACLP;
 var balanceSouth;
 var calcBalance = 0;	
 var indexBalance = {precios:[]};
@@ -58,7 +62,10 @@ function fnOrden(points) {
 
 async function fnOrionx(){
 	let query = {                        
-		query: '{marketOrderBook(marketCode: "CHABTC", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
+		query: `query{CHACLP: marketOrderBook(marketCode: "CHACLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}, 
+		CHABTC: marketOrderBook(marketCode: "CHABTC", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread},
+		BTCCLP: marketOrderBook(marketCode: "BTCCLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}
+		}`
 	};
 
   var libroOrion = await main(query);
@@ -159,8 +166,14 @@ fragment walletListItem on Wallet {
 	
 	
   
-	arrOrionBuy = libroOrion.data.marketOrderBook.buy;
-	arrOrionSell = libroOrion.data.marketOrderBook.sell; 
+	arrOrionBuy = libroOrion.data.CHABTC.marketOrderBook.buy;
+	arrOrionSell = libroOrion.data.CHABTC.marketOrderBook.sell;
+
+	arrOrionBuyCHACLP = libroOrion.data.CHACLP.marketOrderBook.buy;
+	arrOrionSellCHACLP = libroOrion.data.CHACLP.marketOrderBook.sell;	
+	
+	arrOrionBuyBTCCLP = libroOrion.data.BTCCLP.marketOrderBook.buy;
+	arrOrionSellBTCCLP = libroOrion.data.BTCCLP.marketOrderBook.sell;	
 	
 	
 	
@@ -535,9 +548,9 @@ async function fnListOrders(err,httpResponse,body) {
 		if(indexBalance['CHA'].Deposited > 100){
 			if(indexBalance['CHA'].Available < indexBalance['CHA'].Deposited){
 			  for(let order of orders){
-          if(order.Type == 'sell'){
-            await fnCancelOrder(order);
-          }
+				  if(order.Type == 'sell'){
+					await fnCancelOrder(order);
+				  }
 			  }
 			}         
 			await fnEnviaMoneda();
@@ -636,12 +649,13 @@ function fnEvalOrderMarket(){
       qty += obj.Amount - obj.qty;
     }
     console.log(arrMercado);
-  console.log("CREANDO ORDEN A MERCADO");
-  fs.appendFileSync('./data2.txt', 'CREANDO ORDEN A MERCADO' + price + ', ' + qty + "\n", (err) => {
-    if (err) throw err;
-    console.log('The "data to append" was appended to file!');
-  });
-    //fnCreateOrderMarket(price, qty);
+	console.log("CREANDO ORDEN A MERCADO");
+	fs.appendFileSync('./data2.txt', 'CREANDO ORDEN A MERCADO' + price + ', ' + qty + "\n", (err) => {
+		if (err) throw err;
+			console.log('The "data to append" was appended to file!');
+	});
+	
+	fnCreateOrderMarket(price, qty);
   }
 
 }
@@ -720,12 +734,6 @@ async function main(query) {
 
 /* Basic GrapghQL Query */
    
-
-let mutation = {                        
-    query: 'mutation {placeLimitOrder(marketCode: "CHABTC", amount:100000000, limitPrice: 1000, sell:false){_id __typename }}'
-  
-  };
-//main(mutation);
 
 
 async function fnCancelOrder(order){
@@ -835,6 +843,7 @@ function fnCreateOrderMarket(price, qty){
 				query: 'mutation {  placeMarketOrder(marketCode: "CHABTC", amount: ' + qty + ', sell: true) {    _id    __typename  }}'
 			};
 	
+	await main(queryRemate);
 }
 
 function fnBalanceSouth(){

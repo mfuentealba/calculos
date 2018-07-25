@@ -81,7 +81,7 @@ async function main(query) {
     console.log('*** Response ***');    // Se imprime la respuesta que llega
 	
 	//console.log(res.data.marketOrderBook.sell);
-	console.log(res.data);
+	console.log(res.data.CHACLP);
 	/*for(let obj of res.data.marketOrderBook.buy){
 		obj.limitPrice = obj.limitPrice / 100000000;
 		obj.amount = obj.amount / 100000000;
@@ -127,7 +127,10 @@ let query2 = {
   */
   
   let query3 = {                        
-		query: '{marketOrderBook(marketCode: "CHACLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
+		query: `query{CHACLP: marketOrderBook(marketCode: "CHACLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}, 
+		CHABTC: marketOrderBook(marketCode: "CHABTC", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread},
+		BTCCLP: marketOrderBook(marketCode: "BTCCLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}
+		}`
 	};
  main(query3);
  
@@ -140,7 +143,7 @@ let query2 = {
 //main(query);   
 
 let mutation = {                        
-    query: 'mutation {placeLimitOrder(marketCode: "CHACLP", amount:100000000, limitPrice: 5000, sell:true){_id __typename }}'
+    query: 'mutation {placeLimitOrder(marketCode: "CHACLP", amount:50000000000, limitPrice: 498, sell:true){_id __typename }}'
   
   };
 //main(mutation);

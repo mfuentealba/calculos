@@ -4,7 +4,7 @@ const binance = require('node-binance-api');
 const Binance = require('binance-api-node').default
 var moment = require('moment');
 var dateFormat = require('dateformat');
-//10167
+//10167  12672   531718-5
 
 binance.options({
   'APIKEY':'tfdrBVQrUdxkvRLDaMA6HnmTSNMBSlZcnDkPDLdjOGdecEJaVYxDZFugmzH5H1wb',
