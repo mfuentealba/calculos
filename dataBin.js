@@ -4,6 +4,8 @@ const binance = require('node-binance-api');
 const Binance = require('binance-api-node').default
 var moment = require('moment');
 var dateFormat = require('dateformat');
+var fs = require('fs');
+
 //10167  12672   531718-5
 
 binance.options({
@@ -37,17 +39,22 @@ const client = Binance({
  
 client.time().then(time => console.log(time))
 
+setInterval(fn, 3000);
 
-fn();
-
+var i = 1
 async function fn(){
-	var arr = await client.aggTrades({ symbol: 'ETHBTC', fromId: 501});
+	var arr = await client.aggTrades({ symbol: 'LTCBTC', fromId: i});
+	
 	for(let obj of arr){
 		obj.time = new Date(obj.timestamp);
 		//if(!obj.isBuyerMaker){
-			console.log(obj);		
+			//console.log(obj);		
+			fs.appendFileSync('./data_LTCBTC.txt', JSON.stringify(obj) + "\n", (err) => {
+				if (err) throw err;
+				console.log('The "data to append" was appended to file!');
+			  });
 		//}
 		
 	}
-	
+	i += 500
 }
