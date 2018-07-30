@@ -14,10 +14,12 @@ var arrOrionSellCHACLP;
 var tradesOrionCHABTC;
 var tradesOrionCHACLP;
 
+
+
 var balanceSouth;
 var calcBalance = 0;	
 var indexBalance = {precios:[]};
-var arrSouthBuyCHABTC;
+var arrOrionBuyCHABTCCHABTC;
 var arrSouthSellCHABTC;
 var orders;
 var secretSouth = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
@@ -33,6 +35,7 @@ var stopLoss = 0;
 var filled = 0;
 var mejorPrecio;
 var arrRemate;
+var btcRef = 0;
 
 fs.readFile("data.txt", 'utf8', function(err, data) {
 	try{
@@ -81,17 +84,16 @@ async function fnLibroSouth(){
 		}*/
 		//console.log(data.BuyOrders);
 		
-		arrSouthBuyCHABTC = data.BuyOrders;
+		arrOrionBuyCHABTCCHABTC = data.BuyOrders;
 		arrSouthSellCHABTC = data.SellOrders;
 
 		console.log(arrSouthSellCHABTC[0]);  
-		console.log(arrSouthBuyCHABTC[0]);
+		console.log(arrOrionBuyCHABTCCHABTC[0]);
 		
 
 		
 	});	
 }
-
 
 
 
@@ -245,6 +247,16 @@ async function fnProceso(){
 	/******IGUALANDO LIBROS******/
 	console.log("****IGUALANDO LIBROS***");
 	
+	
+	for(let i = 0; i < arrOrionSellBTCCLP.length; i++){
+		let obj = arrOrionSellBTCCLP[i];
+		if(obj.accumulated / 100000000 > 0.005){
+			btcRef = obj.limitPrice;	
+			break;
+		}		
+	}
+	
+	console.log("btcRef: " + btcRef);
 	for(let i = 0; i < arrOrionBuyCHABTC.length; i++){
 		let obj = arrOrionBuyCHABTC[i];
 		obj = {px: (obj.limitPrice / 100000000) , qty: obj.amount / 100000000, acum: obj.accumulated / 100000000};
@@ -258,9 +270,11 @@ async function fnProceso(){
 		arrOrionSellCHABTC[i] = obj;
 	}
 	
+	
 	for(let i = 0; i < arrOrionBuyCHACLP.length; i++){
 		let obj = arrOrionBuyCHACLP[i];
-		obj = {px: (obj.limitPrice / arrOrionSellBTCCLP[0].limitPrice).toFixed(8), qty: obj.amount / 100000000, acum: obj.accumulated / 100000000};
+		
+		obj = {px: (obj.limitPrice / btcRef).toFixed(8), qty: obj.amount / 100000000, acum: obj.accumulated / 100000000, pxRef: obj.limitPrice};
 		arrOrionBuyCHACLP[i] = obj;
 		//console.log(obj);
 	}
@@ -269,18 +283,18 @@ async function fnProceso(){
 	
 	for(let i = 0; i < arrOrionSellCHACLP.length; i++){
 		let obj = arrOrionSellCHACLP[i];
-		obj = {px: (obj.limitPrice / arrOrionSellBTCCLP[0].limitPrice).toFixed(8), qty: obj.amount / 100000000, acum: obj.accumulated / 100000000};
+		obj = {px: (obj.limitPrice / btcRef).toFixed(8), qty: obj.amount / 100000000, acum: obj.accumulated / 100000000, pxRef: obj.limitPrice};
 		arrOrionSellCHACLP[i] = obj;
 	}
 	var acum = 0;
-	for(let i = 0; i < arrSouthBuyCHABTC.length; i++){
-		let obj = arrSouthBuyCHABTC[i];
+	for(let i = 0; i < arrOrionBuyCHABTCCHABTC.length; i++){
+		let obj = arrOrionBuyCHABTCCHABTC[i];
 		acum += obj.Amount;
 		obj = {px: obj.Price, qty: obj.Amount, acum: acum};
-		arrSouthBuyCHABTC[i] = obj;
+		arrOrionBuyCHABTCCHABTC[i] = obj;
 		//console.log(obj);
 	}
-	console.log(arrSouthBuyCHABTC[0]);
+	console.log(arrOrionBuyCHABTCCHABTC[0]);
 	acum = 0;
 	
 	for(let i = 0; i < arrSouthSellCHABTC.length; i++){
@@ -300,7 +314,7 @@ async function fnProceso(){
 	/******MEJOR PRECIO******/
 	console.log("****MEJOR PRECIO***");
 
-var arrPreciosComp = [arrOrionBuyCHACLP[0].px, arrOrionBuyCHABTC[0].px, arrSouthBuyCHABTC[0].px];
+var arrPreciosComp = [arrOrionBuyCHACLP[0].px, arrOrionBuyCHABTC[0].px, arrOrionBuyCHABTCCHABTC[0].px];
 
 arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 	if(arrOrionBuyCHACLP[0].px == arrPreciosComp[2]){
@@ -310,8 +324,8 @@ arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 		console.log("MEJOR ORION CHABTC " + arrOrionBuyCHABTC[0].px);
 		mejorPrecio = arrOrionBuyCHABTC;
 	} else {
-		console.log("MEJOR SOUTH CHABTC " + arrSouthBuyCHABTC[0].px);
-		mejorPrecio = arrSouthBuyCHABTC;
+		console.log("MEJOR SOUTH CHABTC " + arrOrionBuyCHABTCCHABTC[0].px);
+		mejorPrecio = arrOrionBuyCHABTCCHABTC;
 	}
 	
 	console.log("****FIN MEJOR PRECIO***");
@@ -328,8 +342,8 @@ arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 		console.log("MEJOR ORION CHABTC " + arrOrionBuyCHABTC[0].px);
 		arrRemate = arrOrionBuyCHABTC;
 	} else {
-		console.log("MEJOR SOUTH CHABTC " + arrSouthBuyCHABTC[0].px);
-		arrRemate = arrSouthBuyCHABTC;
+		console.log("MEJOR SOUTH CHABTC " + arrOrionBuyCHABTCCHABTC[0].px);
+		arrRemate = arrOrionBuyCHABTCCHABTC;
 	}
 	
 	console.log("****FIN PRECIO REMATE***");
@@ -337,14 +351,16 @@ arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 	/******FIN PRECIO REMATE******/
 
 	/******INICIO DE CALCULOS******/
-	console.log("****CALCULOS***");
+	console.log("\n\n\n****CALCULOS***");
 
 	fnRemateDirectoOrion();
+	
+	fnOrionCHABTC_CHACLP()
 
 	
 	
-	fnEvaluacion(arrSouthBuyCHABTC, arrOrionBuyCHABTC);
-	fnEvaluacion(arrSouthBuyCHABTC, arrOrionBuyCHACLP);
+	fnEvaluacion(arrOrionBuyCHABTCCHABTC, arrOrionBuyCHABTC);
+	fnEvaluacion(arrOrionBuyCHABTCCHABTC, arrOrionBuyCHACLP);
 	fnEvaluacion(arrOrionBuyCHABTC, arrOrionBuyCHABTC);
 	
 	console.log("****FIN CALCULOS***");
@@ -354,6 +370,183 @@ arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 	
 }
 
+function fnOrionCHABTC_CHACLP(){
+	var price = 0;
+	var priceLibro = 0;
+	var vol = 0;
+	var index = 0;
+	var swEval;
+	var debug = 0;
+	for(let datoSo of arrOrionBuyCHABTC){
+
+		index++;
+		if(datoSo.qty > 10){
+			vol = 0.001;//indexOrionBalance['BTC'].Deposited / 8;
+			price = (datoSo.px + 0.00000001);
+			vol = (vol / price);
+			vol += (indexOrionBalance['CHA'].availableBalance / 100000000) - 200;//SON LAS QUE TENGO YA COMPRADAS menos las 200 para remate rapido
+			
+			priceLibro = datoSo.px;
+			var ganancia = 0;
+			var swDif = false;
+			var dif = 0;
+			var difPercent = 0;
+			swEval = false;
+			console.log("PRUEBA VALOR " + price);
+			debug = 0;
+			console.log("Volumen estimado: " + vol);
+			for(let dato of arrOrionBuyCHACLP){
+				debug++;
+				dif = (dato.px - price)// * dato.amount / 100000000;
+				difPercent = 1 - (price / dato.px)// * dato.amount / 100000000;
+
+
+
+
+				if(/*difPercent < 0.05 && */dif < 0.00000050){
+
+					swDif = false;
+					console.log("No sirve");
+
+					break;
+
+
+				} else if(vol - dato.qty < 0){
+					if(swEval){
+						swDif = true;
+						dif = dif * vol;
+						console.log((dif / vol) + ' <--------> ' + vol + ' price: ' + (dato.px));
+						ganancia += dif;
+						break;
+					} else {
+
+						dif = dif * vol;
+						console.log((dif / vol) + ' <--------> ' + vol + ' price: ' + (dato.px));
+						ganancia += dif;
+						swEval = true;
+						console.log('GANANCIA: ' + ganancia);
+						vol = 0.001;//indexOrionBalance['BTC'].Deposited / 8;
+						vol = (vol / price);
+						vol += indexOrionBalance['CHA'].availableBalance / 100000000 - 200;
+						dif = 0;
+					}
+
+				} else {
+
+				vol -= dato.qty;
+				dif = dif * dato.qty;
+
+
+				}
+				console.log((dif / (dato.qty)) + ' <--------> ' + vol + ' price: ' + (dato.px));
+				ganancia += dif;
+			} 
+			if(swDif){
+			break;
+			}
+		}
+
+	}
+	console.log({swDif: swDif, price: price, vol: vol, ganancia: ganancia, priceLibro: priceLibro, index: index});
+	
+	 var objResp = {swDif: swDif, price: price, vol: vol, ganancia: ganancia, priceLibro: priceLibro, index: index};
+      var swDif = objResp.swDif;
+      var price = objResp.price;
+      var vol = objResp.vol;
+      var ganancia = objResp.ganancia;
+      var priceLibro = objResp.priceLibro;
+      var index = objResp.index;
+	  console.log("Ganancia: " + ganancia);
+	  console.log("FIN PRUEBA VALOR: " + swDif);
+
+      for(let order of orderOrion){
+        if(order.sell == false){
+          console.log(priceLibro + ' != ' + (order.limitPrice / 100000000));
+          console.log(index);
+          console.log((order.limitPrice / 100000000) + ' - ' + arrOrionBuyCHABTC[index].px);
+          console.log((order.limitPrice / 100000000) - arrOrionBuyCHABTC[index].px);
+          if(priceLibro != (order.limitPrice / 100000000) || (order.limitPrice / 100000000) - arrOrionBuyCHABTC[index].px > 0.00000002){
+            //await fnCancelOrder(order);
+            console.log('eliminada');
+          }
+          
+        } else {
+          console.log('EVALUANDO');
+          
+          console.log(arrOrionSellCHABTC[0].px + ' < ' +  (order.limitPrice / 100000000));
+          console.log(arrOrionBuyCHACLP[0].px + ' > ' + arrOrionSellCHABTC[0].px);
+          console.log(arrOrionSellCHACLP[0].px + " > " + (order.limitPrice / 100000000));
+		  
+          console.log(arrOrionSellCHABTC[0].px  <  (order.limitPrice / 100000000));		  
+          console.log(arrOrionBuyCHACLP[0].px >  arrOrionSellCHABTC[0].px);
+          console.log((arrOrionSellCHABTC[1].px  - arrOrionSellCHABTC[0].px)  > 0.0000001);
+          console.log(arrOrionSellCHACLP[0].px > (order.limitPrice / 100000000));
+          console.log('EVALUANDO');
+
+          if(arrOrionSellCHABTC[0].px < (order.limitPrice / 100000000)  || 
+			arrOrionBuyCHACLP[0].px > arrOrionSellCHABTC[0].px     || 
+			arrOrionSellCHACLP[0].px > (order.limitPrice / 100000000)){
+				
+            //await fnCancelOrder(order);
+            console.log('eliminada');
+          }
+        }
+      }
+      
+      
+      console.log("Orion CHACLP Buy: " + arrOrionBuyCHACLP[0].px);
+      console.log("Orion CHACLP Sell: " + arrOrionSellCHACLP[0].px);
+      console.log("Orion CHABTC Buy: " + arrOrionBuyCHABTC[0].px);
+      console.log("Orion CHABTC Sell: " + arrOrionSellCHABTC[0].px);
+      
+	  
+	  
+      if(!orders){
+        console.log("Sin Orden");
+        console.log(arrOrionBuyCHACLP[0].px - arrOrionBuyCHABTC[0].px > 0.000001);
+        console.log(1 - (arrOrionBuyCHABTC[0].px / arrOrionBuyCHACLP[0].px) > 0.1);
+		
+		
+		
+		
+        if(swDif){
+          console.log("Creando Orden");
+          vol = indexOrionBalance['BTC'].available / 800000000;
+          vol = (vol / price);
+          //var f = await fnCreateOrder('buy', price, vol).then();
+          //console.log(f);
+          console.log('orden creada');
+        }
+      } else {
+        var sw = false;
+        for(let order of orderOrion){
+          if(order.sell == false){
+            sw = true;
+            break;
+          }
+        }
+        if(!sw){
+          console.log(arrOrionBuyCHACLP[0].px - arrOrionBuyCHABTC[0].Price > 0.000001);
+          console.log(1 - arrOrionBuyCHABTC[0].px / arrOrionBuyCHACLP[0].px > 0.1);
+          console.log('1 - ' + arrOrionBuyCHABTC[0].px + ' / ' + arrOrionBuyCHACLP[0].px + ' > ' + 0.1);
+		  
+		  
+		  
+          if(swDif){
+            console.log("Creando Orden");
+            vol = indexOrionBalance['BTC'].available / 800000000;
+            vol = (vol / price);
+            //var f = await fnCreateOrder('buy', price, vol).then();
+            //console.log(f);
+            console.log('orden creada');
+          }         
+        }
+      }
+      
+	  
+	  
+}
+
 
 function fnRemateDirectoOrion(){
 	var arrMercado = [];
@@ -361,7 +554,7 @@ function fnRemateDirectoOrion(){
   calcBalance = 0;
   console.log("Comparando Libros");
   for(let datSo of arrOrionSellCHABTC){
-    let datOr = arrOrionBuyCHACLP[i];
+    var datOr = arrOrionBuyCHACLP[i];
     datOr.dat = 'holas';
     //console.log(datOr);  
 	  
@@ -373,7 +566,7 @@ function fnRemateDirectoOrion(){
         datOr.qty -= datSo.qty;
         datSo.qty2 = 0;
         calcBalance += datSo.qty * datSo.px;
-       console.log(indexOrionBalance);
+       //console.log(indexOrionBalance);
         if(calcBalance >= indexOrionBalance['BTC'].available){
           arrMercado.pop();
           break;
@@ -388,25 +581,73 @@ function fnRemateDirectoOrion(){
     }
     
   }
-
+	console.log("PRECIO arrOrionBuyCHACLP: " + datOr.px);
   if(arrMercado.length > 0){
-    var price = arrMercado[arrMercado.length - 1].px;
-    var qty2 = 0;
+    var price = datOr.pxRef;
+    var qty = 0;
     for(let obj of arrMercado){
-      qty2 += obj.qty - obj.qty2;
+      qty += obj.qty - obj.qty2;
     }
     console.log(arrMercado);
 	console.log("CREANDO ORDEN A MERCADO");
-	fs.appendFileSync('./data2.txt', 'CREANDO ORDEN A MERCADO' + price + ', ' + qty2 + "\n", (err) => {
+	fs.appendFileSync('./data2.txt', 'CREANDO ORDEN A MERCADO' + price + ', ' + qty + "\n", (err) => {
 		if (err) throw err;
 			console.log('The "data to append" was appended to file!');
 	});
 	
-	//fnCreateOrderMarket(price, qty2);
+	fnCreateOrderMarket(price, qty);
   }
 
 
 }
+
+
+function fnCreateOrderMarket(price, qty){
+	if(qty > indexOrionBalance['CHA'].availableBalance){
+		qty = indexOrionBalance['CHA'].availableBalance;
+	}
+	
+	
+	var queryRemate = {
+				query: 'mutation {  placeMarketOrder(marketCode: "CHABTC", amount: ' + qty + ', sell: false) {    _id    __typename  }}'
+			};
+			
+	fs.appendFileSync('./data3.txt', JSON.stringify(queryRemate) + "\n", (err) => {
+		if (err) throw err;
+			console.log('The "data to append" was appended to file!');
+	});
+	
+	//await main(queryRemate);
+	qty = qty * 0.9961;
+	var queryRemate2 = {
+				query: 'mutation {  placeMarketOrder(marketCode: "CHACLP", amount: ' + qty + ', sell: true) {    _id    __typename  }}'
+			};
+			
+	fs.appendFileSync('./data3.txt', JSON.stringify(queryRemate2) + "\n", (err) => {
+		if (err) throw err;
+			console.log('The "data to append" was appended to file!');
+	});		
+			
+	
+	//await main(queryRemate);
+	
+	qty = (price * qty / btcRef) * 1.0039;
+	
+	var queryRemate3 = {
+				query: 'mutation {  placeMarketOrder(marketCode: "BTCCLP", amount: ' + qty + ', sell: false) {    _id    __typename  }}'
+			};
+			
+	fs.appendFileSync('./data3.txt', JSON.stringify(queryRemate3) + "\n", (err) => {
+		if (err) throw err;
+			console.log('The "data to append" was appended to file!');
+	});		
+	
+	//await main(queryRemate);
+}
+
+
+
+
 
 async function fnEvaluacion(arrCompra, arrVenta){
 
@@ -587,9 +828,9 @@ fragment walletListItem on Wallet {
 	balanceOrion = balanceOrion.wallets;
 	
   //balanceOrion = await main(query2).data.me.wallets;
-	console.log(balanceOrion);
+	//console.log(balanceOrion);
 	for(let objWallet of balanceOrion){
 		indexOrionBalance[objWallet.currency.code] = objWallet;
 	}
-	console.log(indexOrionBalance);
+	//console.log(indexOrionBalance);
 }
