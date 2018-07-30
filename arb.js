@@ -31,11 +31,13 @@ console.log(moment());
 var objLiq = {precios:[]};
 var stopLoss = 0;
 var filled = 0;
+var mejorPrecio;
+var arrRemate;
 
-fs.readFile("./data.txt", 'utf8', function(err, data) {
+fs.readFile("data.txt", 'utf8', function(err, data) {
 	try{
 		var arr = data.split("\n");
-		//console.log(arr);
+		console.log(arr);
 		for(let i of arr){
 			console.log(i);
 			if(i == ''){
@@ -209,9 +211,9 @@ async function fnProceso(){
 		  console.log('Error encontrado al realizar la consulta: ' + error.message);
 		});
 	//console.log('FIN');
-	
-	await fnOrionxBalance();
 	*/
+	await fnOrionxBalance();
+	
 	console.log("******FIN BALANCES******");
 	
 	/******FIN BALANCES******/
@@ -245,7 +247,7 @@ async function fnProceso(){
 	
 	for(let i = 0; i < arrOrionBuyCHABTC.length; i++){
 		let obj = arrOrionBuyCHABTC[i];
-		obj = {px: obj.limitPrice / 100000000, qty: obj.amount / 100000000, acum: obj.accumulated / 100000000};
+		obj = {px: (obj.limitPrice / 100000000) , qty: obj.amount / 100000000, acum: obj.accumulated / 100000000};
 		arrOrionBuyCHABTC[i] = obj;
 		//console.log(obj);
 	}
@@ -293,18 +295,123 @@ async function fnProceso(){
 	
 	/******FIN IGUALANDO LIBROS******/
 	
-	
+
 	
 	/******MEJOR PRECIO******/
 	console.log("****MEJOR PRECIO***");
-	
-	
+
+var arrPreciosComp = [arrOrionBuyCHACLP[0].px, arrOrionBuyCHABTC[0].px, arrSouthBuyCHABTC[0].px];
+
+arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
+	if(arrOrionBuyCHACLP[0].px == arrPreciosComp[2]){
+		console.log("MEJOR ORION CHACLP " + arrOrionBuyCHACLP[0].px);
+		mejorPrecio = arrOrionBuyCHACLP;
+	} else if(arrOrionBuyCHABTC[0].px == arrPreciosComp[2]){
+		console.log("MEJOR ORION CHABTC " + arrOrionBuyCHABTC[0].px);
+		mejorPrecio = arrOrionBuyCHABTC;
+	} else {
+		console.log("MEJOR SOUTH CHABTC " + arrSouthBuyCHABTC[0].px);
+		mejorPrecio = arrSouthBuyCHABTC;
+	}
 	
 	console.log("****FIN MEJOR PRECIO***");
 	
 	/******FIN MEJOR PRECIO******/
+
+	/******PRECIO REMATE******/
+	console.log("****PRECIO REMATE***");
+	
+	if(arrOrionBuyCHACLP[0].px == arrPreciosComp[0]){
+		console.log("MEJOR ORION CHACLP " + arrOrionBuyCHACLP[0].px);
+		arrRemate = arrOrionBuyCHACLP;
+	} else if(arrOrionBuyCHABTC[0].px == arrPreciosComp[0]){
+		console.log("MEJOR ORION CHABTC " + arrOrionBuyCHABTC[0].px);
+		arrRemate = arrOrionBuyCHABTC;
+	} else {
+		console.log("MEJOR SOUTH CHABTC " + arrSouthBuyCHABTC[0].px);
+		arrRemate = arrSouthBuyCHABTC;
+	}
+	
+	console.log("****FIN PRECIO REMATE***");
+	
+	/******FIN PRECIO REMATE******/
+
+	/******INICIO DE CALCULOS******/
+	console.log("****CALCULOS***");
+
+	fnRemateDirectoOrion();
+
+	
+	
+	fnEvaluacion(arrSouthBuyCHABTC, arrOrionBuyCHABTC);
+	fnEvaluacion(arrSouthBuyCHABTC, arrOrionBuyCHACLP);
+	fnEvaluacion(arrOrionBuyCHABTC, arrOrionBuyCHABTC);
+	
+	console.log("****FIN CALCULOS***");
+	
+	/******FIN CALCULOS******/
+	
 	
 }
+
+
+function fnRemateDirectoOrion(){
+	var arrMercado = [];
+  var i = 0;
+  calcBalance = 0;
+  console.log("Comparando Libros");
+  for(let datSo of arrOrionSellCHABTC){
+    let datOr = arrOrionBuyCHACLP[i];
+    datOr.dat = 'holas';
+    //console.log(datOr);  
+	  
+	console.log((datSo.px + 0.00000100) + ' < ' + datOr.px);
+    if(datSo.px + 0.00000100 < datOr.px){
+      arrMercado.push(datSo);
+      datSo.qty2 = datSo.qty;
+      if(datOr.qty - datSo.qty >= 0){
+        datOr.qty -= datSo.qty;
+        datSo.qty2 = 0;
+        calcBalance += datSo.qty * datSo.px;
+       console.log(indexOrionBalance);
+        if(calcBalance >= indexOrionBalance['BTC'].available){
+          arrMercado.pop();
+          break;
+        }
+      } else {
+        datSo.qty2 -= datOr.qty;
+        i++;
+      }
+      
+    } else {
+      break;
+    }
+    
+  }
+
+  if(arrMercado.length > 0){
+    var price = arrMercado[arrMercado.length - 1].px;
+    var qty2 = 0;
+    for(let obj of arrMercado){
+      qty2 += obj.qty - obj.qty2;
+    }
+    console.log(arrMercado);
+	console.log("CREANDO ORDEN A MERCADO");
+	fs.appendFileSync('./data2.txt', 'CREANDO ORDEN A MERCADO' + price + ', ' + qty2 + "\n", (err) => {
+		if (err) throw err;
+			console.log('The "data to append" was appended to file!');
+	});
+	
+	//fnCreateOrderMarket(price, qty2);
+  }
+
+
+}
+
+async function fnEvaluacion(arrCompra, arrVenta){
+
+}
+
 
 async function fnOrdenesSouth(){
 	var date = new Date;			
@@ -406,7 +513,7 @@ async function fnTradesOrion(){
 	
 	var data = await main(query3);
 	
-	console.log(data.data.historyCHABTC);
+	//console.log(data.data.historyCHABTC);
 	
 	tradesOrionCHABTC = data.data.historyCHABTC;
 	
@@ -424,7 +531,7 @@ async function fnLibrosOrion(){
 
 	var libroOrion = await main(query);	
 	
-	console.log(libroOrion);
+	//console.log(libroOrion);
 	
 	//for()
 	arrOrionBuyCHABTC = libroOrion.data.CHABTC.buy;
@@ -478,11 +585,11 @@ fragment walletListItem on Wallet {
 	balanceOrion = balanceOrion.data;
 	balanceOrion = balanceOrion.me;
 	balanceOrion = balanceOrion.wallets;
-	//console.log("khsdgfjksgfkljsgjkldf");
+	
   //balanceOrion = await main(query2).data.me.wallets;
 	console.log(balanceOrion);
 	for(let objWallet of balanceOrion){
 		indexOrionBalance[objWallet.currency.code] = objWallet;
 	}
-	
+	console.log(indexOrionBalance);
 }
