@@ -370,7 +370,7 @@ arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 	
 }
 
-function fnOrionCHABTC_CHACLP(){
+async function fnOrionCHABTC_CHACLP(){
 	var price = 0;
 	var priceLibro = 0;
 	var vol = 0;
@@ -484,8 +484,8 @@ function fnOrionCHABTC_CHACLP(){
           console.log('EVALUANDO');
 
           if(arrOrionSellCHABTC[0].px < (order.limitPrice / 100000000)  || 
-			arrOrionBuyCHACLP[0].px > arrOrionSellCHABTC[0].px     || 
-			arrOrionSellCHACLP[0].px > (order.limitPrice / 100000000)){
+						arrOrionBuyCHACLP[0].px > arrOrionSellCHABTC[0].px     || 
+						arrOrionSellCHACLP[0].px > (order.limitPrice / 100000000)){
 				
             //await fnCancelOrder(order);
             console.log('eliminada');
@@ -499,9 +499,10 @@ function fnOrionCHABTC_CHACLP(){
       console.log("Orion CHABTC Buy: " + arrOrionBuyCHABTC[0].px);
       console.log("Orion CHABTC Sell: " + arrOrionSellCHABTC[0].px);
       
+			console.log("indexOrionBalance BTC: " + indexOrionBalance['BTC'].availableBalance);
+			console.log(indexOrionBalance['BTC']);
 	  
-	  
-      if(!orders){
+      if(!orderOrion){
         console.log("Sin Orden");
         console.log(arrOrionBuyCHACLP[0].px - arrOrionBuyCHABTC[0].px > 0.000001);
         console.log(1 - (arrOrionBuyCHABTC[0].px / arrOrionBuyCHACLP[0].px) > 0.1);
@@ -511,10 +512,10 @@ function fnOrionCHABTC_CHACLP(){
 		
         if(swDif){
           console.log("Creando Orden");
-          vol = indexOrionBalance['BTC'].available / 800000000;
+          vol = indexOrionBalance['BTC'].availableBalance / 800000000;
           vol = (vol / price);
-          //var f = await fnCreateOrder('buy', price, vol).then();
-          //console.log(f);
+          var f = await fnCreateOrderOrion('buy', price, vol).then();
+          console.log(f);
           console.log('orden creada');
         }
       } else {
@@ -534,10 +535,10 @@ function fnOrionCHABTC_CHACLP(){
 		  
           if(swDif){
             console.log("Creando Orden");
-            vol = indexOrionBalance['BTC'].available / 800000000;
+            vol = indexOrionBalance['BTC'].availableBalance / 800000000;
             vol = (vol / price);
-            //var f = await fnCreateOrder('buy', price, vol).then();
-            //console.log(f);
+            var f = await fnCreateOrderOrion('buy', price, vol).then();
+            console.log(f);
             console.log('orden creada');
           }         
         }
@@ -545,6 +546,21 @@ function fnOrionCHABTC_CHACLP(){
       
 	  
 	  
+}
+
+
+async function fnCreateOrderOrion(tipo, price, qty){
+	let mutation = {                        
+		query: 'mutation {placeLimitOrder(marketCode: "CHABTC", amount:' + qty + ', limitPrice: ' + price + ', sell:' + (tipo == 'buy' ? false : true) + '){_id __typename }}'
+	  
+	  };
+	console.log("CREANDO ORDEN EN ORION DE PRECIO: " + price + "y volumen: " + qty);
+  
+	//var r = await main(mutation);
+	fs.appendFileSync('./data3.txt', JSON.stringify(mutation) + "\n", (err) => {
+	if (err) throw err;
+		console.log('The "data to append" was appended to file!');
+	});
 }
 
 
@@ -567,7 +583,7 @@ function fnRemateDirectoOrion(){
         datSo.qty2 = 0;
         calcBalance += datSo.qty * datSo.px;
        //console.log(indexOrionBalance);
-        if(calcBalance >= indexOrionBalance['BTC'].available){
+        if(calcBalance >= indexOrionBalance['BTC'].availableBalance){
           arrMercado.pop();
           break;
         }
