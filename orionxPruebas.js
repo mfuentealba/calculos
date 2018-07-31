@@ -81,7 +81,7 @@ async function main(query) {
     console.log('*** Response ***');    // Se imprime la respuesta que llega
 	
 	//console.log(res.data.marketOrderBook.sell);
-	console.log(res.data.CHACLP);
+	console.log(res.data.orders);
 	/*for(let obj of res.data.marketOrderBook.buy){
 		obj.limitPrice = obj.limitPrice / 100000000;
 		obj.amount = obj.amount / 100000000;
@@ -113,6 +113,8 @@ let query2 = {
 
   
   
+  
+  
 /*  let query3 = {                        
 		query: `{
   history: marketTradeHistory(marketCode: "CHABTC",limit:500) {
@@ -127,10 +129,31 @@ let query2 = {
   */
   
   let query3 = {                        
-		query: `query{CHACLP: marketOrderBook(marketCode: "CHACLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}, 
-		CHABTC: marketOrderBook(marketCode: "CHABTC", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread},
-		BTCCLP: marketOrderBook(marketCode: "BTCCLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}
-		}`
+		query: `{
+  orders(marketCode: "CHACLP", onlyOpen: false, limit: 0) {
+    totalCount
+    items {
+      _id
+      sell
+      type
+      amount
+      amountToHold
+      secondaryAmount
+      filled
+      secondaryFilled
+      limitPrice
+      createdAt
+      isStop
+      status
+      stopPriceUp
+      stopPriceDown
+ 
+      __typename
+    }
+    __typename
+  }
+}
+`
 	};
  main(query3);
  

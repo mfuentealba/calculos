@@ -166,14 +166,14 @@ fragment walletListItem on Wallet {
 	
 	
   
-	arrOrionBuy = libroOrion.data.CHABTC.marketOrderBook.buy;
-	arrOrionSell = libroOrion.data.CHABTC.marketOrderBook.sell;
+	arrOrionBuy = libroOrion.data.CHABTC.buy;
+	arrOrionSell = libroOrion.data.CHABTC.sell;
 
-	arrOrionBuyCHACLP = libroOrion.data.CHACLP.marketOrderBook.buy;
-	arrOrionSellCHACLP = libroOrion.data.CHACLP.marketOrderBook.sell;	
+	arrOrionBuyCHACLP = libroOrion.data.CHACLP.buy;
+	arrOrionSellCHACLP = libroOrion.data.CHACLP.sell;	
 	
-	arrOrionBuyBTCCLP = libroOrion.data.BTCCLP.marketOrderBook.buy;
-	arrOrionSellBTCCLP = libroOrion.data.BTCCLP.marketOrderBook.sell;	
+	arrOrionBuyBTCCLP = libroOrion.data.BTCCLP.buy;
+	arrOrionSellBTCCLP = libroOrion.data.BTCCLP.sell;	
 	
 	
 	
@@ -195,12 +195,16 @@ fragment walletListItem on Wallet {
 				
 			}
 			stopLoss = objLiq.precios[y] * 100000000 + 50;
+			
+			console.log(objLiq.precios);
 			console.log("stopLoss: " + stopLoss)
-			createOrderOrion(indexOrionBalance.balance / 2, arrOrionSell[0].price);	
+			console.log(indexOrionBalance)
+			console.log(arrOrionSell[0])
+			createOrderOrion((indexOrionBalance['CHA'].balance - 20000000000) / 2, arrOrionSell[0].limitPrice);	
 		}
 		
 	} else {
-		if(stopLoss < arrOrionBuy[0].price){
+		if(stopLoss < arrOrionBuy[0].limitPrice){
 			//Cancelar orden y remate
 			
 			var queryCancel = {                        
@@ -275,7 +279,10 @@ async function createOrderOrion(qty, price){
 	  };
 	console.log("CREANDO ORDEN EN ORION DE PRECIO: " + price + "y volumen: " + qty);
   
-	//var r = await main(mutation);
+	var r = await main(mutation);
+	console.log("**** Respuesta orden orion*******")
+	console.log(r)
+	console.log("******************")
 }
 
 
@@ -291,9 +298,16 @@ function fnEvaluaSituacion(){
     index++;
     if(datoSo.Amount > 10){
       vol = indexBalance['BTC'].Deposited / 8;
+	  console.log("******************");
+	  console.log(indexBalance['BTC']);
+	  console.log(indexBalance);
+	  console.log("******************");
 	  price = (datoSo.Price + 0.00000001);
       vol = (vol / price);
-	  vol += indexBalance['CHA'];
+	  if(indexBalance['CHA']){
+		vol += indexBalance['CHA'].Deposited;  
+	  }
+	  
       
       priceLibro = datoSo.Price;
       var ganancia = 0;
@@ -336,7 +350,9 @@ function fnEvaluaSituacion(){
             console.log('GANANCIA: ' + ganancia);
             vol = indexBalance['BTC'].Deposited / 8;
             vol = (vol / price);
-			vol += indexBalance['CHA'];
+			if(indexBalance['CHA']){
+				vol += indexBalance['CHA'].Deposited;
+			}
             dif = 0;
           }
           
@@ -414,13 +430,17 @@ async function fnListOrders(err,httpResponse,body) {
       order.liquidados = 0;
       order.ejecutados = order.OriginalAmount;
       objTrades[order.Code] = order;
-      objLiq[order.Price] = {qty: order.Amount, enviado: false, enOrden: 0, liquidados: 0, estado: 'V'};
-	  objLiq.precios.push(order.Price);
+      objLiq[order.LimitPrice] = {qty: order.Amount, enviado: false, enOrden: 0, liquidados: 0, estado: 'V'};
+	  console.log("****************");
+	  console.log(order);
+	  console.log("****************");
+	  
+	  objLiq.precios.push(order.LimitPrice);
 	  fnOrden(objLiq.precios);
     } else {
       objTrades[order.Code].Amount = order.Amount;
       order.ejecutados = order.OriginalAmount - order.Amount;
-      objLiq[order.Price].qty = order.ejecutados;
+      objLiq[order.LimitPrice].qty = order.ejecutados;
       
     }
     if(order.OriginalAmount != order.Amount){
@@ -799,7 +819,7 @@ async function fnCreateOrder(type, price, vol){
   //}); 
 }
 
-function fnCreateOrderMarket(price, qty){
+async function fnCreateOrderMarket(price, qty){
 	if(qty > indexOrionBalance['CHA'].availableBalance){
 		qty = indexOrionBalance['CHA'].availableBalance;
 	}

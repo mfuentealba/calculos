@@ -24,6 +24,7 @@ var arrSouthSellCHABTC;
 var orders;
 var secretSouth = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
 var objTrades = {};
+var objTradesOrion = {};
 var balanceOrion;
 var indexOrionBalance = {};
 var orderOrion;
@@ -31,13 +32,14 @@ var tradesOrion;
 var moment = require('moment');
 console.log(moment());
 var objLiq = {precios:[]};
+var objLiqOrion = {precios:[]};
 var stopLoss = 0;
 var filled = 0;
 var mejorPrecio;
 var arrRemate;
 var btcRef = 0;
 
-fs.readFile("data.txt", 'utf8', function(err, data) {
+fs.readFile("soutOrder.txt", 'utf8', function(err, data) {
 	try{
 		var arr = data.split("\n");
 		console.log(arr);
@@ -54,8 +56,30 @@ fs.readFile("data.txt", 'utf8', function(err, data) {
 		console.log(err);
 	}
   
-	fnProceso();
-	setInterval(fnProceso, 20000);
+	fs.readFile("orionOrder.txt", 'utf8', function(err, data) {
+		try{
+			var arr = data.split("\n");
+			console.log(arr);
+			for(let i of arr){
+				console.log(i);
+				if(i == ''){
+				  break;
+				}
+				let obj = JSON.parse(i);
+				objTrades[obj._id] = obj;
+
+			}	
+		} catch(err){
+			console.log(err);
+		}
+	  
+		fnProceso();
+		setInterval(fnProceso, 20000);
+	  
+	});
+  
+  
+	
   
 });
 
@@ -353,15 +377,15 @@ arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 	/******INICIO DE CALCULOS******/
 	console.log("\n\n\n****CALCULOS***");
 
-	fnRemateDirectoOrion();
+	//fnRemateDirectoOrion();
 	
 	fnOrionCHABTC_CHACLP()
 
 	
 	
-	fnEvaluacion(arrOrionBuyCHABTCCHABTC, arrOrionBuyCHABTC);
+	/*fnEvaluacion(arrOrionBuyCHABTCCHABTC, arrOrionBuyCHABTC);
 	fnEvaluacion(arrOrionBuyCHABTCCHABTC, arrOrionBuyCHACLP);
-	fnEvaluacion(arrOrionBuyCHABTC, arrOrionBuyCHABTC);
+	fnEvaluacion(arrOrionBuyCHABTC, arrOrionBuyCHABTC);*/
 	
 	console.log("****FIN CALCULOS***");
 	
@@ -466,7 +490,7 @@ async function fnOrionCHABTC_CHACLP(){
           console.log((order.limitPrice / 100000000) + ' - ' + arrOrionBuyCHABTC[index].px);
           console.log((order.limitPrice / 100000000) - arrOrionBuyCHABTC[index].px);
           if(priceLibro != (order.limitPrice / 100000000) || (order.limitPrice / 100000000) - arrOrionBuyCHABTC[index].px > 0.00000002){
-            //await fnCancelOrder(order);
+            await fnCancelOrderOrion(order);
             console.log('eliminada');
           }
           
@@ -487,7 +511,7 @@ async function fnOrionCHABTC_CHACLP(){
 						arrOrionBuyCHACLP[0].px > arrOrionSellCHABTC[0].px     || 
 						arrOrionSellCHACLP[0].px > (order.limitPrice / 100000000)){
 				
-            //await fnCancelOrder(order);
+            await fnCancelOrderOrion(order);
             console.log('eliminada');
           }
         }
@@ -520,12 +544,20 @@ async function fnOrionCHABTC_CHACLP(){
         }
       } else {
         var sw = false;
+		
+		
         for(let order of orderOrion){
           if(order.sell == false){
             sw = true;
             break;
           }
         }
+		
+		console.log("\n\n**************");
+		console.log(orderOrion);
+		console.log("sw: " + sw);
+		console.log("**************\n\n");
+		
         if(!sw){
           console.log(arrOrionBuyCHACLP[0].px - arrOrionBuyCHABTC[0].Price > 0.000001);
           console.log(1 - arrOrionBuyCHABTC[0].px / arrOrionBuyCHACLP[0].px > 0.1);
@@ -549,14 +581,29 @@ async function fnOrionCHABTC_CHACLP(){
 }
 
 
+
+async function fnCancelOrderOrion(order){
+	
+	
+	let mutation = {                        
+		query: 'mutation {  cancelOrder(orderId: ' + order._id + ') {    _id    __typename  }}'
+	};
+	
+	
+	var r = await main(mutation);
+	console.log(r);
+}
+
+
 async function fnCreateOrderOrion(tipo, price, qty){
 	let mutation = {                        
-		query: 'mutation {placeLimitOrder(marketCode: "CHABTC", amount:' + qty + ', limitPrice: ' + price + ', sell:' + (tipo == 'buy' ? false : true) + '){_id __typename }}'
+		query: 'mutation {placeLimitOrder(marketCode: "CHABTC", amount:' + (qty * 100000000) + ', limitPrice: ' + (price * 100000000) + ', sell:' + (tipo == 'buy' ? false : true) + '){_id __typename }}'
 	  
 	  };
 	console.log("CREANDO ORDEN EN ORION DE PRECIO: " + price + "y volumen: " + qty);
   
-	//var r = await main(mutation);
+	var r = await main(mutation);
+	console.log(r);
 	fs.appendFileSync('./data3.txt', JSON.stringify(mutation) + "\n", (err) => {
 	if (err) throw err;
 		console.log('The "data to append" was appended to file!');
@@ -700,7 +747,29 @@ async function fnListOrders(body) {
 	//body = JSON.parse(body);
   console.log(body);
   orders = body;
-  
+  var buyOrder = false;
+  for(let order of orders){
+    if(!objTrades[order.Code]){
+      order.liquidados = 0;
+      order.ejecutados = order.OriginalAmount;
+      objTrades[order.Code] = order;
+      objLiq[order.Price] = {qty: order.Amount, enviado: false, enOrden: 0, liquidados: 0, estado: 'V'};
+	  objLiq.precios.push(order.Price);
+	  fnOrden(objLiq.precios);
+    } else {
+      objTrades[order.Code].Amount = order.Amount;
+      order.ejecutados = order.OriginalAmount - order.Amount;
+      objLiq[order.Price].qty = order.ejecutados;
+      
+    }
+    if(order.OriginalAmount != order.Amount){
+      fs.appendFileSync('./southOrder.txt', JSON.stringify(order) + "\n", (err) => {
+        if (err) throw err;
+        console.log('The "data to append" was appended to file!');
+      });
+    }
+    
+  }
   
 }
 
@@ -739,7 +808,31 @@ async function fnOrdenesOrion(){
 	orderOrion = orderOrion.data.orders.items;
 	console.log(orderOrion);
 	
-	
+	var buyOrder = false;
+	for(let order of orderOrion){
+		if(!objTradesOrion[order._id]){
+			order.liquidados = 0;
+			order.ejecutados = 0;
+			objTradesOrion[order._id] = order;
+			objLiqOrion[order.limitPrice] = {qty: order.amount, enviado: false, enOrden: 0, liquidados: 0, estado: 'V'};
+			objLiqOrion.precios.push(order.limitPrice);
+			fnOrden(objLiqOrion.precios);
+		} else {
+			objTradesOrion[order._id].amount = order.amount;
+			order.ejecutados = order.filled;
+			objLiqOrion[order.limitPrice].qty = order.ejecutados;
+
+		}
+		console.log(JSON.stringify(order));
+		if(order.filled > 0){
+			fs.appendFileSync('./orionOrder.txt', JSON.stringify(order) + "\n", (err) => {
+				if (err) throw err;
+				console.log('The "data to append" was appended to file!');
+			});
+		}
+
+	}
+  
 	
 	
   
