@@ -718,21 +718,26 @@ async function fnEvaluacion(arrCompra, arrVenta){
 
 
 async function fnOrdenesSouth(){
-	var date = new Date;			
-	var nonce = date.getTime();  
-	var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}  
-	var headers = fnHeader(req);
+	try{
+		var date = new Date;			
+		var nonce = date.getTime();  
+		var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}  
+		var headers = fnHeader(req);
 
-	var options = {
-	url     : 'https://www.southxchange.com/api/listOrders',
-	method  : 'POST',
-	//jar     : true,
-	headers : headers,
-	json : true,
-	body:	req//JSON.stringify(req)
+		var options = {
+		url     : 'https://www.southxchange.com/api/listOrders',
+		method  : 'POST',
+		//jar     : true,
+		headers : headers,
+		json : true,
+		body:	req//JSON.stringify(req)
+		}
+
+		await request.post(options).then((data) => fnListOrders(data))		
+	} catch(e){
+		console.log(e);
 	}
-
-	await request.post(options).then((data) => fnListOrders(data))	
+	
 }
 
 
