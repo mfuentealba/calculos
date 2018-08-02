@@ -669,13 +669,13 @@ function fnEvalOrderMarket(){
       qty += obj.Amount - obj.qty;
     }
     console.log(arrMercado);
-	console.log("CREANDO ORDEN A MERCADO");
-	fs.appendFileSync('./data2.txt', 'CREANDO ORDEN A MERCADO' + price + ', ' + qty + "\n", (err) => {
-		if (err) throw err;
-			console.log('The "data to append" was appended to file!');
-	});
-	
-	fnCreateOrderMarket(price, qty);
+    console.log("CREANDO ORDEN A MERCADO");
+    fs.appendFileSync('./data2.txt', 'CREANDO ORDEN A MERCADO' + price + ', ' + qty + "\n", (err) => {
+      if (err) throw err;
+        console.log('The "data to append" was appended to file!');
+    });
+    
+    fnCreateOrderMarket(price, qty);
   }
 
 }
@@ -820,8 +820,8 @@ async function fnCreateOrder(type, price, vol){
 }
 
 async function fnCreateOrderMarket(price, qty){
-	if(qty > indexOrionBalance['CHA'].availableBalance){
-		qty = indexOrionBalance['CHA'].availableBalance;
+	if(qty > indexOrionBalance['CHA'].availableBalance / 100000000){
+		qty = indexOrionBalance['CHA'].availableBalance / 100000000;
 	}
 	var date = new Date;		
 	var nonce = date.getTime();
@@ -860,10 +860,21 @@ async function fnCreateOrderMarket(price, qty){
 	});
 	
 	var queryRemate = {
-				query: 'mutation {  placeMarketOrder(marketCode: "CHABTC", amount: ' + qty + ', sell: true) {    _id    __typename  }}'
+				query: 'mutation {  placeMarketOrder(marketCode: "CHABTC", amount: ' + (qty * 100000000) + ', sell: true) {    _id    __typename  }}'
 			};
 	
-	await main(queryRemate);
+  var r = await main(queryRemate);
+  
+  fs.appendFileSync('./data2.txt', JSON.stringify(queryRemate) + "\n", (err) => {
+    if (err) throw err;
+      console.log('The "data to append" was appended to file!');
+  });
+
+
+  fs.appendFileSync('./data2.txt', JSON.stringify(r) + "\n", (err) => {
+    if (err) throw err;
+      console.log('The "data to append" was appended to file!');
+  });
 }
 
 function fnBalanceSouth(){

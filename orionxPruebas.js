@@ -81,7 +81,7 @@ async function main(query) {
     console.log('*** Response ***');    // Se imprime la respuesta que llega
 	
 	//console.log(res.data.marketOrderBook.sell);
-	console.log(res.data.orders);
+	console.log(res.data.me.wallets);
 	/*for(let obj of res.data.marketOrderBook.buy){
 		obj.limitPrice = obj.limitPrice / 100000000;
 		obj.amount = obj.amount / 100000000;
@@ -104,15 +104,36 @@ let query = {
 `};
 
 let query2 = {                        
-		query: `{wallets(userId:"RwbP7oG97zoLShK6H") {
-      _id
-      
-}}`
-  };
+  query: `query getUserWallets {
+me {
+  _id
+  country {
+    code
+    __typename
+  }
+  wallets {
+    currency {
+      code
+      __typename
+    }
+    ...walletListItem
+    __typename
+  }
+  __typename
+}
+}
+
+fragment walletListItem on Wallet {
+_id
+balance  
+availableBalance
+unconfirmedBalance  
+}`
+};
 
 
   
-  
+  main(query2);
   
   
 /*  let query3 = {                        
@@ -155,7 +176,7 @@ let query2 = {
 }
 `
 	};
- main(query3);
+ //main(query3);
  
  
  
