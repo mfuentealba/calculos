@@ -177,7 +177,7 @@ fragment walletListItem on Wallet {
 	
 	
 	
-	var volEstimado = indexOrionBalance.balance / 2;
+	var volEstimado = indexOrionBalance['CHA'].availableBalance / 200000000;
 	if(orderOrion.length == 0){
 		if(objLiq.precios.length > 0){
 			for(var y = 0; y < objLiq.precios.length; y++){
@@ -194,13 +194,13 @@ fragment walletListItem on Wallet {
 				}
 				
 			}
-			stopLoss = objLiq.precios[y] * 100000000 + 50;
+			stopLoss = (objLiq.precios[y] + 50) * 100000000;
 			
 			console.log(objLiq.precios);
 			console.log("stopLoss: " + stopLoss)
-			console.log(indexOrionBalance)
+			console.log(['CHA'].availableBalance / 200000000)
 			console.log(arrOrionSell[0])
-			createOrderOrion((indexOrionBalance['CHA'].balance - 20000000000) / 2, arrOrionSell[0].limitPrice);	
+			createOrderOrion((indexOrionBalance['CHA'].availableBalance - 20000000000) / 2, arrOrionSell[0].limitPrice);	
 		}
 		
 	} else {
