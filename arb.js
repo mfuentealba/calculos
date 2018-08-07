@@ -735,7 +735,9 @@ async function fnOrdenesSouth(){
 
 		await request.post(options).then((data) => fnListOrders(data))		
 	} catch(e){
+		console.log("*************ERROR EN SERVICIO DE ORDENES SOUTH\n\n");
 		console.log(e);
+		console.log("*************ERROR EN SERVICIO DE ORDENES SOUTH\n\n");
 	}
 	
 }
@@ -750,7 +752,7 @@ function fnOrden(points) {
 
 async function fnListOrders(body) {
 	//body = JSON.parse(body);
-  console.log(body);
+  //console.log(body);
   orders = body;
   var buyOrder = false;
   for(let order of orders){
