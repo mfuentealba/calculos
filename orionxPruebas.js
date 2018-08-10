@@ -81,7 +81,7 @@ async function main(query) {
     console.log('*** Response ***');    // Se imprime la respuesta que llega
 	
 	//console.log(res.data.marketOrderBook.sell);
-	console.log(res.data.me.wallets);
+	console.log(res.data.orders);
 	/*for(let obj of res.data.marketOrderBook.buy){
 		obj.limitPrice = obj.limitPrice / 100000000;
 		obj.amount = obj.amount / 100000000;
@@ -133,7 +133,7 @@ unconfirmedBalance
 
 
   
-  main(query2);
+ // main(query2);
   
   
 /*  let query3 = {                        
@@ -151,7 +151,7 @@ unconfirmedBalance
   
   let query3 = {                        
 		query: `{
-  orders(marketCode: "CHACLP", onlyOpen: false, limit: 0) {
+  orders(marketCode: "CHABTC", onlyOpen: false, limit: 10) {
     totalCount
     items {
       _id
@@ -176,7 +176,7 @@ unconfirmedBalance
 }
 `
 	};
- //main(query3);
+ main(query3);
  
  
  

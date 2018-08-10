@@ -248,7 +248,7 @@ async function fnProceso(){
 	/******LIBROS******/
 	console.log("****LIBROS***");
 	await fnLibrosOrion();
-	await fnLibroSouth();
+	//await fnLibroSouth();
 	console.log("****FIN LIBROS***");
 	/******FIN LIBROS******/
 	
@@ -262,7 +262,7 @@ async function fnProceso(){
 	/******ORDENES******/
 	console.log("****ORDENES***");
 	await fnOrdenesOrion();
-	await fnOrdenesSouth();
+	//await fnOrdenesSouth();
 	
 	console.log("****FIN ORDENES***");
 	
@@ -311,14 +311,14 @@ async function fnProceso(){
 		arrOrionSellCHACLP[i] = obj;
 	}
 	var acum = 0;
-	for(let i = 0; i < arrOrionBuyCHABTCCHABTC.length; i++){
-		let obj = arrOrionBuyCHABTCCHABTC[i];
+	/*for(let i = 0; i < arrSouthBuyCHABTC.length; i++){
+		let obj = arrSouthBuyCHABTC[i];
 		acum += obj.Amount;
 		obj = {px: obj.Price, qty: obj.Amount, acum: acum};
 		arrOrionBuyCHABTCCHABTC[i] = obj;
 		//console.log(obj);
 	}
-	console.log(arrOrionBuyCHABTCCHABTC[0]);
+	console.log(arrSouthBuyCHABTC[0]);
 	acum = 0;
 	
 	for(let i = 0; i < arrSouthSellCHABTC.length; i++){
@@ -327,7 +327,7 @@ async function fnProceso(){
 		
 		obj = {px: obj.Price, qty: obj.Amount, acum: acum};
 		arrSouthSellCHABTC[i] = obj;
-	}
+	}*/
 	
 	console.log("****FIN IGUALANDO LIBROS***");
 	
@@ -338,19 +338,21 @@ async function fnProceso(){
 	/******MEJOR PRECIO******/
 	console.log("****MEJOR PRECIO***");
 
-var arrPreciosComp = [arrOrionBuyCHACLP[0].px, arrOrionBuyCHABTC[0].px, arrOrionBuyCHABTCCHABTC[0].px];
+var arrPreciosComp = [arrOrionBuyCHACLP[0].px, arrOrionBuyCHABTC[0].px/*, arrSouthBuyCHABTC[0].px*/];
 
 arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
+	console.log("Comparando Precios: " + arrOrionBuyCHACLP[0].px + ' ' + arrPreciosComp[arrPreciosComp.length - 1]);
+	console.log("Comparando Precios: " + arrOrionBuyCHABTC[0].px + ' ' + arrPreciosComp[arrPreciosComp.length - 1]);
 	if(arrOrionBuyCHACLP[0].px == arrPreciosComp[2]){
 		console.log("MEJOR ORION CHACLP " + arrOrionBuyCHACLP[0].px);
 		mejorPrecio = arrOrionBuyCHACLP;
 	} else if(arrOrionBuyCHABTC[0].px == arrPreciosComp[2]){
 		console.log("MEJOR ORION CHABTC " + arrOrionBuyCHABTC[0].px);
 		mejorPrecio = arrOrionBuyCHABTC;
-	} else {
-		console.log("MEJOR SOUTH CHABTC " + arrOrionBuyCHABTCCHABTC[0].px);
-		mejorPrecio = arrOrionBuyCHABTCCHABTC;
-	}
+	}/* else {
+		console.log("MEJOR SOUTH CHABTC " + arrSouthBuyCHABTC[0].px);
+		mejorPrecio = arrSouthBuyCHABTC;
+	}*/
 	
 	console.log("****FIN MEJOR PRECIO***");
 	
@@ -365,10 +367,10 @@ arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 	} else if(arrOrionBuyCHABTC[0].px == arrPreciosComp[0]){
 		console.log("MEJOR ORION CHABTC " + arrOrionBuyCHABTC[0].px);
 		arrRemate = arrOrionBuyCHABTC;
-	} else {
-		console.log("MEJOR SOUTH CHABTC " + arrOrionBuyCHABTCCHABTC[0].px);
-		arrRemate = arrOrionBuyCHABTCCHABTC;
-	}
+	} /*else {
+		console.log("MEJOR SOUTH CHABTC " + arrSouthBuyCHABTC[0].px);
+		arrRemate = arrSouthBuyCHABTC;
+	}*/
 	
 	console.log("****FIN PRECIO REMATE***");
 	
@@ -405,7 +407,7 @@ async function fnOrionCHABTC_CHACLP(){
 
 		index++;
 		if(datoSo.qty > 10){
-			vol = 0.002;//indexOrionBalance['BTC'].Deposited / 8;
+			vol = indexOrionBalance['BTC'].availableBalance / 800000000;
 			price = (datoSo.px + 0.00000001);
 			vol = (vol / price);
 			vol += (indexOrionBalance['CHA'].availableBalance / 100000000) - 200;//SON LAS QUE TENGO YA COMPRADAS menos las 200 para remate rapido
@@ -449,7 +451,7 @@ async function fnOrionCHABTC_CHACLP(){
 						ganancia += dif;
 						swEval = true;
 						console.log('GANANCIA: ' + ganancia);
-						vol = 0.002;//indexOrionBalance['BTC'].Deposited / 8;
+						vol = indexOrionBalance['BTC'].availableBalance / 800000000;
 						vol = (vol / price);
 						vol += indexOrionBalance['CHA'].availableBalance / 100000000 - 200;
 						dif = 0;
@@ -846,7 +848,7 @@ async function fnOrdenesOrion(){
 			});		
 					
 			
-			//await main(queryRemate);
+			await main(queryRemate2);
 			
 			qty = (price * qty / btcRef) * 1.0039;
 			
@@ -859,7 +861,8 @@ async function fnOrdenesOrion(){
 					console.log('The "data to append" was appended to file!');
 			});
 
-
+			await main(queryRemate3);
+			
 			fs.appendFileSync('./orionOrder.txt', JSON.stringify(order) + "\n", (err) => {
 				if (err) throw err;
 				console.log('The "data to append" was appended to file!');
@@ -976,5 +979,6 @@ fragment walletListItem on Wallet {
 	for(let objWallet of balanceOrion){
 		indexOrionBalance[objWallet.currency.code] = objWallet;
 	}
-	//console.log(indexOrionBalance);
+	console.log(indexOrionBalance);
+	//exit
 }
