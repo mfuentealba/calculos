@@ -22,7 +22,7 @@ var indexBalance = {precios:[]};
 var arrOrionBuyCHABTCCHABTC;
 var arrSouthSellCHABTC;
 var orders;
-var secretSouth = 'tTiQAtoIJRAttGNbFBElwrCUmvdrwqBoPSjvucrYGJFJJkjPWU';
+var secretSouth = 'TdYfvxqQojtRffghfsUPBufSppLoGkoKwVRfXvcYKVRpSOXJiw';
 var objTrades = {};
 var objTradesOrion = {};
 var balanceOrion;
@@ -219,7 +219,7 @@ async function fnProceso(){
 	console.log("******BALANCES******");
 	var date = new Date;		
 	var nonce = date.getTime();
-	var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}	
+	var req = {nonce: nonce + 14400000, key: 'IUSfqcKQBmDwvrxbNBTGhXIjyltfAF'}	
 	var headers = fnHeader(req);
 	
 	
@@ -674,7 +674,7 @@ function fnCreateOrderMarket(price, qty){
 	
 	
 	var queryRemate = {
-				query: 'mutation {  placeMarketOrder(marketCode: "CHABTC", amount: ' + qty + ', sell: false) {    _id    __typename  }}'
+				query: 'mutation {  ini: placeMarketOrder(marketCode: "CHABTC", amount: ' + qty + ', sell: false) {    _id    __typename  }, fin: placeMarketOrder(marketCode: "CHACLP", amount: ' + (qty * 0.9961) + ', sell: true) {    _id    __typename  }}'
 			};
 			
 	fs.appendFileSync('./data3.txt', JSON.stringify(queryRemate) + "\n", (err) => {
@@ -683,18 +683,7 @@ function fnCreateOrderMarket(price, qty){
 	});
 	
 	//await main(queryRemate);
-	qty = qty * 0.9961;
-	var queryRemate2 = {
-				query: 'mutation {  placeMarketOrder(marketCode: "CHACLP", amount: ' + qty + ', sell: true) {    _id    __typename  }}'
-			};
-			
-	fs.appendFileSync('./data3.txt', JSON.stringify(queryRemate2) + "\n", (err) => {
-		if (err) throw err;
-			console.log('The "data to append" was appended to file!');
-	});		
-			
 	
-	//await main(queryRemate);
 	
 	qty = (price * qty / btcRef) * 1.0039;
 	
@@ -723,7 +712,7 @@ async function fnOrdenesSouth(){
 	try{
 		var date = new Date;			
 		var nonce = date.getTime();  
-		var req = {nonce: nonce + 14400000, key: 'uUVmpIxtbxJWMrNOrOBkXXWKPXnJdh'}  
+		var req = {nonce: nonce + 14400000, key: 'IUSfqcKQBmDwvrxbNBTGhXIjyltfAF'}  
 		var headers = fnHeader(req);
 
 		var options = {
@@ -839,7 +828,7 @@ async function fnOrdenesOrion(){
 
 			qty = qty * 0.9961;
 			var queryRemate2 = {
-						query: 'mutation {  placeMarketOrder(marketCode: "CHACLP", amount: ' + qty + ', sell: true) {    _id    __typename  }}'
+						query: 'mutation {  remate:placeMarketOrder(marketCode: "CHACLP", amount: ' + qty + ', sell: true) {    _id    __typename  }, recuperacion: placeMarketOrder(marketCode: "BTCCLP", amount: ' + ((price * qty / btcRef) * 1.0039) + ', sell: false) {    _id    __typename  }}'
 					};
 					
 			fs.appendFileSync('./remate.txt', JSON.stringify(queryRemate2) + "\n", (err) => {
@@ -852,30 +841,11 @@ async function fnOrdenesOrion(){
 			
 			qty = (price * qty / btcRef) * 1.0039;
 			
-			var queryRemate3 = {
-						query: 'mutation {  placeMarketOrder(marketCode: "BTCCLP", amount: ' + qty + ', sell: false) {    _id    __typename  }}'
-					};
-					
-			fs.appendFileSync('./remate.txt', JSON.stringify(queryRemate3) + "\n", (err) => {
-				if (err) throw err;
-					console.log('The "data to append" was appended to file!');
-			});
-
-			await main(queryRemate3);
 			
-			fs.appendFileSync('./orionOrder.txt', JSON.stringify(order) + "\n", (err) => {
-				if (err) throw err;
-				console.log('The "data to append" was appended to file!');
-			});
+			
 		}
 
-	}
-  
-	
-	
-  
-	
-	
+	}	
 }
 
 async function fnTradesOrion(){

@@ -81,7 +81,7 @@ async function main(query) {
     console.log('*** Response ***');    // Se imprime la respuesta que llega
 	
 	//console.log(res.data.marketOrderBook.sell);
-	console.log(res.data.orders);
+	console.log(res.data);
 	/*for(let obj of res.data.marketOrderBook.buy){
 		obj.limitPrice = obj.limitPrice / 100000000;
 		obj.amount = obj.amount / 100000000;
@@ -176,7 +176,7 @@ unconfirmedBalance
 }
 `
 	};
- main(query3);
+ //main(query3);
  
  
  
@@ -187,7 +187,7 @@ unconfirmedBalance
 //main(query);   
 
 let mutation = {                        
-    query: 'mutation {placeLimitOrder(marketCode: "CHACLP", amount:50000000000, limitPrice: 498, sell:true){_id __typename }}'
+    query: 'mutation {ini: placeLimitOrder(marketCode: "CHACLP", amount:100000000, limitPrice: 498, sell:true){_id __typename }, otra: placeLimitOrder(marketCode: "CHACLP", amount:500000000000, limitPrice: 498, sell:true){_id __typename }}'
   
   };
-//main(mutation);
+main(mutation);
