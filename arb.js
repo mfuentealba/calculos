@@ -5,6 +5,9 @@ const fetch = require('node-fetch');
 const crypto = require('crypto');
 var request = require('request-promise');
 var fs = require('fs');
+var Orden = require('./models/orden');
+var ordenes = new Orden();
+
 var arrOrionBuyCHABTC;
 var arrOrionSellCHABTC;
 var arrOrionBuyBTCCLP;
@@ -38,6 +41,17 @@ var filled = 0;
 var mejorPrecio;
 var arrRemate;
 var btcRef = 0;
+var mongoose = require("mongoose");
+
+mongoose.connect('mongodb://localhost:27017/arb', {useMongoClient: true}).then(
+  () => {
+    console.log('Conectado a Mongo!!!!')
+    
+  },
+  err => {
+	console.log("Error en conexión a mongoDB:\n"+err);	
+   }
+)
 
 fs.readFile("soutOrder.txt", 'utf8', function(err, data) {
 	try{
@@ -809,6 +823,9 @@ async function fnOrdenesOrion(){
 	var buyOrder = false;
 	for(let order of orderOrion){
 		if(!objTradesOrion[order._id]){
+			
+			//orden.Ordenes
+			//ordenes.update({ _id: '5b7642c2b69777cb02311638' }, { $set: { size: 'large' }}, callback);
 			order.liquidados = 0;
 			order.ejecutados = 0;
 			objTradesOrion[order._id] = order;
