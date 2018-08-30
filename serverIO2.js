@@ -297,7 +297,7 @@ function fnEvaluaSituacion(){
     
     index++;
     if(datoSo.Amount > 10){
-      vol = indexBalance['BTC'].Deposited / 8;
+      vol = (indexBalance['BTC'] ? indexBalance['BTC'].Deposited : 0) / 8;
 	  console.log("******************");
 	  console.log(indexBalance['BTC']);
 	  console.log(indexBalance);
@@ -348,7 +348,7 @@ function fnEvaluaSituacion(){
             ganancia += dif;
             swEval = true;
             console.log('GANANCIA: ' + ganancia);
-            vol = indexBalance['BTC'].Deposited / 8;
+            vol = (indexBalance['BTC'] ? indexBalance['BTC'].Deposited : 0) / 8;
             vol = (vol / price);
 			if(indexBalance['CHA']){
 				vol += indexBalance['CHA'].Deposited;
@@ -553,7 +553,7 @@ async function fnListOrders(err,httpResponse,body) {
 		  
           if(swDif/* || 1 - (arrSouthBuy[0].Price / (arrOrionBuy[0].limitPrice / 100000000)) > 0.1*/){
             console.log("Creando Orden");
-            vol = indexBalance['BTC'].Available / 8;
+            vol = (indexBalance['BTC'] ? indexBalance['BTC'].Available : 0) / 8;
             vol = (vol / price);
             var f = await fnCreateOrder('buy', price, vol).then();
             console.log(f);
@@ -647,7 +647,7 @@ function fnEvalOrderMarket(){
         datSo.qty = 0;
         calcBalance += datSo.Amount * datSo.Price;
        
-        if(calcBalance >= indexBalance['BTC'].Available){
+        if(calcBalance >= (indexBalance['BTC'] ? indexBalance['BTC'].Available : 0)){
           arrMercado.pop();
           break;
         }
@@ -906,7 +906,7 @@ function fnBalanceSouth(){
         indexBalance[obj.Currency] = obj;
       }
       console.log(indexBalance['BTC']);
-      calcBalance = indexBalance['BTC'].Available;
+      calcBalance = indexBalance['BTC'] ? indexBalance['BTC'].Available : 0;
       fnOrionx();
     } catch(err){
       console.log(err);

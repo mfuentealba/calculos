@@ -425,7 +425,9 @@ async function fnOrionCHABTC_CHACLP(){
 			price = (datoSo.px + 0.00000001);
 			vol = (vol / price);
 			vol += (indexOrionBalance['CHA'].availableBalance / 100000000) - 200;//SON LAS QUE TENGO YA COMPRADAS menos las 200 para remate rapido
-			
+			console.log(vol);
+			vol = vol > 500 ? 500 : vol;
+			console.log(vol);
 			priceLibro = datoSo.px;
 			var ganancia = 0;
 			var swDif = false;
@@ -468,6 +470,7 @@ async function fnOrionCHABTC_CHACLP(){
 						vol = indexOrionBalance['BTC'].availableBalance / 800000000;
 						vol = (vol / price);
 						vol += indexOrionBalance['CHA'].availableBalance / 100000000 - 200;
+						vol = vol > 500 ? 500 : vol;
 						dif = 0;
 					}
 
@@ -585,6 +588,7 @@ async function fnOrionCHABTC_CHACLP(){
             console.log("Creando Orden");
             vol = indexOrionBalance['BTC'].availableBalance / 800000000;
             vol = (vol / price);
+			vol = vol > 500 ? 500 : vol;
             var f = await fnCreateOrderOrion('buy', price, vol).then();
             console.log(f);
             console.log('orden creada');
