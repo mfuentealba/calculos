@@ -82,12 +82,12 @@ async function main(query) {
 	
 	//console.log(res.data.marketOrderBook.sell);
 	console.log(res.data);
-	/*for(let obj of res.data.marketOrderBook.buy){
-		obj.limitPrice = obj.limitPrice / 100000000;
+	for(let obj of res.data.CHACLP.sell){
+		/*obj.limitPrice = obj.limitPrice / 100000000;
 		obj.amount = obj.amount / 100000000;
-		obj.accumulated = obj.accumulated / 100000000;
+		obj.accumulated = obj.accumulated / 100000000;*/
 		console.log(obj);
-	}*/
+	}
 
   } catch (e) {
     throw(e);
@@ -150,33 +150,9 @@ unconfirmedBalance
   */
   
   let query3 = {                        
-		query: `{
-  orders(marketCode: "CHABTC", onlyOpen: false, limit: 10) {
-    totalCount
-    items {
-      _id
-      sell
-      type
-      amount
-      amountToHold
-      secondaryAmount
-      filled
-      secondaryFilled
-      limitPrice
-      createdAt
-      isStop
-      status
-      stopPriceUp
-      stopPriceDown
- 
-      __typename
-    }
-    __typename
-  }
-}
-`
+		query: 'query consulta{CHABTC:marketOrderBook(marketCode: "CHABTC", limit:20){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}, CHACLP:marketOrderBook(marketCode: "CHACLP", limit:20){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}, BTCCLP:marketOrderBook(marketCode: "BTCCLP", limit:20){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
 	};
- //main(query3);
+ main(query3);
  
  
  
@@ -190,4 +166,4 @@ let mutation = {
     query: 'mutation {ini: placeLimitOrder(marketCode: "CHACLP", amount:100000000, limitPrice: 498, sell:true){_id __typename }, otra: placeLimitOrder(marketCode: "CHACLP", amount:500000000000, limitPrice: 498, sell:true){_id __typename }}'
   
   };
-main(mutation);
+//main(mutation);

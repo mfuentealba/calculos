@@ -26,6 +26,7 @@ console.log(moment());
 var objLiq = {precios:[]};
 var stopLoss = 0;
 var filled = 0;
+var BTCRef = 0;
 
 fs.readFile("./data.txt", 'utf8', function(err, data) {
 	try{
@@ -179,7 +180,8 @@ fragment walletListItem on Wallet {
 	
 	var volEstimado = indexOrionBalance['CHA'].availableBalance / 200000000;
 	if(orderOrion.length == 0){
-		if(objLiq.precios.length > 0){
+		/**********************REVISAR******************************/
+		/*if(objLiq.precios.length > 0){
 			for(var y = 0; y < objLiq.precios.length; y++){
 				let ob = objLiq[objLiq.precios[y]];
 				if(volEstimado - ob.qty > 0){
@@ -201,10 +203,10 @@ fragment walletListItem on Wallet {
 			console.log(['CHA'].availableBalance / 200000000)
 			console.log(arrOrionSell[0])
 			createOrderOrion((indexOrionBalance['CHA'].availableBalance - 20000000000) / 2, arrOrionSell[0].limitPrice);	
-		}
+		}*/
 		
-	} else {
-		if(stopLoss < arrOrionBuy[0].limitPrice){
+	} else {/**********************REVISAR******************************/
+		/*if(stopLoss < arrOrionBuy[0].limitPrice ){
 			//Cancelar orden y remate
 			
 			var queryCancel = {                        
@@ -248,7 +250,7 @@ fragment walletListItem on Wallet {
 			}
 		}
 		stopLoss = objLiq.precios[0] * 100000000 + 50;
-		filled = orderOrion[0].filled;
+		filled = orderOrion[0].filled;*/
 	}
 	
 	
@@ -308,6 +310,7 @@ function fnEvaluaSituacion(){
 		vol += indexBalance['CHA'].Deposited;  
 	  }
 	  
+	  
       
       priceLibro = datoSo.Price;
       var ganancia = 0;
@@ -318,7 +321,16 @@ function fnEvaluaSituacion(){
       console.log("PRUEBA VALOR " + price);
       debug = 0;
       console.log("Volumen estimado: " + vol);
-      for(let dato of arrOrionBuy){
+	  
+	  var arrEval;
+	  if(arrOrionBuy[0].limitPrice > arrOrionBuyCHACLP[0].limitPrice / BTCRef){
+		  arrEval = arrOrionBuy;
+	  } else {
+		  arrEval = arrOrionBuyCHACLP;
+	  }
+	  
+	  
+      for(let dato of arrEval){
         debug++;
         dif = ((dato.limitPrice / 100000000) - price)// * dato.amount / 100000000;
         difPercent = 1 - (price / (dato.limitPrice / 100000000))// * dato.amount / 100000000;
@@ -486,6 +498,7 @@ async function fnListOrders(err,httpResponse,body) {
         if(order.Type == 'buy'){
           console.log(priceLibro + ' != ' + order.LimitPrice);
           console.log(index);
+		  console.log(arrSouthBuy);
           console.log(order.LimitPrice + ' - ' + arrSouthBuy[index].Price);
           console.log(order.LimitPrice - arrSouthBuy[index].Price);
           if(/*arrSouthBuy[0].Price*/ priceLibro != order.LimitPrice || order.LimitPrice - arrSouthBuy[index].Price > 0.00000002/* || arrOrionBuy[0].limitPrice / 100000000 - arrSouthBuy[1].Price < 0.000001*/){
@@ -505,7 +518,7 @@ async function fnListOrders(err,httpResponse,body) {
           console.log(arrOrionSell[0].limitPrice / 100000000 > order.LimitPrice);
           console.log('EVALUANDO');
 
-          if(arrSouthSell[0].Price < order.LimitPrice || arrOrionBuy[0].limitPrice / 100000000 > arrSouthSell[0].Price || arrOrionSell[0].limitPrice / 100000000 > order.LimitPrice/* || arrSouthSell[1].Price - arrSouthSell[0].Price > 0.0000001*/){
+          if(arrSouthSell[0].Price < order.LimitPrice || ( arrOrionBuy[0].limitPrice / 100000000 > arrSouthSell[0].Price && arrOrionBuyCHACLP[0].limitPrice > arrSouthSell[0].Price ) || arrOrionSell[0].limitPrice / 100000000 > order.LimitPrice){
             await fnCancelOrder(order);
             console.log('eliminada');
           }
@@ -922,16 +935,30 @@ function fnBalanceSouth(){
 
 async function fnOrionxBalance(){
 	let query = {                        
-		query: '{marketOrderBook(marketCode: "CHABTC", limit:20){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
+		query: 'query consulta{CHABTC:marketOrderBook(marketCode: "CHABTC", limit:20){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}, CHACLP:marketOrderBook(marketCode: "CHACLP", limit:20){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}, BTCCLP:marketOrderBook(marketCode: "BTCCLP", limit:20){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}}'
 	};
 
 	var libroOrion = await main(query);
 	
 	//console.log(libroOrion);
   
-	arrOrionBuy = libroOrion.data.marketOrderBook.buy;
-	arrOrionSell = libroOrion.data.marketOrderBook.sell; 
+	arrOrionBuy = libroOrion.data.CHABTC.buy;
+	arrOrionSell = libroOrion.data.CHABTC.sell; 
 	
+	arrOrionBuyCHACLP = libroOrion.data.CHACLP.buy;
+	arrOrionSellCHACLP = libroOrion.data.CHACLP.sell; 
+	
+	arrOrionBuyBTCCLP = libroOrion.data.BTCCLP.buy;
+	arrOrionSellBTCCLP = libroOrion.data.BTCCLP.sell; 
+	
+	var acum = 0;
+	for(var obj of arrOrionSellBTCCLP){
+		acum += obj['amount'];
+		if(acum > 1000000){
+			BTCRef = obj['limitPrice'];
+			break;
+		}
+	}
 	
 	
 	
