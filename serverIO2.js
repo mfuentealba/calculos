@@ -177,6 +177,25 @@ fragment walletListItem on Wallet {
 	arrOrionSellBTCCLP = libroOrion.data.BTCCLP.sell;	
 	
 	
+	var acum = 0;
+	for(var obj of arrOrionSellBTCCLP){
+		acum += obj['amount'];
+		console.log(obj);
+		if(acum > 1000000){
+			BTCRef = obj['limitPrice'];
+			break;
+		}
+	}
+	console.log("BTCREF: " + BTCRef);
+	
+	
+	for(var obj of arrOrionBuyCHACLP){
+		obj['limitPrice'] = obj['limitPrice'] / BTCRef * 100000000;
+		
+		
+	}
+	
+	
 	
 	var volEstimado = indexOrionBalance['CHA'].availableBalance / 200000000;
 	if(orderOrion.length == 0){
@@ -322,11 +341,16 @@ function fnEvaluaSituacion(){
       debug = 0;
       console.log("Volumen estimado: " + vol);
 	  
+	  console.log("COMPARANDO CON : " + (arrOrionBuyCHACLP[0].limitPrice));
+	  
 	  var arrEval;
-	  if(arrOrionBuy[0].limitPrice > arrOrionBuyCHACLP[0].limitPrice / BTCRef){
+	  console.log(arrOrionBuy[0].limitPrice + ' > ' + arrOrionBuyCHACLP[0].limitPrice)
+	  if(arrOrionBuy[0].limitPrice > arrOrionBuyCHACLP[0].limitPrice){
 		  arrEval = arrOrionBuy;
+		  console.log("SELECCIONADO arrOrionBuy " + (arrOrionBuyCHACLP[0].limitPrice));
 	  } else {
 		  arrEval = arrOrionBuyCHACLP;
+		  console.log("SELECCIONADO arrOrionBuyCHACLP " + (arrOrionBuyCHACLP[0].limitPrice));
 	  }
 	  
 	  
@@ -954,12 +978,13 @@ async function fnOrionxBalance(){
 	var acum = 0;
 	for(var obj of arrOrionSellBTCCLP){
 		acum += obj['amount'];
+		console.log(obj);
 		if(acum > 1000000){
 			BTCRef = obj['limitPrice'];
 			break;
 		}
 	}
-	
+	console.log("BTCREF: " + BTCRef);
 	
 	
 	
