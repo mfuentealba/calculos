@@ -21,7 +21,7 @@
             "type": "node",
             "request": "launch",
             "name": "Iniciar programa",
-            "program": "${workspaceFolder}\\arb.js"
+            "program": "${workspaceFolder}\\xrp.js"
         }
     ]
 }

@@ -8,22 +8,22 @@ var fs = require('fs');
 var Orden = require('./models/orden');
 var ordenes = new Orden();
 
-var arrOrionBuyCHABTC;
-var arrOrionSellCHABTC;
+var arrOrionBuyXRPBTC;
+var arrOrionSellXRPBTC;
 var arrOrionBuyBTCCLP;
 var arrOrionSellBTCCLP;
-var arrOrionBuyCHACLP;
-var arrOrionSellCHACLP;
-var tradesOrionCHABTC;
-var tradesOrionCHACLP;
+var arrOrionBuyXRPCLP;
+var arrOrionSellXRPCLP;
+var tradesOrionXRPBTC;
+var tradesOrionXRPCLP;
 
 
 
 var balanceSouth;
 var calcBalance = 0;	
 var indexBalance = {precios:[]};
-var arrOrionBuyCHABTCCHABTC;
-var arrSouthSellCHABTC;
+var arrOrionBuyXRPBTCXRPBTC;
+var arrSouthSellXRPBTC;
 var orders;
 var secretSouth = 'TdYfvxqQojtRffghfsUPBufSppLoGkoKwVRfXvcYKVRpSOXJiw';
 var objTrades = {};
@@ -108,32 +108,6 @@ function fnOrden(points) {
 
 
 
-async function fnLibroSouth(){
-	var URL = 'https://www.southxchange.com/api/book/CHA/BTC';  
-	var respJSON = '';		
-	// Realiza la petición
-	
-	//console.log(URL);
-	await request.get(URL).then((data) => {	
-		data = JSON.parse(data);
-		//console.log(data);
-		/*for(let obj of data){
-			console.log(obj);
-		}*/
-		//console.log(data.BuyOrders);
-		
-		arrOrionBuyCHABTCCHABTC = data.BuyOrders;
-		arrSouthSellCHABTC = data.SellOrders;
-
-		console.log(arrSouthSellCHABTC[0]);  
-		console.log(arrOrionBuyCHABTCCHABTC[0]);
-		
-
-		
-	});	
-}
-
-
 
 async function fullQuery(url, query, apiKey, apiSecretKey) {
   // New actual Time-Stamp
@@ -205,27 +179,6 @@ function fnHeader(req){
 }
 
 
-function fnBalanceSouth(data){
-		
-		
-	balanceSouth = data;
-	
-	try{
-	  for(var i = 0; i < balanceSouth.length; i++){
-		var obj = balanceSouth[i];
-		
-		indexBalance[obj.Currency] = obj;
-	  }
-	  console.log(indexBalance['BTC']);
-	  calcBalance = indexBalance['BTC'].Available;
-	  return;
-	  //fnOrionx();
-	} catch(err){
-	  console.log(err);
-	}
-			
-}
-
 async function fnProceso(){
 	console.log("*** NUEVA OPERACION ***");
   
@@ -237,21 +190,6 @@ async function fnProceso(){
 	var headers = fnHeader(req);
 	
 	
-	var options = {
-		url     : 'https://www.southxchange.com/api/listBalances',
-		method  : 'POST',
-		//jar     : true,
-		headers : headers,
-		json : true,
-		body:	req//JSON.stringify(req)
-	}	
-		
-	/*await request.post(options).then((data) => {fnBalanceSouth(data)}).catch((error) => {
-		  // Ocurrió un error en el request
-		  console.log('Error encontrado al realizar la consulta: ' + error.message);
-		});
-	//console.log('FIN');
-	*/
 	await fnOrionxBalance();
 	
 	console.log("******FIN BALANCES******");
@@ -295,52 +233,52 @@ async function fnProceso(){
 	}
 	
 	console.log("btcRef: " + btcRef);
-	for(let i = 0; i < arrOrionBuyCHABTC.length; i++){
-		let obj = arrOrionBuyCHABTC[i];
-		obj = {px: (obj.limitPrice / 100000000) , qty: obj.amount / 100000000, acum: obj.accumulated / 100000000};
-		arrOrionBuyCHABTC[i] = obj;
+	for(let i = 0; i < arrOrionBuyXRPBTC.length; i++){
+		let obj = arrOrionBuyXRPBTC[i];
+		obj = {px: (obj.limitPrice / 100000000) , qty: obj.amount / 1000000, acum: obj.accumulated / 1000000};
+		arrOrionBuyXRPBTC[i] = obj;
 		//console.log(obj);
 	}
-	console.log(arrOrionBuyCHABTC[0]);
-	for(let i = 0; i < arrOrionSellCHABTC.length; i++){
-		let obj = arrOrionSellCHABTC[i];
-		obj = {px: obj.limitPrice / 100000000, qty: obj.amount / 100000000, acum: obj.accumulated / 100000000};
-		arrOrionSellCHABTC[i] = obj;
+	console.log(arrOrionBuyXRPBTC[0]);
+	for(let i = 0; i < arrOrionSellXRPBTC.length; i++){
+		let obj = arrOrionSellXRPBTC[i];
+		obj = {px: obj.limitPrice / 100000000, qty: obj.amount / 1000000, acum: obj.accumulated / 1000000};
+		arrOrionSellXRPBTC[i] = obj;
 	}
 	
 	
-	for(let i = 0; i < arrOrionBuyCHACLP.length; i++){
-		let obj = arrOrionBuyCHACLP[i];
+	for(let i = 0; i < arrOrionBuyXRPCLP.length; i++){
+		let obj = arrOrionBuyXRPCLP[i];
 		
-		obj = {px: (obj.limitPrice / btcRef).toFixed(8), qty: obj.amount / 100000000, acum: obj.accumulated / 100000000, pxRef: obj.limitPrice};
-		arrOrionBuyCHACLP[i] = obj;
+		obj = {px: (obj.limitPrice / btcRef).toFixed(8), qty: obj.amount / 1000000, acum: obj.accumulated / 1000000, pxRef: obj.limitPrice};
+		arrOrionBuyXRPCLP[i] = obj;
 		//console.log(obj);
 	}
-	console.log(arrOrionBuyCHACLP[0]);
+	console.log(arrOrionBuyXRPCLP[0]);
 	
 	
-	for(let i = 0; i < arrOrionSellCHACLP.length; i++){
-		let obj = arrOrionSellCHACLP[i];
-		obj = {px: (obj.limitPrice / btcRef).toFixed(8), qty: obj.amount / 100000000, acum: obj.accumulated / 100000000, pxRef: obj.limitPrice};
-		arrOrionSellCHACLP[i] = obj;
+	for(let i = 0; i < arrOrionSellXRPCLP.length; i++){
+		let obj = arrOrionSellXRPCLP[i];
+		obj = {px: (obj.limitPrice / btcRef).toFixed(8), qty: obj.amount / 1000000, acum: obj.accumulated / 1000000, pxRef: obj.limitPrice};
+		arrOrionSellXRPCLP[i] = obj;
 	}
 	var acum = 0;
-	/*for(let i = 0; i < arrSouthBuyCHABTC.length; i++){
-		let obj = arrSouthBuyCHABTC[i];
+	/*for(let i = 0; i < arrSouthBuyXRPBTC.length; i++){
+		let obj = arrSouthBuyXRPBTC[i];
 		acum += obj.Amount;
 		obj = {px: obj.Price, qty: obj.Amount, acum: acum};
-		arrOrionBuyCHABTCCHABTC[i] = obj;
+		arrOrionBuyXRPBTCXRPBTC[i] = obj;
 		//console.log(obj);
 	}
-	console.log(arrSouthBuyCHABTC[0]);
+	console.log(arrSouthBuyXRPBTC[0]);
 	acum = 0;
 	
-	for(let i = 0; i < arrSouthSellCHABTC.length; i++){
-		let obj = arrSouthSellCHABTC[i];
+	for(let i = 0; i < arrSouthSellXRPBTC.length; i++){
+		let obj = arrSouthSellXRPBTC[i];
 		acum += obj.Amount;
 		
 		obj = {px: obj.Price, qty: obj.Amount, acum: acum};
-		arrSouthSellCHABTC[i] = obj;
+		arrSouthSellXRPBTC[i] = obj;
 	}*/
 	
 	console.log("****FIN IGUALANDO LIBROS***");
@@ -352,20 +290,20 @@ async function fnProceso(){
 	/******MEJOR PRECIO******/
 	console.log("****MEJOR PRECIO***");
 
-var arrPreciosComp = [arrOrionBuyCHACLP[0].px, arrOrionBuyCHABTC[0].px/*, arrSouthBuyCHABTC[0].px*/];
+var arrPreciosComp = [arrOrionBuyXRPCLP[0].px, arrOrionBuyXRPBTC[0].px/*, arrSouthBuyXRPBTC[0].px*/];
 
 arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
-	console.log("Comparando Precios: " + arrOrionBuyCHACLP[0].px + ' ' + arrPreciosComp[arrPreciosComp.length - 1]);
-	console.log("Comparando Precios: " + arrOrionBuyCHABTC[0].px + ' ' + arrPreciosComp[arrPreciosComp.length - 1]);
-	if(arrOrionBuyCHACLP[0].px == arrPreciosComp[2]){
-		console.log("MEJOR ORION CHACLP " + arrOrionBuyCHACLP[0].px);
-		mejorPrecio = arrOrionBuyCHACLP;
-	} else if(arrOrionBuyCHABTC[0].px == arrPreciosComp[2]){
-		console.log("MEJOR ORION CHABTC " + arrOrionBuyCHABTC[0].px);
-		mejorPrecio = arrOrionBuyCHABTC;
+	console.log("Comparando Precios: " + arrOrionBuyXRPCLP[0].px + ' ' + arrPreciosComp[arrPreciosComp.length - 1]);
+	console.log("Comparando Precios: " + arrOrionBuyXRPBTC[0].px + ' ' + arrPreciosComp[arrPreciosComp.length - 1]);
+	if(arrOrionBuyXRPCLP[0].px == arrPreciosComp[2]){
+		console.log("MEJOR ORION XRPCLP " + arrOrionBuyXRPCLP[0].px);
+		mejorPrecio = arrOrionBuyXRPCLP;
+	} else if(arrOrionBuyXRPBTC[0].px == arrPreciosComp[2]){
+		console.log("MEJOR ORION XRPBTC " + arrOrionBuyXRPBTC[0].px);
+		mejorPrecio = arrOrionBuyXRPBTC;
 	}/* else {
-		console.log("MEJOR SOUTH CHABTC " + arrSouthBuyCHABTC[0].px);
-		mejorPrecio = arrSouthBuyCHABTC;
+		console.log("MEJOR SOUTH XRPBTC " + arrSouthBuyXRPBTC[0].px);
+		mejorPrecio = arrSouthBuyXRPBTC;
 	}*/
 	
 	console.log("****FIN MEJOR PRECIO***");
@@ -375,15 +313,15 @@ arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 	/******PRECIO REMATE******/
 	console.log("****PRECIO REMATE***");
 	
-	if(arrOrionBuyCHACLP[0].px == arrPreciosComp[0]){
-		console.log("MEJOR ORION CHACLP " + arrOrionBuyCHACLP[0].px);
-		arrRemate = arrOrionBuyCHACLP;
-	} else if(arrOrionBuyCHABTC[0].px == arrPreciosComp[0]){
-		console.log("MEJOR ORION CHABTC " + arrOrionBuyCHABTC[0].px);
-		arrRemate = arrOrionBuyCHABTC;
+	if(arrOrionBuyXRPCLP[0].px == arrPreciosComp[0]){
+		console.log("MEJOR ORION XRPCLP " + arrOrionBuyXRPCLP[0].px);
+		arrRemate = arrOrionBuyXRPCLP;
+	} else if(arrOrionBuyXRPBTC[0].px == arrPreciosComp[0]){
+		console.log("MEJOR ORION XRPBTC " + arrOrionBuyXRPBTC[0].px);
+		arrRemate = arrOrionBuyXRPBTC;
 	} /*else {
-		console.log("MEJOR SOUTH CHABTC " + arrSouthBuyCHABTC[0].px);
-		arrRemate = arrSouthBuyCHABTC;
+		console.log("MEJOR SOUTH XRPBTC " + arrSouthBuyXRPBTC[0].px);
+		arrRemate = arrSouthBuyXRPBTC;
 	}*/
 	
 	console.log("****FIN PRECIO REMATE***");
@@ -395,13 +333,13 @@ arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 
 	//fnRemateDirectoOrion();
 	
-	fnOrionCHABTC_CHACLP()
+	fnOrionXRPBTC_XRPCLP()
 
 	
 	
-	/*fnEvaluacion(arrOrionBuyCHABTCCHABTC, arrOrionBuyCHABTC);
-	fnEvaluacion(arrOrionBuyCHABTCCHABTC, arrOrionBuyCHACLP);
-	fnEvaluacion(arrOrionBuyCHABTC, arrOrionBuyCHABTC);*/
+	/*fnEvaluacion(arrOrionBuyXRPBTCXRPBTC, arrOrionBuyXRPBTC);
+	fnEvaluacion(arrOrionBuyXRPBTCXRPBTC, arrOrionBuyXRPCLP);
+	fnEvaluacion(arrOrionBuyXRPBTC, arrOrionBuyXRPBTC);*/
 	
 	console.log("****FIN CALCULOS***");
 	
@@ -410,21 +348,21 @@ arrPreciosComp = arrPreciosComp.sort(function(a, b){return b-a});
 	
 }
 
-async function fnOrionCHABTC_CHACLP(){
+async function fnOrionXRPBTC_XRPCLP(){
 	var price = 0;
 	var priceLibro = 0;
 	var vol = 0;
 	var index = 0;
 	var swEval;
 	var debug = 0;
-	for(let datoSo of arrOrionBuyCHABTC){
+	for(let datoSo of arrOrionBuyXRPBTC){
 
 		index++;
 		if(datoSo.qty > 10){
 			vol = indexOrionBalance['BTC'].availableBalance / 800000000;
 			price = (datoSo.px * 100000000 + 1) / 100000000;
 			vol = (vol / price);
-			vol += (indexOrionBalance['CHA'].availableBalance / 100000000) - 200;//SON LAS QUE TENGO YA COMPRADAS menos las 200 para remate rapido
+			vol += (indexOrionBalance['XRP'].availableBalance / 1000000)/* - 200*/;//SON LAS QUE TENGO YA COMPRADAS menos las 200 para remate rapido
 			console.log(vol);
 			vol = vol > 500 ? 500 : vol;
 			console.log(vol);
@@ -437,7 +375,7 @@ async function fnOrionCHABTC_CHACLP(){
 			console.log("PRUEBA VALOR " + price);
 			debug = 0;
 			console.log("Volumen estimado: " + vol);
-			for(let dato of arrOrionBuyCHACLP){
+			for(let dato of arrOrionBuyXRPCLP){
 				debug++;
 				dif = (dato.px - price)// * dato.amount / 100000000;
 				difPercent = 1 - (price / dato.px)// * dato.amount / 100000000;
@@ -469,7 +407,7 @@ async function fnOrionCHABTC_CHACLP(){
 						console.log('GANANCIA: ' + ganancia);
 						vol = indexOrionBalance['BTC'].availableBalance / 800000000;
 						vol = (vol / price);
-						vol += indexOrionBalance['CHA'].availableBalance / 100000000 - 200;
+						vol += indexOrionBalance['XRP'].availableBalance / 1000000/* - 200*/;
 						vol = vol > 500 ? 500 : vol;
 						dif = 0;
 					}
@@ -506,9 +444,9 @@ async function fnOrionCHABTC_CHACLP(){
         if(order.sell == false){
           console.log(priceLibro + ' != ' + (order.limitPrice / 100000000));
           console.log(index);
-          console.log((order.limitPrice / 100000000) + ' - ' + arrOrionBuyCHABTC[index].px);
-          console.log((order.limitPrice / 100000000) - arrOrionBuyCHABTC[index].px);
-          if(priceLibro != (order.limitPrice / 100000000) || (order.limitPrice / 100000000) - arrOrionBuyCHABTC[index].px > 0.00000002){
+          console.log((order.limitPrice / 100000000) + ' - ' + arrOrionBuyXRPBTC[index].px);
+          console.log((order.limitPrice / 100000000) - arrOrionBuyXRPBTC[index].px);
+          if(priceLibro != (order.limitPrice / 100000000) || (order.limitPrice / 100000000) - arrOrionBuyXRPBTC[index].px > 0.00000002){
             await fnCancelOrderOrion(order);
             console.log('eliminada');
           }
@@ -516,19 +454,19 @@ async function fnOrionCHABTC_CHACLP(){
         } else {
           console.log('EVALUANDO');
           
-          console.log(arrOrionSellCHABTC[0].px + ' < ' +  (order.limitPrice / 100000000));
-          console.log(arrOrionBuyCHACLP[0].px + ' > ' + arrOrionSellCHABTC[0].px);
-          console.log(arrOrionSellCHACLP[0].px + " > " + (order.limitPrice / 100000000));
+          console.log(arrOrionSellXRPBTC[0].px + ' < ' +  (order.limitPrice / 100000000));
+          console.log(arrOrionBuyXRPCLP[0].px + ' > ' + arrOrionSellXRPBTC[0].px);
+          console.log(arrOrionSellXRPCLP[0].px + " > " + (order.limitPrice / 100000000));
 		  
-          console.log(arrOrionSellCHABTC[0].px  <  (order.limitPrice / 100000000));		  
-          console.log(arrOrionBuyCHACLP[0].px >  arrOrionSellCHABTC[0].px);
-          console.log((arrOrionSellCHABTC[1].px  - arrOrionSellCHABTC[0].px)  > 0.0000001);
-          console.log(arrOrionSellCHACLP[0].px > (order.limitPrice / 100000000));
+          console.log(arrOrionSellXRPBTC[0].px  <  (order.limitPrice / 100000000));		  
+          console.log(arrOrionBuyXRPCLP[0].px >  arrOrionSellXRPBTC[0].px);
+          console.log((arrOrionSellXRPBTC[1].px  - arrOrionSellXRPBTC[0].px)  > 0.0000001);
+          console.log(arrOrionSellXRPCLP[0].px > (order.limitPrice / 100000000));
           console.log('EVALUANDO');
 
-          if(arrOrionSellCHABTC[0].px < (order.limitPrice / 100000000)  || 
-						arrOrionBuyCHACLP[0].px > arrOrionSellCHABTC[0].px     || 
-						arrOrionSellCHACLP[0].px > (order.limitPrice / 100000000)){
+          if(arrOrionSellXRPBTC[0].px < (order.limitPrice / 100000000)  || 
+						arrOrionBuyXRPCLP[0].px > arrOrionSellXRPBTC[0].px     || 
+						arrOrionSellXRPCLP[0].px > (order.limitPrice / 100000000)){
 				
             await fnCancelOrderOrion(order);
             console.log('eliminada');
@@ -537,18 +475,18 @@ async function fnOrionCHABTC_CHACLP(){
       }
       
       
-      console.log("Orion CHACLP Buy: " + arrOrionBuyCHACLP[0].px);
-      console.log("Orion CHACLP Sell: " + arrOrionSellCHACLP[0].px);
-      console.log("Orion CHABTC Buy: " + arrOrionBuyCHABTC[0].px);
-      console.log("Orion CHABTC Sell: " + arrOrionSellCHABTC[0].px);
+      console.log("Orion XRPCLP Buy: " + arrOrionBuyXRPCLP[0].px);
+      console.log("Orion XRPCLP Sell: " + arrOrionSellXRPCLP[0].px);
+      console.log("Orion XRPBTC Buy: " + arrOrionBuyXRPBTC[0].px);
+      console.log("Orion XRPBTC Sell: " + arrOrionSellXRPBTC[0].px);
       
 			console.log("indexOrionBalance BTC: " + indexOrionBalance['BTC'].availableBalance);
 			console.log(indexOrionBalance['BTC']);
 	  
       if(!orderOrion){
         console.log("Sin Orden");
-        console.log(arrOrionBuyCHACLP[0].px - arrOrionBuyCHABTC[0].px > 0.000001);
-        console.log(1 - (arrOrionBuyCHABTC[0].px / arrOrionBuyCHACLP[0].px) > 0.1);
+        console.log(arrOrionBuyXRPCLP[0].px - arrOrionBuyXRPBTC[0].px > 0.000001);
+        console.log(1 - (arrOrionBuyXRPBTC[0].px / arrOrionBuyXRPCLP[0].px) > 0.1);
 		
 		
 		
@@ -578,9 +516,9 @@ async function fnOrionCHABTC_CHACLP(){
 		console.log("**************\n\n");
 		
         if(!sw){
-          console.log(arrOrionBuyCHACLP[0].px - arrOrionBuyCHABTC[0].Price > 0.000001);
-          console.log(1 - arrOrionBuyCHABTC[0].px / arrOrionBuyCHACLP[0].px > 0.1);
-          console.log('1 - ' + arrOrionBuyCHABTC[0].px + ' / ' + arrOrionBuyCHACLP[0].px + ' > ' + 0.1);
+          console.log(arrOrionBuyXRPCLP[0].px - arrOrionBuyXRPBTC[0].Price > 0.000001);
+          console.log(1 - arrOrionBuyXRPBTC[0].px / arrOrionBuyXRPCLP[0].px > 0.1);
+          console.log('1 - ' + arrOrionBuyXRPBTC[0].px + ' / ' + arrOrionBuyXRPCLP[0].px + ' > ' + 0.1);
 		  
 		  
 		  
@@ -617,10 +555,10 @@ async function fnCancelOrderOrion(order){
 
 async function fnCreateOrderOrion(tipo, price, qty){
 	let mutation = {                        
-		query: 'mutation {placeLimitOrder(marketCode: "CHABTC", amount:' + (qty * 100000000) + ', limitPrice: ' + Math.round(price * 100000000) + ', sell:' + (tipo == 'buy' ? false : true) + '){_id __typename }}'
+		query: 'mutation {placeLimitOrder(marketCode: "XRPBTC", amount:' + (qty * 1000000) + ', limitPrice: ' + Math.round(price * 100000000) + ', sell:' + (tipo == 'buy' ? false : true) + '){_id __typename }}'
 	  
 	  };
-	console.log("CREANDO ORDEN EN ORION DE PRECIO: " + price + "y volumen: " + qty);
+	console.log("CREANDO ORDEN EN ORION DE PRECIO: " + price + " y volumen: " + qty);
   
 	var r = await main(mutation);
 	console.log(r);
@@ -636,8 +574,8 @@ function fnRemateDirectoOrion(){
   var i = 0;
   calcBalance = 0;
   console.log("Comparando Libros");
-  for(let datSo of arrOrionSellCHABTC){
-    var datOr = arrOrionBuyCHACLP[i];
+  for(let datSo of arrOrionSellXRPBTC){
+    var datOr = arrOrionBuyXRPCLP[i];
     datOr.dat = 'holas';
     //console.log(datOr);  
 	  
@@ -664,7 +602,7 @@ function fnRemateDirectoOrion(){
     }
     
   }
-	console.log("PRECIO arrOrionBuyCHACLP: " + datOr.px);
+	console.log("PRECIO arrOrionBuyXRPCLP: " + datOr.px);
   if(arrMercado.length > 0){
     var price = datOr.pxRef;
     var qty = 0;
@@ -686,13 +624,13 @@ function fnRemateDirectoOrion(){
 
 
 function fnCreateOrderMarket(price, qty){
-	if(qty > indexOrionBalance['CHA'].availableBalance){
-		qty = indexOrionBalance['CHA'].availableBalance;
+	if(qty > indexOrionBalance['XRP'].availableBalance){
+		qty = indexOrionBalance['XRP'].availableBalance;
 	}
 	
 	
 	var queryRemate = {
-				query: 'mutation {  ini: placeMarketOrder(marketCode: "CHABTC", amount: ' + qty + ', sell: false) {    _id    __typename  }, fin: placeMarketOrder(marketCode: "CHACLP", amount: ' + (qty * 0.9961) + ', sell: true) {    _id    __typename  }}'
+				query: 'mutation {  ini: placeMarketOrder(marketCode: "XRPBTC", amount: ' + qty + ', sell: false) {    _id    __typename  }, fin: placeMarketOrder(marketCode: "XRPCLP", amount: ' + (qty * 0.9961) + ', sell: true) {    _id    __typename  }}'
 			};
 			
 	fs.appendFileSync('./data3.txt', JSON.stringify(queryRemate) + "\n", (err) => {
@@ -726,30 +664,6 @@ async function fnEvaluacion(arrCompra, arrVenta){
 }
 
 
-async function fnOrdenesSouth(){
-	try{
-		var date = new Date;			
-		var nonce = date.getTime();  
-		var req = {nonce: nonce + 14400000, key: 'IUSfqcKQBmDwvrxbNBTGhXIjyltfAF'}  
-		var headers = fnHeader(req);
-
-		var options = {
-		url     : 'https://www.southxchange.com/api/listOrders',
-		method  : 'POST',
-		//jar     : true,
-		headers : headers,
-		json : true,
-		body:	req//JSON.stringify(req)
-		}
-
-		await request.post(options).then((data) => fnListOrders(data))		
-	} catch(e){
-		console.log("*************ERROR EN SERVICIO DE ORDENES SOUTH\n\n");
-		console.log(e);
-		console.log("*************ERROR EN SERVICIO DE ORDENES SOUTH\n\n");
-	}
-	
-}
 
 
 function fnOrden(points) {
@@ -759,42 +673,11 @@ function fnOrden(points) {
 }
 
 
-async function fnListOrders(body) {
-	//body = JSON.parse(body);
-  //console.log(body);
-  orders = body;
-  var buyOrder = false;
-  for(let order of orders){
-    if(!objTrades[order.Code]){
-      order.liquidados = 0;
-      order.ejecutados = order.OriginalAmount;
-      objTrades[order.Code] = order;
-      objLiq[order.Price] = {qty: order.Amount, enviado: false, enOrden: 0, liquidados: 0, estado: 'V'};
-	  objLiq.precios.push(order.Price);
-	  fnOrden(objLiq.precios);
-    } else {
-      objTrades[order.Code].Amount = order.Amount;
-      order.ejecutados = order.OriginalAmount - order.Amount;
-      objLiq[order.Price].qty = order.ejecutados;
-      
-    }
-    if(order.OriginalAmount != order.Amount){
-      fs.appendFileSync('./southOrder.txt', JSON.stringify(order) + "\n", (err) => {
-        if (err) throw err;
-        console.log('The "data to append" was appended to file!');
-      });
-    }
-    
-  }
-  
-}
-
-
 
 async function fnOrdenesOrion(){
 	let query4 = {                        
 		query: `{
-  orders(marketCode: "CHABTC", onlyOpen: true, limit: 0) {
+  orders(marketCode: "XRPBTC", onlyOpen: true, limit: 0) {
     totalCount
     items {
       _id
@@ -843,28 +726,7 @@ async function fnOrdenesOrion(){
 
 		}
 		console.log(JSON.stringify(order));
-		if(order.filled > 0 && order.filled != objTradesOrion[order._id].ejecutados){
-			var qty = order.filled - objTradesOrion[order._id].ejecutados;
-			objTradesOrion[order._id].ejecutados = order.filled;
-
-			qty = qty * 0.9961;
-			var queryRemate2 = {
-						query: 'mutation {  remate:placeMarketOrder(marketCode: "CHACLP", amount: ' + qty + ', sell: true) {    _id    __typename  }, recuperacion: placeMarketOrder(marketCode: "BTCCLP", amount: ' + ((price * qty / btcRef) * 1.0039) + ', sell: false) {    _id    __typename  }}'
-					};
-					
-			fs.appendFileSync('./remate.txt', JSON.stringify(queryRemate2) + "\n", (err) => {
-				if (err) throw err;
-					console.log('The "data to append" was appended to file!');
-			});		
-					
-			
-			await main(queryRemate2);
-			
-			qty = (price * qty / btcRef) * 1.0039;
-			
-			
-			
-		}
+		
 
 	}	
 }
@@ -872,14 +734,14 @@ async function fnOrdenesOrion(){
 async function fnTradesOrion(){
 	let query3 = {                        
 		query: `query{
-  historyCHABTC: marketTradeHistory(marketCode: "CHABTC") {
+  historyXRPBTC: marketTradeHistory(marketCode: "XRPBTC") {
     _id
     amount
     price
     date
     __typename
   }
-  historyCHACLP: marketTradeHistory(marketCode: "CHACLP") {
+  historyXRPCLP: marketTradeHistory(marketCode: "XRPCLP") {
     _id
     amount
     price
@@ -892,18 +754,18 @@ async function fnTradesOrion(){
 	
 	var data = await main(query3);
 	
-	//console.log(data.data.historyCHABTC);
+	//console.log(data.data.historyXRPBTC);
 	
-	tradesOrionCHABTC = data.data.historyCHABTC;
+	tradesOrionXRPBTC = data.data.historyXRPBTC;
 	
 	
-	tradesOrionCHACLP = data.data.historyCHACLP;
+	tradesOrionXRPCLP = data.data.historyXRPCLP;
 }
 
 async function fnLibrosOrion(){
 	let query = {                        
-		query: `query{CHACLP: marketOrderBook(marketCode: "CHACLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}, 
-		CHABTC: marketOrderBook(marketCode: "CHABTC", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread},
+		query: `query{XRPCLP: marketOrderBook(marketCode: "XRPCLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}, 
+		XRPBTC: marketOrderBook(marketCode: "XRPBTC", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread},
 		BTCCLP: marketOrderBook(marketCode: "BTCCLP", limit:100){buy{limitPrice amount accumulated} sell{limitPrice amount accumulated} spread}
 		}`
 	};
@@ -913,11 +775,11 @@ async function fnLibrosOrion(){
 	//console.log(libroOrion);
 	
 	//for()
-	arrOrionBuyCHABTC = libroOrion.data.CHABTC.buy;
-	arrOrionSellCHABTC = libroOrion.data.CHABTC.sell;
+	arrOrionBuyXRPBTC = libroOrion.data.XRPBTC.buy;
+	arrOrionSellXRPBTC = libroOrion.data.XRPBTC.sell;
 
-	arrOrionBuyCHACLP = libroOrion.data.CHACLP.buy;
-	arrOrionSellCHACLP = libroOrion.data.CHACLP.sell;	
+	arrOrionBuyXRPCLP = libroOrion.data.XRPCLP.buy;
+	arrOrionSellXRPCLP = libroOrion.data.XRPCLP.sell;	
 	
 	arrOrionBuyBTCCLP = libroOrion.data.BTCCLP.buy;
 	arrOrionSellBTCCLP = libroOrion.data.BTCCLP.sell;	
@@ -970,6 +832,89 @@ fragment walletListItem on Wallet {
 	for(let objWallet of balanceOrion){
 		indexOrionBalance[objWallet.currency.code] = objWallet;
 	}
-	console.log(indexOrionBalance);
-	//exit
+
+  if(indexOrionBalance['XRP'].availableBalance > 0){
+		/*var queryRemate2 = {
+					query: 'mutation {  remate:placeMarketOrder(marketCode: "XRPCLP", amount: ' + indexOrionBalance['XRP'].availableBalance + ', sell: true) {    _id    __typename  }, recuperacion: placeMarketOrder(marketCode: "BTCCLP", amount: ' + ((btcRef * qty / btcRef) * 1.0039) + ', sell: false) {    _id    __typename  }}'
+				};
+				
+*/
+		var queryRemate2 = {
+			query:`mutation {  
+										remate:placeMarketOrder(marketCode: "XRPCLP", amount:  ` + indexOrionBalance['XRP'].availableBalance + `, sell: true) 
+										{   
+											_id
+											amount
+											limitPrice
+											filled
+											status
+											trades{	
+												amount
+												price
+												totalCost
+												
+											}	
+										}	
+									}		
+			`
+			};
+			fs.appendFileSync('./remate.txt', JSON.stringify(queryRemate2) + "\n", (err) => {
+				if (err) throw err;
+					console.log('The "data to append" was appended to file!');
+			});		
+					
+			
+			//console.log());
+			var respOrder =  await main(queryRemate2);
+			var evalOrder = respOrder.data.remate._id;
+			do{
+				var queryRemate2 = {
+					query:`query{
+						order(orderId:"` + evalOrder + `"){
+								
+														_id
+														amount
+														limitPrice
+														filled
+														status
+														trades{	
+															amount
+															price
+															totalCost
+															
+														}	
+													}	
+						}
+					`
+					};
+			
+				respOrder =  await main(queryRemate2);
+			
+		} while(respOrder.data.order.status != 'closed');
+		var qty = 0;
+		for(let obj of respOrder.data.order.trades){
+			qty += obj.totalCost;
+		}
+		queryRemate2 = {
+			query:`mutation {  
+										remate:placeMarketOrder(marketCode: "BTCCLP", amount:  ` + qty + `, sell: false) 
+										{   
+											_id
+											amount
+											limitPrice
+											filled
+											status
+											trades{	
+												amount
+												price
+												totalCost
+												
+											}	
+										}	
+									}		
+			`
+			};
+		console.log(indexOrionBalance);
+		//exit
+	}
 }
