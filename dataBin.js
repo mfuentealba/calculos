@@ -2,9 +2,12 @@
 
 const binance = require('node-binance-api');
 const Binance = require('binance-api-node').default
+var EventEmitter = require('events').EventEmitter;
+var ee = new EventEmitter();
 var moment = require('moment');
 var dateFormat = require('dateformat');
 var fs = require('fs');
+//ee.on("exec", fnAsignar);
 
 //10167  12672   531718-5
 
@@ -29,6 +32,9 @@ binance.websockets.chart("BNBBTC", "1m", (symbol, interval, chart) => {
 
 
 
+console.log(moment(new Date()).format('YYYY-MM-DD'));
+
+
 
  
 // Authenticated client, can make signed calls
@@ -44,12 +50,12 @@ setInterval(fn, 3000);
 var i = 1
 async function fn(){
 	var arr = await client.aggTrades({ symbol: 'LTCBTC', fromId: i});
-	
+	var ev = '';
 	for(let obj of arr){
 		obj.time = new Date(obj.timestamp);
 		//if(!obj.isBuyerMaker){
 			//console.log(obj);		
-			fs.appendFileSync('./data_LTCBTC.txt', JSON.stringify(obj) + "\n", (err) => {
+			fs.appendFileSync('./LTCBTC/data_LTCBTC' + moment(obj.time).format('YYYY-MM-DD') + '.txt', JSON.stringify(obj) + "\n", (err) => {
 				if (err) throw err;
 				console.log('The "data to append" was appended to file!');
 			  });

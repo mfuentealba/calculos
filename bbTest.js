@@ -1,6 +1,6 @@
 var fsLauncher = require('fs');
 var secNum = [];
-var objSec = {};
+
 var contador = 1;
 var ind = 1;
 var request = require('request');
@@ -8,24 +8,6 @@ var EventEmitter = require('events').EventEmitter;
 var arrOrdenGraf = [];
 var ee = new EventEmitter();
 var init;
-
-for(var i = 0; i < 10; i++){	
-	secNum.push("0" + i);
-	objSec["0" + i] = i - 1;
-}
-
-for(var i = 10; i < 60; i++){	
-	secNum.push("" + i);
-	objSec["" + i] = i - 1;
-}
-
-
-
-
-var bearishengulfingpattern = require('./technicalindicators.js').bearishengulfingpattern;
-var bullishengulfingpattern = require('./technicalindicators.js').bullishengulfingpattern;
-var bearishharamipattern = require('./technicalindicators.js').bearishharami;
-var bullishharamipattern = require('./technicalindicators.js').bullishharami;
 
 var BB = require('./technicalindicators.js').BollingerBands;
 
@@ -40,9 +22,6 @@ stdDev : 2
 
 var bb = new BB(ini);
 var bbGraf;
-var ATR = require('technicalindicators').ATR;
-ini = {low:[], high:[], close:[], period: 30};
-var atr = new ATR(ini);
 var fs = require('fs');
 var fs2 = require('fs');
 var fs3 = require('fs');
@@ -1688,7 +1667,7 @@ var reqObj;
 						////console.log('The "data to append" was appended to file!');
 					});
 				
-				
+				//{"aggId":16,"price":"0.01907100","quantity":"0.21000000","firstId":16,"lastId":16,"timestamp":1500010882052,"isBuyerMaker":false,"wasBestPrice":true,"time":"2017-07-14T05:41:22.052Z"}
 				//console.log(reqObj.fecha);
 				reqObj.close = Number(reqObj.close);
 				reqObj.open = Number(reqObj.open);
@@ -1897,8 +1876,6 @@ fs.readFile(arrFile[cnt++], 'utf8', function(err, data) {
 	
 	fnLecturaArchivo(err, data);
 });
-
-//console.log("FIN");
 	
 
 
