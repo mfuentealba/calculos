@@ -17,8 +17,6 @@ var arrOrionSellCHACLP;
 var tradesOrionCHABTC;
 var tradesOrionCHACLP;
 
-
-
 var balanceSouth;
 var calcBalance = 0;	
 var indexBalance = {precios:[]};
